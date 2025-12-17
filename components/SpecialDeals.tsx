@@ -95,7 +95,7 @@ const deals = [
             Hot Deals
           </h2>
           <p className="font-body text-xl text-white/90 max-w-2xl mx-auto font-light">
-            Exclusive offers you can't afford to miss
+            Exclusive offers you can&apost afford to miss
           </p>
         </div>
 

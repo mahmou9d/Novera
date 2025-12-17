@@ -210,7 +210,7 @@ const products = [
           {filteredProducts.map((product, idx) => (
             <div
               key={product.id}
-              onMouseEnter={() => setHoveredProduct(product.id)}
+              // onMouseEnter={() => setHoveredProduct(product.id)}
               onMouseLeave={() => setHoveredProduct(null)}
               className={`group relative opacity-0 animate-scale-in stagger-${
                 (idx % 6) + 1

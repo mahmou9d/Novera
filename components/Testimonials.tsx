@@ -242,7 +242,7 @@ const testimonials = [
 
                 {/* Review Text */}
                 <blockquote className="font-serif text-3xl lg:text-4xl font-medium text-[#181A2F] leading-relaxed italic">
-                  "{currentTestimonial.review}"
+                  {`"{currentTestimonial.review}"`}
                 </blockquote>
 
                 {/* Author Info */}
@@ -362,7 +362,7 @@ const testimonials = [
                 </div>
 
                 <p className="font-sans text-sm text-gray-700 mb-4 line-clamp-4">
-                  "{testimonial.review}"
+                  {`"{testimonial.review}"`}
                 </p>
 
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-100">

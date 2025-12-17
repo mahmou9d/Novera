@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from "react";
 import {
@@ -103,7 +104,7 @@ const trendingProducts = [
   },
 ];
 
-  const toggleLike = (id) => {
+  const toggleLike = (id:any) => {
     setLikedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -123,7 +124,7 @@ const trendingProducts = [
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FDA481]/10 to-[#B4182D]/10 px-6 py-3 rounded-full mb-6">
             <Flame className="text-[#B4182D]" size={20} />
             <span className="font-body text-sm font-semibold uppercase tracking-wider text-[#181A2F]">
-              What's Hot Right Now
+              What&aposs Hot Right Now
             </span>
           </div>
 
