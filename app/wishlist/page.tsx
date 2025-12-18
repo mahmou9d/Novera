@@ -1,18 +1,33 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Heart,
-  ShoppingCart,
-  Trash2,
-  Eye,
-  X,
-  Sparkles,
-} from "lucide-react";
+import { Heart, ShoppingCart, Trash2, Eye, X, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-const WishlistPage = () => {
-  const [wishlistItems, setWishlistItems] = useState([
+// Types
+interface WishlistItem {
+  id: number;
+  name: string;
+  brand: string;
+  price: number;
+  originalPrice: number | null;
+  image: string;
+  colors: string[];
+  inStock: boolean;
+  rating: number;
+  addedDate: string;
+}
+
+interface Particle {
+  id: number;
+  left: number;
+  top: number;
+  animationDelay: number;
+  animationDuration: number;
+}
+
+const WishlistPage: React.FC = () => {
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
     {
       id: 1,
       name: "Minimalist Leather Wallet",
@@ -93,34 +108,48 @@ const WishlistPage = () => {
     },
   ]);
 
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const [selectedItem, setSelectedItem] = useState<WishlistItem | null>(null);
+  const [notification, setNotification] = useState<string | null>(null);
 
-  const removeItem = (id) => {
+  // Generate particles once using useState with initializer function
+  const [particles] = useState<Particle[]>(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      animationDelay: Math.random() * 6,
+      animationDuration: 4 + Math.random() * 4,
+    }))
+  );
+
+  const removeItem = (id: number): void => {
     setWishlistItems(wishlistItems.filter((item) => item.id !== id));
     showNotification("Item removed from wishlist");
   };
 
-  const addToCart = (item) => {
+  const addToCart = (item: WishlistItem): void => {
     showNotification(`${item.name} added to cart!`);
   };
 
-  const addAllToCart = () => {
+  const addAllToCart = (): void => {
     showNotification(`${wishlistItems.length} items added to cart!`);
   };
 
-  const clearWishlist = () => {
+  const clearWishlist = (): void => {
     setWishlistItems([]);
     showNotification("Wishlist cleared");
   };
 
-  const showNotification = (message) => {
+  const showNotification = (message: string): void => {
     setNotification(message);
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const totalValue = wishlistItems.reduce((sum, item) => sum + item.price, 0);
-  const totalSavings = wishlistItems.reduce(
+  const totalValue: number = wishlistItems.reduce(
+    (sum, item) => sum + item.price,
+    0
+  );
+  const totalSavings: number = wishlistItems.reduce(
     (sum, item) =>
       sum + (item.originalPrice ? item.originalPrice - item.price : 0),
     0
@@ -359,15 +388,15 @@ const WishlistPage = () => {
 
         {/* Floating particles background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(30)].map((_, i) => (
+          {particles.map((particle) => (
             <div
-              key={i}
+              key={particle.id}
               className="particle"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 6}s`,
-                animationDuration: `${4 + Math.random() * 4}s`,
+                left: `${particle.left}%`,
+                top: `${particle.top}%`,
+                animationDelay: `${particle.animationDelay}s`,
+                animationDuration: `${particle.animationDuration}s`,
               }}
             />
           ))}
@@ -440,7 +469,7 @@ const WishlistPage = () => {
           {wishlistItems.length > 0 ? (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {wishlistItems.map((item, index) => (
+                {wishlistItems.map((item) => (
                   <div
                     key={item.id}
                     className="wishlist-card gradient-border rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group"
@@ -751,8 +780,8 @@ const WishlistPage = () => {
                 className="text-lg mb-8 max-w-md mx-auto"
                 style={{ color: "var(--color-slate)" }}
               >
-                Start adding items you love and we'll keep them safe here for
-                you!
+                Start adding items you love and we&apos;ll keep them safe here
+                for you!
               </p>
               <button
                 className="cyber-button text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-2xl transition-all duration-300 inline-flex items-center gap-3 glow-crimson"

@@ -12,26 +12,59 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const Signup = () => {
-  const [formData, setFormData] = useState({
+// Types
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+interface Notification {
+  message: string;
+  type: "success" | "error";
+}
+
+interface Particle {
+  id: number;
+  left: number;
+  top: number;
+  animationDelay: number;
+  animationDuration: number;
+}
+
+const Signup: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [notification, setNotification] = useState(null);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
+  const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
+  const [notification, setNotification] = useState<Notification | null>(null);
 
-  const handleChange = (e) => {
+  // Generate particles once using useState with initializer function
+  const [particles] = useState<Particle[]>(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      animationDelay: Math.random() * 6,
+      animationDuration: 4 + Math.random() * 4,
+    }))
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
 
     if (
@@ -58,7 +91,10 @@ const Signup = () => {
     showNotification("Account created successfully!", "success");
   };
 
-  const showNotification = (message, type = "success") => {
+  const showNotification = (
+    message: string,
+    type: "success" | "error" = "success"
+  ): void => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
@@ -183,15 +219,15 @@ const Signup = () => {
 
       {/* Floating particles background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(30)].map((_, i) => (
+        {particles.map((particle) => (
           <div
-            key={i}
+            key={particle.id}
             className="particle"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 6}s`,
-              animationDuration: `${4 + Math.random() * 4}s`,
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              animationDelay: `${particle.animationDelay}s`,
+              animationDuration: `${particle.animationDuration}s`,
             }}
           />
         ))}
@@ -530,6 +566,7 @@ const Signup = () => {
           {/* Social Signup */}
           <div className="space-y-3">
             <button
+              type="button"
               className="w-full py-3 rounded-xl font-semibold transition-all border-2 flex items-center justify-center gap-3 hover:scale-[1.02]"
               style={{
                 borderColor: "rgba(139, 149, 165, 0.2)",

@@ -11,14 +11,39 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [notification, setNotification] = useState(null);
+// Types
+interface Notification {
+  message: string;
+  type: "success" | "error";
+}
 
-  const handleSubmit = (e) => {
+interface Particle {
+  id: number;
+  left: number;
+  top: number;
+  animationDelay: number;
+  animationDuration: number;
+}
+
+const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [notification, setNotification] = useState<Notification | null>(null);
+
+  // Generate particles once using useState with initializer function
+  const [particles] = useState<Particle[]>(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      animationDelay: Math.random() * 6,
+      animationDuration: 4 + Math.random() * 4,
+    }))
+  );
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -30,7 +55,10 @@ const Login = () => {
     showNotification("Login successful!", "success");
   };
 
-  const showNotification = (message, type = "success") => {
+  const showNotification = (
+    message: string,
+    type: "success" | "error" = "success"
+  ): void => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
@@ -38,7 +66,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-amber-50 relative overflow-hidden flex items-center justify-center py-12 px-4">
       <style jsx>{`
-
         :root {
           --color-navy: #1a1f3a;
           --color-slate: #3d4c63;
@@ -47,9 +74,6 @@ const Login = () => {
           --color-crimson: #d93a49;
           --color-burgundy: #8b1e3f;
         }
-
-
-
 
         @keyframes float {
           0%,
@@ -154,15 +178,15 @@ const Login = () => {
 
       {/* Floating particles background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(30)].map((_, i) => (
+        {particles.map((particle) => (
           <div
-            key={i}
+            key={particle.id}
             className="particle"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 6}s`,
-              animationDuration: `${4 + Math.random() * 4}s`,
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              animationDelay: `${particle.animationDelay}s`,
+              animationDuration: `${particle.animationDuration}s`,
             }}
           />
         ))}
@@ -389,6 +413,7 @@ const Login = () => {
           {/* Social Login */}
           <div className="space-y-3">
             <button
+              type="button"
               className="w-full py-3 rounded-xl font-semibold transition-all border-2 flex items-center justify-center gap-3 hover:scale-[1.02]"
               style={{
                 borderColor: "rgba(139, 149, 165, 0.2)",
@@ -431,7 +456,7 @@ const Login = () => {
             className="text-center mt-6 text-sm"
             style={{ color: "var(--color-slate)" }}
           >
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/signup"
               className="font-bold transition-colors"

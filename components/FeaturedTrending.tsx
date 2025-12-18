@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from "react";
 import {
@@ -11,100 +10,127 @@ import {
   Eye,
 } from "lucide-react";
 
+// Types
+interface FeaturedProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  sold: number;
+  image: string;
+  badge: string;
+  timeLeft: string;
+}
+
+interface TrendingProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  trending: string;
+  orders: string;
+  image: string;
+  rank: number;
+}
+
+type TabType = "featured" | "trending";
+
 export default function FeaturedTrending() {
-  const [activeTab, setActiveTab] = useState("featured");
-  const [likedItems, setLikedItems] = useState(new Set());
+  const [activeTab, setActiveTab] = useState<TabType>("featured");
+  const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
 
-const featuredProducts = [
-  {
-    id: 1,
-    name: "Italian Wool Suit",
-    description: "Tailored perfection in premium Italian wool",
-    price: 645,
-    rating: 4.9,
-    reviews: 287,
-    sold: 156,
-    image:
-      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=1200&q=85",
-    badge: "Editor's Pick",
-    timeLeft: "2d 14h",
-  },
-  {
-    id: 2,
-    name: "Premium Leather Jacket",
-    description: "Timeless design meets exceptional craftsmanship",
-    price: 890,
-    rating: 5.0,
-    reviews: 423,
-    sold: 234,
-    image:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=1200&q=85",
-    badge: "Most Loved",
-    timeLeft: "1d 8h",
-  },
-  {
-    id: 3,
-    name: "Cashmere Turtleneck",
-    description: "Weightless luxury in pure cashmere",
-    price: 425,
-    rating: 4.8,
-    reviews: 512,
-    sold: 389,
-    image:
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1200&q=85",
-    badge: "Bestseller",
-    timeLeft: "3d 6h",
-  },
-];
+  const featuredProducts: FeaturedProduct[] = [
+    {
+      id: 1,
+      name: "Italian Wool Suit",
+      description: "Tailored perfection in premium Italian wool",
+      price: 645,
+      rating: 4.9,
+      reviews: 287,
+      sold: 156,
+      image:
+        "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=1200&q=85",
+      badge: "Editor's Pick",
+      timeLeft: "2d 14h",
+    },
+    {
+      id: 2,
+      name: "Premium Leather Jacket",
+      description: "Timeless design meets exceptional craftsmanship",
+      price: 890,
+      rating: 5.0,
+      reviews: 423,
+      sold: 234,
+      image:
+        "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=1200&q=85",
+      badge: "Most Loved",
+      timeLeft: "1d 8h",
+    },
+    {
+      id: 3,
+      name: "Cashmere Turtleneck",
+      description: "Weightless luxury in pure cashmere",
+      price: 425,
+      rating: 4.8,
+      reviews: 512,
+      sold: 389,
+      image:
+        "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1200&q=85",
+      badge: "Bestseller",
+      timeLeft: "3d 6h",
+    },
+  ];
 
-const trendingProducts = [
-  {
-    id: 4,
-    name: "Tailored Dress Pants",
-    description: "Sharp silhouette for the modern gentleman",
-    price: 320,
-    trending: "+342%",
-    orders: "1.2k orders this week",
-    image:
-      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=1200&q=85",
-    rank: 1,
-  },
-  {
-    id: 5,
-    name: "Organic Cotton Polo",
-    description: "Sustainable style that breathes",
-    price: 285,
-    trending: "+289%",
-    orders: "980 orders this week",
-    image:
-      "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=1200&q=85",
-    rank: 2,
-  },
-  {
-    id: 6,
-    name: "Leather Bomber Jacket",
-    description: "Edge meets sophistication",
-    price: 725,
-    trending: "+245%",
-    orders: "847 orders this week",
-    image:
-      "https://images.unsplash.com/photo-1520975867597-0af37a22e31e?w=1200&q=85",
-    rank: 3,
-  },
-  {
-    id: 7,
-    name: "Designer Denim Jeans",
-    description: "Premium fit with timeless appeal",
-    price: 195,
-    trending: "+198%",
-    orders: "723 orders this week",
-    image:
-      "https://images.unsplash.com/photo-1542272454315-7f6d4f2fe0a4?w=1200&q=85",
-    rank: 4,
-  },
-];
+  const trendingProducts: TrendingProduct[] = [
+    {
+      id: 4,
+      name: "Tailored Dress Pants",
+      description: "Sharp silhouette for the modern gentleman",
+      price: 320,
+      trending: "+342%",
+      orders: "1.2k orders this week",
+      image:
+        "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=1200&q=85",
+      rank: 1,
+    },
+    {
+      id: 5,
+      name: "Organic Cotton Polo",
+      description: "Sustainable style that breathes",
+      price: 285,
+      trending: "+289%",
+      orders: "980 orders this week",
+      image:
+        "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=1200&q=85",
+      rank: 2,
+    },
+    {
+      id: 6,
+      name: "Leather Bomber Jacket",
+      description: "Edge meets sophistication",
+      price: 725,
+      trending: "+245%",
+      orders: "847 orders this week",
+      image:
+        "https://images.unsplash.com/photo-1520975867597-0af37a22e31e?w=1200&q=85",
+      rank: 3,
+    },
+    {
+      id: 7,
+      name: "Designer Denim Jeans",
+      description: "Premium fit with timeless appeal",
+      price: 195,
+      trending: "+198%",
+      orders: "723 orders this week",
+      image:
+        "https://images.unsplash.com/photo-1542272454315-7f6d4f2fe0a4?w=1200&q=85",
+      rank: 4,
+    },
+  ];
 
-  const toggleLike = (id:any) => {
+  const toggleLike = (id: number): void => {
     setLikedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -127,7 +153,7 @@ const trendingProducts = [
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FDA481]/10 to-[#B4182D]/10 px-6 py-3 rounded-full mb-6">
             <Flame className="text-[#B4182D]" size={20} />
             <span className="font-body text-sm font-semibold uppercase tracking-wider text-[#181A2F]">
-              What&aposs Hot Right Now
+              What&apos;s Hot Right Now
             </span>
           </div>
 
@@ -281,7 +307,7 @@ const trendingProducts = [
 
             {/* Secondary Featured Products */}
             <div className="grid md:grid-cols-2 gap-8">
-              {featuredProducts.slice(1).map((product, idx) => (
+              {featuredProducts.slice(1).map((product) => (
                 <div
                   key={product.id}
                   className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
@@ -357,7 +383,7 @@ const trendingProducts = [
         {/* Trending Products - Grid Layout */}
         {activeTab === "trending" && (
           <div className="grid md:grid-cols-2 gap-8">
-            {trendingProducts.map((product, idx) => (
+            {trendingProducts.map((product) => (
               <div
                 key={product.id}
                 className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
