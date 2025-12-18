@@ -67,7 +67,10 @@ const deals = [
 ];
 
   return (
-    <div className="relative bg-gradient-to-br from-[#B4182D] via-[#8B0000] to-[#54162B] py-20 lg:py-32 overflow-hidden">
+    <div
+      id="deals"
+      className="relative bg-gradient-to-br from-[#B4182D] via-[#8B0000] to-[#54162B] py-20 lg:py-32 overflow-hidden"
+    >
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-96 h-96 bg-[#FDA481]/10 rounded-full blur-3xl float-up"></div>

@@ -120,8 +120,10 @@ const testimonials = [
   const currentTestimonial = testimonials[currentSlide];
 
   return (
-    <div className="relative bg-gradient-to-b from-white via-[#faf9f7] to-white py-20 lg:py-32 overflow-hidden">
-
+    <div
+      id="testimonials"
+      className="relative bg-gradient-to-b from-white via-[#faf9f7] to-white py-20 lg:py-32 overflow-hidden"
+    >
       {/* Decorative Background Elements */}
       <div className="absolute top-20 right-10 w-64 h-64 bg-[#FDA481]/5 rounded-full blur-3xl float"></div>
       <div

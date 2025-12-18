@@ -117,7 +117,10 @@ const trendingProducts = [
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#faf9f7] to-white py-20 lg:py-32">
+    <div
+      id="featured"
+      className="bg-gradient-to-b from-[#faf9f7] to-white py-20 lg:py-32"
+    >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Section Header */}
         <div className="text-center mb-16">

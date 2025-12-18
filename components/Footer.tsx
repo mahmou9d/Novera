@@ -79,14 +79,14 @@ export default function Footer() {
     },
   ];
 
-  const paymentMethods = [
-    { name: "Visa", icon: "💳" },
-    { name: "Mastercard", icon: "💳" },
-    { name: "Amex", icon: "💳" },
-    { name: "PayPal", icon: "💰" },
-    { name: "Apple Pay", icon: "🍎" },
-    { name: "Google Pay", icon: "📱" },
-  ];
+const paymentMethods = [
+  { name: "Visa", logo: "/payments/visa.svg" },
+  { name: "Mastercard", logo: "/payments/mastercard.svg" },
+  { name: "Amex", logo: "/payments/amex.svg" },
+  { name: "PayPal", logo: "/payments/paypal.svg" },
+  { name: "Apple Pay", logo: "/payments/apple-pay.svg" },
+  { name: "Google Pay", logo: "/payments/google-pay.svg" },
+];
 
   const features = [
     { icon: Truck, text: "Free Shipping Over $100" },
@@ -96,8 +96,6 @@ export default function Footer() {
 
   return (
     <footer className="bg-gradient-to-br from-[#181A2F] via-[#242E49] to-[#181A2F] text-white">
-
-
       {/* Top Features Bar */}
       <div className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8">
@@ -260,20 +258,24 @@ export default function Footer() {
               in New York
             </div>
 
+
             {/* Payment Methods */}
-            <div className="flex items-center gap-3">
-              <span className="font-sans text-xs text-gray-500 uppercase tracking-wider mr-2">
-                We Accept:
-              </span>
-              {paymentMethods.map((method, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white/5 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
-                  title={method.name}
-                >
-                  <span className="text-xl">{method.icon}</span>
-                </div>
-              ))}
+            <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3">
+              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                <Shield size={14} className="text-[#FDA481]" />
+                <span className="font-sans text-xs text-gray-300 font-medium">
+                  Secure Payment
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-sans text-gray-400">
+                <span className="font-semibold text-white">Visa</span>
+                <span>•</span>
+                <span className="font-semibold text-white">Mastercard</span>
+                <span>•</span>
+                <span className="font-semibold text-white">PayPal</span>
+                <span>•</span>
+                <span className="font-semibold text-white">More</span>
+              </div>
             </div>
           </div>
         </div>

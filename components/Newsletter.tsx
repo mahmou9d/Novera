@@ -26,7 +26,10 @@ export default function Newsletter() {
   ];
 
   return (
-    <div className="relative bg-gradient-to-br from-[#181A2F] via-[#242E49] to-[#37415C] py-20 lg:py-32 overflow-hidden">
+    <div
+      
+      className="relative bg-gradient-to-br from-[#181A2F] via-[#242E49] to-[#37415C] py-20 lg:py-32 overflow-hidden"
+    >
       {/* Decorative Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 right-20 w-96 h-96 bg-[#FDA481]/10 rounded-full blur-3xl bounce-slow"></div>
