@@ -2,19 +2,34 @@
 import React, { useState } from "react";
 import { Heart, ShoppingBag } from "lucide-react";
 
-const ProductGrid = ({ products = [] }) => {
-  const [notification, setNotification] = useState(null);
+// Types
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  colors?: string[];
+  tag?: "Sale" | "New" | "Exclusive" | string;
+}
 
-  const showNotification = (message) => {
+interface ProductGridProps {
+  products?: Product[];
+}
+
+const ProductGrid: React.FC<ProductGridProps> = ({ products = [] }) => {
+  const [notification, setNotification] = useState<string | null>(null);
+
+  const showNotification = (message: string): void => {
     setNotification(message);
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const addToWishlist = (product) => {
+  const addToWishlist = (product: Product): void => {
     showNotification(`${product.name} added to wishlist!`);
   };
 
-  const addToCart = (product) => {
+  const addToCart = (product: Product): void => {
     showNotification(`${product.name} added to cart!`);
   };
 
@@ -183,7 +198,7 @@ const ProductGrid = ({ products = [] }) => {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {products.map((product, idx) => (
+        {products.map((product) => (
           <div
             key={product.id}
             className="product-card group gradient-border rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
