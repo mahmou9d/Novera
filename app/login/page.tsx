@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Mail,
   Lock,
@@ -10,6 +11,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useLoginMutation } from "@/store/authSlice";
+import { useRouter } from "next/navigation";
 
 // Types
 interface Notification {
@@ -25,12 +28,31 @@ interface Particle {
   animationDuration: number;
 }
 
+interface LoginFormData {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
 const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [notification, setNotification] = useState<Notification | null>(null);
+  const [login, { isLoading, error }] = useLoginMutation();
+
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm<LoginFormData>({
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
 
   // Generate particles once using useState with initializer function
   const [particles] = useState<Particle[]>(() =>
@@ -43,16 +65,20 @@ const Login: React.FC = () => {
     }))
   );
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormData): Promise<void> => {
+    try {
+      console.log(data)
+      // Here you would handle the actual login
+      await login({
+        email: data.email,
+        password: data.password,
+      }).unwrap();
 
-    if (!email || !password) {
-      showNotification("Please fill in all fields", "error");
-      return;
+      showNotification("Login successful!", "success");
+      router.push("/");
+    } catch (err) {
+      showNotification("Login failed. Please try again.", "error");
     }
-
-    // Here you would handle the actual login
-    showNotification("Login successful!", "success");
   };
 
   const showNotification = (
@@ -149,6 +175,11 @@ const Login: React.FC = () => {
           left: 100%;
         }
 
+        .cyber-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
         .animate-scale-in {
           animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -173,6 +204,19 @@ const Login: React.FC = () => {
         }
         .input-group:nth-child(4) {
           animation-delay: 0.4s;
+        }
+
+        .error-message {
+          color: var(--color-crimson);
+          font-size: 0.875rem;
+          margin-top: 0.5rem;
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+        }
+
+        .input-error {
+          border-color: var(--color-crimson) !important;
         }
       `}</style>
 
@@ -255,7 +299,7 @@ const Login: React.FC = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Email Input */}
             <div className="input-group">
               <label
@@ -272,26 +316,45 @@ const Login: React.FC = () => {
                 />
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address",
+                    },
+                  })}
                   placeholder="Enter your email"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none"
+                  className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none ${
+                    errors.email ? "input-error" : ""
+                  }`}
                   style={{
                     background: "rgba(255, 255, 255, 0.5)",
-                    borderColor: "rgba(139, 149, 165, 0.2)",
+                    borderColor: errors.email
+                      ? "var(--color-crimson)"
+                      : "rgba(139, 149, 165, 0.2)",
                     color: "var(--color-navy)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "var(--color-peach)";
-                    e.target.style.boxShadow =
-                      "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    if (!errors.email) {
+                      e.target.style.borderColor = "var(--color-peach)";
+                      e.target.style.boxShadow =
+                        "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                    e.target.style.boxShadow = "none";
+                    if (!errors.email) {
+                      e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
+                      e.target.style.boxShadow = "none";
+                    }
                   }}
                 />
               </div>
+              {errors.email && (
+                <p className="error-message">
+                  <AlertCircle size={16} />
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             {/* Password Input */}
@@ -310,23 +373,36 @@ const Login: React.FC = () => {
                 />
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters",
+                    },
+                  })}
                   placeholder="Enter your password"
-                  className="w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all outline-none"
+                  className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all outline-none ${
+                    errors.password ? "input-error" : ""
+                  }`}
                   style={{
                     background: "rgba(255, 255, 255, 0.5)",
-                    borderColor: "rgba(139, 149, 165, 0.2)",
+                    borderColor: errors.password
+                      ? "var(--color-crimson)"
+                      : "rgba(139, 149, 165, 0.2)",
                     color: "var(--color-navy)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "var(--color-peach)";
-                    e.target.style.boxShadow =
-                      "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    if (!errors.password) {
+                      e.target.style.borderColor = "var(--color-peach)";
+                      e.target.style.boxShadow =
+                        "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                    e.target.style.boxShadow = "none";
+                    if (!errors.password) {
+                      e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
+                      e.target.style.boxShadow = "none";
+                    }
                   }}
                 />
                 <button
@@ -344,6 +420,12 @@ const Login: React.FC = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="error-message">
+                  <AlertCircle size={16} />
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             {/* Remember Me & Forgot Password */}
@@ -351,8 +433,7 @@ const Login: React.FC = () => {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  {...register("rememberMe")}
                   className="w-4 h-4 rounded accent-crimson"
                   style={{ accentColor: "var(--color-crimson)" }}
                 />
@@ -382,6 +463,7 @@ const Login: React.FC = () => {
             <div className="input-group">
               <button
                 type="submit"
+                disabled={isLoading}
                 className="cyber-button w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
                 style={{
                   background:
@@ -389,8 +471,8 @@ const Login: React.FC = () => {
                   boxShadow: "0 10px 30px rgba(217, 58, 73, 0.3)",
                 }}
               >
-                Login
-                <ArrowRight size={20} />
+                {isLoading ? "Loading..." : "Login"}
+                {!isLoading && <ArrowRight size={20} />}
               </button>
             </div>
           </form>

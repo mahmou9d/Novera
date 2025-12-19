@@ -3,18 +3,43 @@ import Link from "next/link";
 import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
 import SearchSeaction from "./SearchSeaction";
+import { useLogoutMutation } from "@/store/authSlice";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const scrollToSection = (sectionId:string) => {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [logout, { isLoading }] = useLogoutMutation();
+
+  const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
       setMobileMenuOpen(false);
     }
   };
-
+  const access = localStorage.getItem("access");
+  const handleLogout = () => {
+    logout()
+      .then(() => {
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        // Remove all cart items & wishlist items on logout
+        // Promise.all(
+        //   items.map((item) =>
+        //     dispatch(RemoveCart({ product_id: item.product_id })).unwrap()
+        //   )
+        // );
+        // Promise.all(
+        //   items2.map((item) =>
+        //     dispatch(WishlistRemove(item.product_id)).unwrap()
+        //   )
+        // );
+        router.push("/");
+      })
+      .catch((err) => {});
+  };
   return (
     <>
       <style jsx global>{`
@@ -73,7 +98,7 @@ const [isSearchOpen, setIsSearchOpen] = useState(false);
                 Reviews
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FDA481] group-hover:w-full transition-all duration-300"></span>
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection("deals")}
                 className="font-sans text-sm font-bold uppercase tracking-wider text-[#FDA481] hover:text-white transition-all duration-300 relative group py-2 flex items-center gap-2"
               >
@@ -121,12 +146,21 @@ const [isSearchOpen, setIsSearchOpen] = useState(false);
               <div className="w-px h-6 bg-white/20 hidden lg:block"></div>
 
               {/* Desktop Login Button */}
-              <Link
-                href="/login"
-                className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
-              >
-                Login
-              </Link>
+              {access ? (
+                <button
+                  onClick={handleLogout}
+                  className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+                >
+                  logout
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+                >
+                  Login
+                </Link>
+              )}
 
               {/* Mobile Menu Button */}
               <button
@@ -177,13 +211,22 @@ const [isSearchOpen, setIsSearchOpen] = useState(false);
             >
               <span>🔥</span> Hot Deals
             </button>
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white transition-all duration-300 text-center mt-4 shadow-xl"
-            >
-              Login
-            </Link>
+            {access ? (
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white transition-all duration-300 text-center mt-4 shadow-xl"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white transition-all duration-300 text-center mt-4 shadow-xl"
+              >
+                Login
+              </Link>
+            )}
           </nav>
         </div>
       </header>

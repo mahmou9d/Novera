@@ -119,7 +119,7 @@ const SearchSection = ({ isOpen, onClose }: SearchSectionProps) => {
             <div>
               <p className="text-sm text-gray-500 mb-4">
                 Search results for &quot;
-                <span className="font-semibold">{searchQuery}</span>&quot;
+                <span className="font-semibold">{searchQuery}</span>&quot;s
               </p>
               {/* Example Results */}
               <div className="space-y-3">

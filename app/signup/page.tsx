@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Mail,
   Lock,
@@ -11,15 +12,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useLoginMutation, useSignupMutation } from "@/store/authSlice";
+import { Router } from "next/router";
+import { useRouter } from "next/navigation";
 
 // Types
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
 interface Notification {
   message: string;
   type: "success" | "error";
@@ -33,18 +30,40 @@ interface Particle {
   animationDuration: number;
 }
 
+interface SignupFormData {
+  full_name: string;
+  email: string;
+  password1: string;
+  password2: string;
+  acceptTerms: boolean;
+}
+
 const Signup: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
-  const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
   const [notification, setNotification] = useState<Notification | null>(null);
+  const [signup, { isLoading, isSuccess }] = useSignupMutation();
+  const [login] = useLoginMutation();
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm<SignupFormData>({
+    defaultValues: {
+      full_name: "",
+      email: "",
+      password1: "",
+      password2: "",
+      acceptTerms: false,
+    },
+  });
+
+  // Watch password1 to validate password2
+  const password1 = watch("password1");
 
   // Generate particles once using useState with initializer function
   const [particles] = useState<Particle[]>(() =>
@@ -57,38 +76,23 @@ const Signup: React.FC = () => {
     }))
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
-      showNotification("Please fill in all fields", "error");
-      return;
+  const onSubmit = async (data: SignupFormData): Promise<void> => {
+    try {
+      await signup({
+        full_name: data.full_name,
+        email: data.email,
+        password1: data.password1,
+        password2: data.password2,
+      }).unwrap();
+      await login({
+        email: data.email,
+        password: data.password1,
+      }).unwrap();
+      showNotification("Account created successfully!", "success");
+      router.push("/");
+    } catch (err) {
+      showNotification("Signup failed. Please try again.", "error");
     }
-
-    if (formData.password !== formData.confirmPassword) {
-      showNotification("Passwords do not match", "error");
-      return;
-    }
-
-    if (!acceptTerms) {
-      showNotification("Please accept terms and conditions", "error");
-      return;
-    }
-
-    // Here you would handle the actual signup
-    showNotification("Account created successfully!", "success");
   };
 
   const showNotification = (
@@ -184,6 +188,11 @@ const Signup: React.FC = () => {
           left: 100%;
         }
 
+        .cyber-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
         .animate-scale-in {
           animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -214,6 +223,19 @@ const Signup: React.FC = () => {
         }
         .input-group:nth-child(6) {
           animation-delay: 0.6s;
+        }
+
+        .error-message {
+          color: var(--color-crimson);
+          font-size: 0.875rem;
+          margin-top: 0.5rem;
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+        }
+
+        .input-error {
+          border-color: var(--color-crimson) !important;
         }
       `}</style>
 
@@ -296,7 +318,7 @@ const Signup: React.FC = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Name Input */}
             <div className="input-group">
               <label
@@ -313,27 +335,45 @@ const Signup: React.FC = () => {
                 />
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
+                  {...register("full_name", {
+                    required: "Full name is required",
+                    minLength: {
+                      value: 2,
+                      message: "Name must be at least 2 characters",
+                    },
+                  })}
                   placeholder="Enter your full name"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none"
+                  className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none ${
+                    errors.full_name ? "input-error" : ""
+                  }`}
                   style={{
                     background: "rgba(255, 255, 255, 0.5)",
-                    borderColor: "rgba(139, 149, 165, 0.2)",
+                    borderColor: errors.full_name
+                      ? "var(--color-crimson)"
+                      : "rgba(139, 149, 165, 0.2)",
                     color: "var(--color-navy)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "var(--color-peach)";
-                    e.target.style.boxShadow =
-                      "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    if (!errors.full_name) {
+                      e.target.style.borderColor = "var(--color-peach)";
+                      e.target.style.boxShadow =
+                        "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                    e.target.style.boxShadow = "none";
+                    if (!errors.full_name) {
+                      e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
+                      e.target.style.boxShadow = "none";
+                    }
                   }}
                 />
               </div>
+              {errors.full_name && (
+                <p className="error-message">
+                  <AlertCircle size={16} />
+                  {errors.full_name.message}
+                </p>
+              )}
             </div>
 
             {/* Email Input */}
@@ -352,27 +392,45 @@ const Signup: React.FC = () => {
                 />
                 <input
                   type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address",
+                    },
+                  })}
                   placeholder="Enter your email"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none"
+                  className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none ${
+                    errors.email ? "input-error" : ""
+                  }`}
                   style={{
                     background: "rgba(255, 255, 255, 0.5)",
-                    borderColor: "rgba(139, 149, 165, 0.2)",
+                    borderColor: errors.email
+                      ? "var(--color-crimson)"
+                      : "rgba(139, 149, 165, 0.2)",
                     color: "var(--color-navy)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "var(--color-peach)";
-                    e.target.style.boxShadow =
-                      "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    if (!errors.email) {
+                      e.target.style.borderColor = "var(--color-peach)";
+                      e.target.style.boxShadow =
+                        "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                    e.target.style.boxShadow = "none";
+                    if (!errors.email) {
+                      e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
+                      e.target.style.boxShadow = "none";
+                    }
                   }}
                 />
               </div>
+              {errors.email && (
+                <p className="error-message">
+                  <AlertCircle size={16} />
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             {/* Password Input */}
@@ -391,24 +449,41 @@ const Signup: React.FC = () => {
                 />
                 <input
                   type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  {...register("password1", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                    pattern: {
+                      value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                      message:
+                        "Password must contain uppercase, lowercase, and number",
+                    },
+                  })}
                   placeholder="Create a password"
-                  className="w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all outline-none"
+                  className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all outline-none ${
+                    errors.password1 ? "input-error" : ""
+                  }`}
                   style={{
                     background: "rgba(255, 255, 255, 0.5)",
-                    borderColor: "rgba(139, 149, 165, 0.2)",
+                    borderColor: errors.password1
+                      ? "var(--color-crimson)"
+                      : "rgba(139, 149, 165, 0.2)",
                     color: "var(--color-navy)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "var(--color-peach)";
-                    e.target.style.boxShadow =
-                      "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    if (!errors.password1) {
+                      e.target.style.borderColor = "var(--color-peach)";
+                      e.target.style.boxShadow =
+                        "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                    e.target.style.boxShadow = "none";
+                    if (!errors.password1) {
+                      e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
+                      e.target.style.boxShadow = "none";
+                    }
                   }}
                 />
                 <button
@@ -426,6 +501,12 @@ const Signup: React.FC = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password1 && (
+                <p className="error-message">
+                  <AlertCircle size={16} />
+                  {errors.password1.message}
+                </p>
+              )}
             </div>
 
             {/* Confirm Password Input */}
@@ -444,24 +525,34 @@ const Signup: React.FC = () => {
                 />
                 <input
                   type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
+                  {...register("password2", {
+                    required: "Please confirm your password",
+                    validate: (value) =>
+                      value === password1 || "Passwords do not match",
+                  })}
                   placeholder="Confirm your password"
-                  className="w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all outline-none"
+                  className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all outline-none ${
+                    errors.password2 ? "input-error" : ""
+                  }`}
                   style={{
                     background: "rgba(255, 255, 255, 0.5)",
-                    borderColor: "rgba(139, 149, 165, 0.2)",
+                    borderColor: errors.password2
+                      ? "var(--color-crimson)"
+                      : "rgba(139, 149, 165, 0.2)",
                     color: "var(--color-navy)",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "var(--color-peach)";
-                    e.target.style.boxShadow =
-                      "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    if (!errors.password2) {
+                      e.target.style.borderColor = "var(--color-peach)";
+                      e.target.style.boxShadow =
+                        "0 0 0 3px rgba(253, 180, 168, 0.1)";
+                    }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                    e.target.style.boxShadow = "none";
+                    if (!errors.password2) {
+                      e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
+                      e.target.style.boxShadow = "none";
+                    }
                   }}
                 />
                 <button
@@ -483,6 +574,12 @@ const Signup: React.FC = () => {
                   )}
                 </button>
               </div>
+              {errors.password2 && (
+                <p className="error-message">
+                  <AlertCircle size={16} />
+                  {errors.password2.message}
+                </p>
+              )}
             </div>
 
             {/* Terms & Conditions */}
@@ -490,8 +587,9 @@ const Signup: React.FC = () => {
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  {...register("acceptTerms", {
+                    required: "You must accept the terms and conditions",
+                  })}
                   className="w-4 h-4 mt-1 rounded accent-crimson"
                   style={{ accentColor: "var(--color-crimson)" }}
                 />
@@ -529,12 +627,19 @@ const Signup: React.FC = () => {
                   </Link>
                 </span>
               </label>
+              {errors.acceptTerms && (
+                <p className="error-message">
+                  <AlertCircle size={16} />
+                  {errors.acceptTerms.message}
+                </p>
+              )}
             </div>
 
             {/* Submit Button */}
             <div className="input-group">
               <button
                 type="submit"
+                disabled={isLoading}
                 className="cyber-button w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
                 style={{
                   background:
@@ -542,8 +647,8 @@ const Signup: React.FC = () => {
                   boxShadow: "0 10px 30px rgba(217, 58, 73, 0.3)",
                 }}
               >
-                Create Account
-                <ArrowRight size={20} />
+                {isLoading ? "Creating Account..." : "Create Account"}
+                {!isLoading && <ArrowRight size={20} />}
               </button>
             </div>
           </form>
