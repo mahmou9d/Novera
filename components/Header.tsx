@@ -151,7 +151,7 @@ const Header = () => {
                   onClick={handleLogout}
                   className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
                 >
-                  logout
+                  Logout
                 </button>
               ) : (
                 <Link
