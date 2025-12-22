@@ -5,6 +5,7 @@ import { Heart, ShoppingCart, Trash2, Eye, X, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Types
 interface WishlistItem {
@@ -151,98 +152,9 @@ const WishlistPage: React.FC = () => {
             --color-burgundy: #8b1e3f;
           }
 
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
-          @keyframes scaleIn {
-            from {
-              opacity: 0;
-              transform: scale(0.9);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-
-          @keyframes float {
-            0%,
-            100% {
-              transform: translateY(0) rotate(0deg);
-            }
-            50% {
-              transform: translateY(-20px) rotate(180deg);
-            }
-          }
-
-          .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--color-peach);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-            opacity: 0.4;
-            will-change: transform;
-          }
-
-          @keyframes pulse {
-            0%,
-            100% {
-              opacity: 1;
-            }
-            50% {
-              opacity: 0.5;
-            }
-          }
-
-          .animate-fadeInUp {
-            animation: fadeInUp 0.6s ease-out forwards;
-          }
-
-          .animate-scaleIn {
-            animation: scaleIn 0.5s ease-out forwards;
-          }
-
-          .animate-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-          }
-
           .glow-crimson {
             box-shadow: 0 0 30px rgba(217, 58, 73, 0.3),
               0 0 60px rgba(217, 58, 73, 0.1);
-          }
-
-          .wishlist-card {
-            opacity: 0;
-            animation: fadeInUp 0.6s ease-out forwards;
-          }
-
-          .wishlist-card:nth-child(1) {
-            animation-delay: 0.1s;
-          }
-          .wishlist-card:nth-child(2) {
-            animation-delay: 0.2s;
-          }
-          .wishlist-card:nth-child(3) {
-            animation-delay: 0.3s;
-          }
-          .wishlist-card:nth-child(4) {
-            animation-delay: 0.4s;
-          }
-          .wishlist-card:nth-child(5) {
-            animation-delay: 0.5s;
-          }
-          .wishlist-card:nth-child(6) {
-            animation-delay: 0.6s;
           }
 
           .gradient-border {
@@ -279,91 +191,111 @@ const WishlistPage: React.FC = () => {
             backdrop-filter: blur(20px);
             border: 1px solid rgba(139, 149, 165, 0.15);
           }
-
-          .cyber-button {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.7s ease-out;
-          }
-
-          .cyber-button::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-              90deg,
-              transparent,
-              rgba(255, 255, 255, 0.1),
-              transparent
-            );
-            transition: left 0.7s ease-out;
-          }
-
-          .cyber-button:hover::before {
-            left: 100%;
-          }
-
-          .image-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-          }
         `}</style>
 
         {/* Notification Toast */}
-        {notification && (
-          <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-scaleIn">
-            <div className="glass-effect px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border-green-200 transition-all duration-700 ease-out">
-              <div className="w-2 h-2 rounded-full animate-pulse bg-green-500" />
-              <p
-                className="font-semibold"
-                style={{ color: "var(--color-navy)" }}
-              >
-                {notification}
-              </p>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {notification && (
+            <motion.div
+              initial={{ opacity: 0, y: -50, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -50, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="fixed top-8 left-1/2 -translate-x-1/2 z-50"
+            >
+              <div className="glass-effect px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border-green-200">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [1, 0.5, 1],
+                  }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="w-2 h-2 rounded-full bg-green-500"
+                />
+                <p
+                  className="font-semibold"
+                  style={{ color: "var(--color-navy)" }}
+                >
+                  {notification}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header Section */}
-          <div className="mb-12 animate-fadeInUp">
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="mb-12"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
-                <div className="relative">
-                  <div
-                    className="absolute inset-0 rounded-2xl blur-2xl opacity-20 animate-pulse transition-all duration-1000"
+                <motion.div
+                  className="relative"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      opacity: [0.2, 0.3, 0.2],
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute inset-0 rounded-2xl blur-2xl"
                     style={{ background: "var(--color-crimson)" }}
                   />
-                  <div
-                    className="relative p-4 rounded-2xl transition-transform duration-700 ease-out hover:scale-110"
+                  <motion.div
+                    whileHover={{ rotate: 10 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="relative p-4 rounded-2xl"
                     style={{
                       background:
                         "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
                     }}
                   >
-                    <Heart
-                      className="w-10 h-10 text-white transition-transform duration-500"
-                      strokeWidth={2}
-                    />
-                  </div>
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Heart className="w-10 h-10 text-white" strokeWidth={2} />
+                    </motion.div>
+                  </motion.div>
                   {wishlistItems.length > 0 && (
-                    <div
-                      className="absolute -top-2 -right-2 text-white text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg animate-pulse"
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 15,
+                      }}
+                      className="absolute -top-2 -right-2 text-white text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
                       style={{
                         background:
                           "linear-gradient(135deg, var(--color-peach), var(--color-crimson))",
                       }}
                     >
-                      {wishlistItems.length}
-                    </div>
+                      <motion.span
+                        key={wishlistItems.length}
+                        initial={{ scale: 1.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {wishlistItems.length}
+                      </motion.span>
+                    </motion.div>
                   )}
-                </div>
+                </motion.div>
                 <div>
-                  <h1
+                  <motion.h1
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
                     className="text-5xl font-black min-h-20 flex items-center"
                     style={{
                       background:
@@ -374,57 +306,84 @@ const WishlistPage: React.FC = () => {
                     }}
                   >
                     My Wishlist
-                  </h1>
+                  </motion.h1>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Wishlist Items */}
           {wishlistItems.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {wishlistItems.map((item, index) => (
-                  <WishlistCard
-                    key={item.id}
-                    item={item}
-                    index={index}
-                    onRemove={removeItem}
-                    onAddToCart={addToCart}
-                    onQuickView={setSelectedItem}
-                  />
-                ))}
-              </div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+              >
+                <AnimatePresence>
+                  {wishlistItems.map((item, index) => (
+                    <WishlistCard
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      onRemove={removeItem}
+                      onAddToCart={addToCart}
+                      onQuickView={setSelectedItem}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
 
               {/* Bottom Actions */}
-              <div className="glass-effect rounded-3xl p-6 shadow-xl sticky bottom-6 animate-scaleIn">
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="glass-effect rounded-3xl p-6 shadow-xl sticky bottom-6"
+              >
                 <div className="flex gap-4">
-                  <button
+                  <motion.button
                     onClick={addAllToCart}
-                    className="cyber-button flex-1 text-white py-5 rounded-2xl font-bold text-lg transition-all duration-700 ease-out flex items-center justify-center gap-3 shadow-2xl glow-crimson hover:scale-[1.02] group"
+                    className="flex-1 text-white py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-2xl glow-crimson group"
                     style={{
                       background:
                         "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy), var(--color-navy))",
                     }}
+                    whileHover={{
+                      y: -3,
+                      boxShadow: "0 25px 50px rgba(217, 58, 73, 0.4)",
+                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <ShoppingCart
-                      size={24}
-                      className="transition-transform duration-500 group-hover:scale-110"
-                    />
+                    <motion.div
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <ShoppingCart size={24} />
+                    </motion.div>
                     Add All to Cart ({wishlistItems.length} items)
-                  </button>
-                  <button
+                  </motion.button>
+
+                  <motion.button
                     onClick={clearWishlist}
-                    className="px-8 py-5 rounded-2xl border-2 transition-all duration-700 ease-out font-semibold hover:border-red-500 hover:text-red-500 hover:bg-red-50 hover:scale-105"
+                    className="px-8 py-5 rounded-2xl border-2 font-semibold"
                     style={{
                       borderColor: "rgba(139, 149, 165, 0.3)",
                       color: "var(--color-slate)",
                     }}
+                    whileHover={{
+                      borderColor: "#ef4444",
+                      color: "#ef4444",
+                      backgroundColor: "rgba(239, 68, 68, 0.05)",
+                      scale: 1.02,
+                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     Clear All
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             </>
           ) : (
             <EmptyWishlist />
@@ -432,13 +391,15 @@ const WishlistPage: React.FC = () => {
         </div>
 
         {/* Quick View Modal */}
-        {selectedItem && (
-          <QuickViewModal
-            item={selectedItem}
-            onClose={() => setSelectedItem(null)}
-            onAddToCart={addToCart}
-          />
-        )}
+        <AnimatePresence>
+          {selectedItem && (
+            <QuickViewModal
+              item={selectedItem}
+              onClose={() => setSelectedItem(null)}
+              onAddToCart={addToCart}
+            />
+          )}
+        </AnimatePresence>
       </div>
       <Footer />
     </>
@@ -458,11 +419,26 @@ const WishlistCard = React.memo<{
     : 0;
 
   return (
-    <div className="wishlist-card gradient-border rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-700 ease-out group">
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8, x: -100 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.1,
+        layout: { duration: 0.3 },
+      }}
+      whileHover={{ y: -8 }}
+      className="gradient-border rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl group"
+    >
       <div className="bg-white p-6">
         <div className="flex gap-6">
           {/* Image */}
-          <div className="relative w-48 h-48 shrink-0 rounded-2xl overflow-hidden bg-gray-100">
+          <motion.div
+            className="relative w-48 h-48 shrink-0 rounded-2xl overflow-hidden bg-gray-100"
+            whileHover={{ scale: 1.02 }}
+          >
             <Image
               src={item.image}
               alt={item.name}
@@ -471,74 +447,117 @@ const WishlistCard = React.memo<{
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
               priority={index < 2}
             />
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out bg-gradient-to-t from-[#d93a49]/30 to-transparent" />
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-gradient-to-t from-[#d93a49]/30 to-transparent"
+            />
 
             {/* Quick View */}
-            <button
+            <motion.button
               onClick={() => onQuickView(item)}
-              className="absolute top-3 right-3 backdrop-blur-sm p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out shadow-lg bg-white/90 hover:bg-[#d93a49] hover:text-white hover:scale-110"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileHover={{ scale: 1.1, rotate: 360 }}
+              whileTap={{ scale: 0.9 }}
+              className="absolute top-3 right-3 backdrop-blur-sm p-2.5 rounded-full opacity-0 group-hover:opacity-100 shadow-lg bg-white/90 hover:bg-[#d93a49] hover:text-white"
               style={{ color: "var(--color-slate)" }}
               aria-label="Quick view"
+              transition={{
+                opacity: { duration: 0.3 },
+                scale: { type: "spring", stiffness: 400 },
+              }}
             >
               <Eye size={18} />
-            </button>
+            </motion.button>
 
             {/* Stock Badge */}
-            <div
-              className={`absolute bottom-3 left-3 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg transition-all duration-500 ${
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: index * 0.1 + 0.2 }}
+              className={`absolute bottom-3 left-3 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg ${
                 item.inStock
                   ? "bg-green-500 text-white"
                   : "bg-red-500 text-white"
               }`}
             >
               {item.inStock ? "✓ In Stock" : "Out of Stock"}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Info */}
           <div className="flex-1 flex flex-col justify-between">
             <div>
-              <p
-                className="text-xs font-semibold uppercase tracking-wider mb-2 transition-colors duration-500"
+              <motion.p
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 + 0.1 }}
+                className="text-xs font-semibold uppercase tracking-wider mb-2"
                 style={{ color: "var(--color-crimson)" }}
               >
                 {item.brand}
-              </p>
-              <h3
+              </motion.p>
+              <motion.h3
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 + 0.2 }}
+                whileHover={{ x: 5 }}
                 className="text-2xl font-bold mb-3 cursor-pointer inline-block"
                 style={{ color: "var(--color-navy)" }}
               >
                 {item.name}
-              </h3>
+              </motion.h3>
 
               {/* Colors */}
-              <div className="flex gap-2 mb-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.1 + 0.3 }}
+                className="flex gap-2 mb-4"
+              >
                 {item.colors.map((color, i) => (
-                  <div
+                  <motion.div
                     key={i}
-                    className="w-8 h-8 rounded-full border-2 transition-all duration-500 ease-out hover:scale-125 cursor-pointer shadow-md"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{
+                      delay: index * 0.1 + 0.3 + i * 0.05,
+                      type: "spring",
+                    }}
+                    whileHover={{ scale: 1.3, rotate: 360 }}
+                    className="w-8 h-8 rounded-full border-2 cursor-pointer shadow-md"
                     style={{
                       backgroundColor: color,
                       borderColor: "rgba(139, 149, 165, 0.2)",
                     }}
                   />
                 ))}
-              </div>
+              </motion.div>
 
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.1 + 0.4 }}
+                className="flex items-center gap-2 mb-3"
+              >
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
-                    <span
+                    <motion.span
                       key={i}
-                      className={`text-lg transition-colors duration-300 ${
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 + 0.4 + i * 0.05 }}
+                      whileHover={{ scale: 1.3, rotate: 360 }}
+                      className={`text-lg cursor-pointer ${
                         i < Math.floor(item.rating)
                           ? "text-amber-400"
                           : "text-gray-300"
                       }`}
                     >
                       ★
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
                 <span
@@ -547,25 +566,34 @@ const WishlistCard = React.memo<{
                 >
                   {item.rating}
                 </span>
-              </div>
+              </motion.div>
 
-              <p
-                className="text-xs transition-colors duration-300"
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.1 + 0.5 }}
+                className="text-xs"
                 style={{ color: "var(--color-steel)" }}
               >
                 Added {item.addedDate}
-              </p>
+              </motion.p>
             </div>
 
             {/* Price & Actions */}
             <div>
-              <div className="flex items-baseline gap-3 mb-4">
-                <span
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 + 0.6 }}
+                className="flex items-baseline gap-3 mb-4"
+              >
+                <motion.span
+                  whileHover={{ scale: 1.05 }}
                   className="text-3xl font-bold"
                   style={{ color: "var(--color-navy)" }}
                 >
                   ${item.price}
-                </span>
+                </motion.span>
                 {item.originalPrice && (
                   <>
                     <span
@@ -574,27 +602,34 @@ const WishlistCard = React.memo<{
                     >
                       ${item.originalPrice}
                     </span>
-                    <span
-                      className="text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg transition-transform duration-500 hover:scale-110"
+                    <motion.span
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      className="text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg"
                       style={{
                         background:
                           "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
                       }}
                     >
                       -{discount}%
-                    </span>
+                    </motion.span>
                   </>
                 )}
-              </div>
+              </motion.div>
 
-              <div className="flex gap-3">
-                <button
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 + 0.7 }}
+                className="flex gap-3"
+              >
+                <motion.button
                   onClick={() => onAddToCart(item)}
                   disabled={!item.inStock}
-                  className={`cyber-button flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all duration-700 ease-out shadow-lg group ${
-                    !item.inStock
-                      ? "cursor-not-allowed opacity-50"
-                      : "hover:scale-[1.02]"
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold shadow-lg group ${
+                    !item.inStock ? "cursor-not-allowed opacity-50" : ""
                   }`}
                   style={
                     item.inStock
@@ -608,30 +643,52 @@ const WishlistCard = React.memo<{
                           color: "var(--color-steel)",
                         }
                   }
+                  whileHover={
+                    item.inStock
+                      ? {
+                          y: -2,
+                          boxShadow: "0 10px 25px rgba(217, 58, 73, 0.3)",
+                        }
+                      : {}
+                  }
+                  whileTap={item.inStock ? { scale: 0.98 } : {}}
                 >
-                  <ShoppingCart
-                    size={18}
-                    className="transition-transform duration-500 group-hover:scale-110"
-                  />
+                  <motion.div
+                    whileHover={{ scale: 1.2, rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <ShoppingCart size={18} />
+                  </motion.div>
                   Add to Cart
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={() => onRemove(item.id)}
-                  className="px-4 py-3 rounded-xl border-2 transition-all duration-700 ease-out hover:bg-red-50 hover:border-red-500 hover:scale-110"
+                  className="px-4 py-3 rounded-xl border-2"
                   style={{
                     borderColor: "rgba(239, 68, 68, 0.3)",
                     color: "#ef4444",
                   }}
+                  whileHover={{
+                    backgroundColor: "rgba(239, 68, 68, 0.1)",
+                    borderColor: "#ef4444",
+                    scale: 1.05,
+                  }}
+                  whileTap={{ scale: 0.95 }}
                   aria-label="Remove item"
                 >
-                  <Trash2 size={18} />
-                </button>
-              </div>
+                  <motion.div
+                    whileHover={{ rotate: 360, scale: 1.2 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Trash2 size={18} />
+                  </motion.div>
+                </motion.button>
+              </motion.div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 });
 
@@ -639,44 +696,85 @@ WishlistCard.displayName = "WishlistCard";
 
 // Empty wishlist component
 const EmptyWishlist = React.memo(() => (
-  <div className="glass-effect rounded-3xl p-16 text-center shadow-xl animate-scaleIn">
-    <div className="relative inline-block mb-8">
-      <div
-        className="absolute inset-0 rounded-full blur-3xl opacity-20 animate-pulse transition-all duration-1000"
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.6, type: "spring" }}
+    className="glass-effect rounded-3xl p-16 text-center shadow-xl"
+  >
+    <motion.div
+      className="relative inline-block mb-8"
+      animate={{
+        y: [0, -10, 0],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.2, 0.3, 0.2],
+        }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="absolute inset-0 rounded-full blur-3xl"
         style={{ background: "var(--color-crimson)" }}
       />
-      <Heart
-        className="w-32 h-32 mx-auto relative transition-transform duration-700 ease-out hover:scale-110"
-        strokeWidth={1.5}
-        style={{ color: "var(--color-steel)" }}
-      />
-    </div>
-    <h2
+      <motion.div
+        whileHover={{ scale: 1.1, rotate: 10 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      >
+        <Heart
+          className="w-32 h-32 mx-auto relative"
+          strokeWidth={1.5}
+          style={{ color: "var(--color-steel)" }}
+        />
+      </motion.div>
+    </motion.div>
+    <motion.h2
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
       className="text-4xl font-bold mb-4"
       style={{ color: "var(--color-navy)" }}
     >
       Your Wishlist is Empty
-    </h2>
-    <p
+    </motion.h2>
+    <motion.p
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
       className="text-lg mb-8 max-w-md mx-auto"
       style={{ color: "var(--color-slate)" }}
     >
       Start adding items you love and we&apos;ll keep them safe here for you!
-    </p>
-    <button
-      className="cyber-button text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-2xl transition-all duration-700 ease-out inline-flex items-center gap-3 glow-crimson hover:scale-105 group"
+    </motion.p>
+    <motion.button
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}
+      className="text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-2xl inline-flex items-center gap-3 glow-crimson group"
       style={{
         background:
           "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
       }}
+      whileHover={{
+        y: -3,
+        boxShadow: "0 25px 50px rgba(217, 58, 73, 0.4)",
+      }}
+      whileTap={{ scale: 0.95 }}
     >
-      <Sparkles
-        size={24}
-        className="transition-transform duration-500 group-hover:rotate-12"
-      />
+      <motion.div
+        animate={{ rotate: [0, 15, -15, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <Sparkles size={24} />
+      </motion.div>
       Start Shopping
-    </button>
-  </div>
+    </motion.button>
+  </motion.div>
 ));
 
 EmptyWishlist.displayName = "EmptyWishlist";
@@ -687,33 +785,55 @@ const QuickViewModal = React.memo<{
   onClose: () => void;
   onAddToCart: (item: WishlistItem) => void;
 }>(({ item, onClose, onAddToCart }) => (
-  <div
-    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeInUp"
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.3 }}
+    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
     onClick={onClose}
   >
-    <div
-      className="bg-white rounded-3xl max-w-3xl w-full p-8 shadow-2xl animate-scaleIn transition-all duration-700 ease-out"
+    <motion.div
+      initial={{ scale: 0.8, y: 50, opacity: 0 }}
+      animate={{ scale: 1, y: 0, opacity: 1 }}
+      exit={{ scale: 0.8, y: 50, opacity: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="bg-white rounded-3xl max-w-3xl w-full p-8 shadow-2xl"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex justify-between items-start mb-6">
-        <h2
+        <motion.h2
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
           className="text-3xl font-bold"
           style={{ color: "var(--color-navy)" }}
         >
           Quick View
-        </h2>
-        <button
+        </motion.h2>
+        <motion.button
           onClick={onClose}
-          className="p-2 rounded-full transition-all duration-500 ease-out hover:bg-slate/10 hover:scale-110 hover:rotate-90"
+          className="p-2 rounded-full"
           style={{ color: "var(--color-slate)" }}
+          whileHover={{
+            backgroundColor: "rgba(139, 149, 165, 0.1)",
+            rotate: 90,
+            scale: 1.1,
+          }}
+          whileTap={{ scale: 0.9 }}
           aria-label="Close modal"
         >
           <X size={24} />
-        </button>
+        </motion.button>
       </div>
 
       <div className="grid grid-cols-2 gap-8">
-        <div className="relative w-full h-96 rounded-2xl overflow-hidden group">
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="relative w-full h-96 rounded-2xl overflow-hidden group"
+        >
           <Image
             src={item.image}
             alt={item.name}
@@ -722,22 +842,38 @@ const QuickViewModal = React.memo<{
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
             priority
           />
-        </div>
-        <div>
-          <p
-            className="text-sm font-semibold uppercase tracking-wider mb-2 transition-colors duration-500"
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-sm font-semibold uppercase tracking-wider mb-2"
             style={{ color: "var(--color-crimson)" }}
           >
             {item.brand}
-          </p>
-          <h3
+          </motion.p>
+          <motion.h3
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
             className="text-3xl font-bold mb-4"
             style={{ color: "var(--color-navy)" }}
           >
             {item.name}
-          </h3>
-          <div className="flex items-baseline gap-3 mb-6">
-            <span
+          </motion.h3>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="flex items-baseline gap-3 mb-6"
+          >
+            <motion.span
+              whileHover={{ scale: 1.05 }}
               className="text-4xl font-bold"
               style={{
                 background:
@@ -748,7 +884,7 @@ const QuickViewModal = React.memo<{
               }}
             >
               ${item.price}
-            </span>
+            </motion.span>
             {item.originalPrice && (
               <span
                 className="text-xl line-through"
@@ -757,14 +893,25 @@ const QuickViewModal = React.memo<{
                 ${item.originalPrice}
               </span>
             )}
-          </div>
+          </motion.div>
 
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center gap-2 transition-all duration-500">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="space-y-4 mb-8"
+          >
+            <motion.div
+              whileHover={{ x: 5 }}
+              className="flex items-center gap-2"
+            >
               <span style={{ color: "var(--color-slate)" }}>Rating:</span>
               <span className="font-bold text-amber-500">{item.rating} ★</span>
-            </div>
-            <div className="flex items-center gap-2 transition-all duration-500">
+            </motion.div>
+            <motion.div
+              whileHover={{ x: 5 }}
+              className="flex items-center gap-2"
+            >
               <span style={{ color: "var(--color-slate)" }}>Availability:</span>
               <span
                 className={`font-bold ${
@@ -773,14 +920,21 @@ const QuickViewModal = React.memo<{
               >
                 {item.inStock ? "In Stock" : "Out of Stock"}
               </span>
-            </div>
-            <div className="flex items-center gap-2 transition-all duration-500">
+            </motion.div>
+            <motion.div
+              whileHover={{ x: 5 }}
+              className="flex items-center gap-2"
+            >
               <span style={{ color: "var(--color-slate)" }}>Colors:</span>
               <div className="flex gap-2">
                 {item.colors.map((color, i) => (
-                  <div
+                  <motion.div
                     key={i}
-                    className="w-6 h-6 rounded-full border-2 transition-all duration-500 ease-out hover:scale-125 cursor-pointer"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.7 + i * 0.05, type: "spring" }}
+                    whileHover={{ scale: 1.3, rotate: 360 }}
+                    className="w-6 h-6 rounded-full border-2 cursor-pointer"
                     style={{
                       backgroundColor: color,
                       borderColor: "rgba(139, 149, 165, 0.3)",
@@ -788,16 +942,16 @@ const QuickViewModal = React.memo<{
                   />
                 ))}
               </div>
-            </div>
-          </div>
-
-          <button
+            </motion.div>
+          </motion.div>
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
             onClick={() => onAddToCart(item)}
             disabled={!item.inStock}
-            className={`cyber-button w-full py-4 rounded-xl font-bold text-lg transition-all duration-700 ease-out shadow-xl ${
-              !item.inStock
-                ? "cursor-not-allowed opacity-50"
-                : "hover:scale-[1.02]"
+            className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl ${
+              !item.inStock ? "cursor-not-allowed opacity-50" : ""
             }`}
             style={
               item.inStock
@@ -811,13 +965,22 @@ const QuickViewModal = React.memo<{
                     color: "var(--color-steel)",
                   }
             }
+            whileHover={
+              item.inStock
+                ? {
+                    y: -3,
+                    boxShadow: "0 20px 40px rgba(217, 58, 73, 0.4)",
+                  }
+                : {}
+            }
+            whileTap={item.inStock ? { scale: 0.98 } : {}}
           >
             {item.inStock ? "Add to Cart" : "Out of Stock"}
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </div>
-    </div>
-  </div>
+    </motion.div>
+  </motion.div>
 ));
 
 QuickViewModal.displayName = "QuickViewModal";

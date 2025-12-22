@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useLoginMutation, useSignupMutation } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 // Zod Schema
 const signupSchema = z
@@ -235,13 +236,22 @@ const Signup: React.FC = () => {
                       : "border-[#37415C]/20 focus:border-[#FDA481] focus:shadow-[0_0_0_3px_rgba(253,164,129,0.1)]"
                   }`}
                 />
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D] transition-all duration-500 ease-out hover:scale-110"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D] transition-all duration-500 ease-out"
+                  whileHover={{
+                    scale: 1,
+                    transition: {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 20,
+                    },
+                  }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+                </motion.button>
               </div>
               {errors.password1 && (
                 <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
@@ -271,17 +281,26 @@ const Signup: React.FC = () => {
                       : "border-[#37415C]/20 focus:border-[#FDA481] focus:shadow-[0_0_0_3px_rgba(253,164,129,0.1)]"
                   }`}
                 />
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D] transition-all duration-500 ease-out hover:scale-110"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D]"
+                  whileHover={{
+                    scale: 1,
+                    transition: {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 20,
+                    },
+                  }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {showConfirmPassword ? (
                     <EyeOff size={20} />
                   ) : (
                     <Eye size={20} />
                   )}
-                </button>
+                </motion.button>
               </div>
               {errors.password2 && (
                 <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
@@ -326,10 +345,19 @@ const Signup: React.FC = () => {
 
             {/* Submit Button */}
             <div className="input-group">
-              <button
+              <motion.button
                 type="submit"
                 disabled={isLoading}
-                className="cyber-button w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-[1.02] transition-all duration-700 ease-out flex items-center justify-center gap-3 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 glow-crimson group"
+                className="cyber-button w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-3 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 glow-crimson group"
+                whileHover={{
+                  scale: 1,
+                  transition: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 20,
+                  },
+                }}
+                whileTap={{ scale: 0.95 }}
               >
                 {isLoading ? (
                   <>
@@ -345,7 +373,7 @@ const Signup: React.FC = () => {
                     />
                   </>
                 )}
-              </button>
+              </motion.button>
             </div>
           </form>
 
@@ -358,9 +386,18 @@ const Signup: React.FC = () => {
 
           {/* Social Signup */}
           <div className="space-y-3">
-            <button
+            <motion.button
               type="button"
-              className="w-full py-3 rounded-xl font-semibold transition-all duration-700 ease-out border-2 border-[#37415C]/20 flex items-center justify-center gap-3 hover:scale-[1.02] bg-white/50 text-[#181A2F] hover:border-[#FDA481] hover:bg-[#FDA481]/10"
+              className="w-full py-3 rounded-xl font-semibold transition-all duration-700 ease-out border-2 border-[#37415C]/20 flex items-center justify-center gap-3  bg-white/50 text-[#181A2F] hover:border-[#FDA481] hover:bg-[#FDA481]/10"
+              whileHover={{
+                scale: 1,
+                transition: {
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 20,
+                },
+              }}
+              whileTap={{ scale: 0.95 }}
             >
               <svg
                 className="w-5 h-5 transition-transform duration-500"
@@ -384,7 +421,7 @@ const Signup: React.FC = () => {
                 />
               </svg>
               Continue with Google
-            </button>
+            </motion.button>
           </div>
 
           {/* Login Link */}

@@ -231,13 +231,24 @@ TopWaveDivider.displayName = "TopWaveDivider";
 // Memoized Load More Button
 const LoadMoreButton = memo(() => (
   <div className="text-center mt-16 opacity-0 animate-fade-up stagger-6">
-    <button className="group inline-flex items-center gap-3 bg-[#181A2F] text-white px-12 py-5 rounded-full font-semibold uppercase tracking-wider hover:bg-[#FDA481] transition-all duration-500 shadow-xl hover:shadow-2xl hover:scale-105">
+    <motion.button
+      className="group inline-flex items-center gap-3 bg-[#181A2F] text-white px-12 py-5 rounded-full font-semibold uppercase tracking-wider hover:bg-[#FDA481] transition-all duration-500 shadow-xl hover:shadow-2xl"
+      whileHover={{
+        scale: 1,
+        transition: {
+          type: "spring",
+          stiffness: 300,
+          damping: 20,
+        },
+      }}
+      whileTap={{ scale: 0.9 }}
+    >
       Discover More
       <TrendingUp
         size={20}
         className="group-hover:rotate-12 transition-transform duration-300"
       />
-    </button>
+    </motion.button>
   </div>
 ));
 
