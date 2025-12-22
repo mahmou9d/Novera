@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { Heart, ShoppingBag } from "lucide-react";
+import Image from "next/image";
+import { motion } from "framer-motion";
 
 // Types
 interface Product {
@@ -35,161 +37,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products = [] }) => {
 
   return (
     <div className="relative">
-      <style jsx>{`
-        @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap");
-
-        :root {
-          --color-navy: #1a1f3a;
-          --color-slate: #3d4c63;
-          --color-steel: #8b95a5;
-          --color-peach: #fdb4a8;
-          --color-crimson: #d93a49;
-          --color-burgundy: #8b1e3f;
-        }
-
-        * {
-          font-family: "DM Sans", sans-serif;
-        }
-
-        h1,
-        h2,
-        h3 {
-          font-family: "Syne", sans-serif;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .product-card {
-          opacity: 0;
-          animation: fadeInUp 0.6s ease-out forwards;
-        }
-
-        .product-card:nth-child(1) {
-          animation-delay: 0.1s;
-        }
-        .product-card:nth-child(2) {
-          animation-delay: 0.15s;
-        }
-        .product-card:nth-child(3) {
-          animation-delay: 0.2s;
-        }
-        .product-card:nth-child(4) {
-          animation-delay: 0.25s;
-        }
-        .product-card:nth-child(5) {
-          animation-delay: 0.3s;
-        }
-        .product-card:nth-child(6) {
-          animation-delay: 0.35s;
-        }
-        .product-card:nth-child(7) {
-          animation-delay: 0.4s;
-        }
-        .product-card:nth-child(8) {
-          animation-delay: 0.45s;
-        }
-        .product-card:nth-child(9) {
-          animation-delay: 0.5s;
-        }
-        .product-card:nth-child(10) {
-          animation-delay: 0.55s;
-        }
-        .product-card:nth-child(11) {
-          animation-delay: 0.6s;
-        }
-        .product-card:nth-child(12) {
-          animation-delay: 0.65s;
-        }
-
-        .glass-effect {
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(139, 149, 165, 0.15);
-        }
-
-        .gradient-border {
-          position: relative;
-          background: white;
-        }
-
-        .gradient-border::before {
-          content: "";
-          position: absolute;
-          inset: -2px;
-          border-radius: 24px;
-          padding: 2px;
-          background: linear-gradient(
-            135deg,
-            var(--color-crimson),
-            var(--color-peach),
-            var(--color-burgundy)
-          );
-          -webkit-mask: linear-gradient(#fff 0 0) content-box,
-            linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          opacity: 0;
-          transition: opacity 0.3s;
-        }
-
-        .gradient-border:hover::before {
-          opacity: 1;
-        }
-
-        .cyber-button {
-          position: relative;
-          overflow: hidden;
-          transition: all 0.3s ease;
-        }
-
-        .cyber-button::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.2),
-            transparent
-          );
-          transition: left 0.5s ease;
-        }
-
-        .cyber-button:hover::before {
-          left: 100%;
-        }
-      `}</style>
-
-      {/* Notification Toast */}
+      {/* Notification */}
       {notification && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-scaleIn">
-          <div className="glass-effect px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border-green-200">
-            <div className="w-2 h-2 rounded-full animate-pulse bg-green-500"></div>
-            <p className="font-semibold" style={{ color: "var(--color-navy)" }}>
+          <div className="bg-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full animate-pulse bg-green-500" />
+            <p className="font-semibold text-[var(--color-navy)]">
               {notification}
             </p>
           </div>
@@ -201,39 +54,39 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products = [] }) => {
         {products.map((product) => (
           <div
             key={product.id}
-            className="product-card group gradient-border rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+            className="product-card group gradient-border rounded-3xl overflow-hidden shadow-lg card-animate"
           >
             <div className="bg-white">
-              {/* Image Container */}
-              <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
-                <img
+              {/* Image */}
+              <div className="relative aspect-3/4 overflow-hidden bg-gray-100">
+                <Image
+                  width={400}
+                  height={600}
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover scale-smooth will-change-transform"
                 />
 
-                {/* Gradient Overlay */}
+                {/* Overlay */}
                 <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{
                     background:
                       "linear-gradient(to top, rgba(217, 58, 73, 0.6), transparent)",
                   }}
-                ></div>
+                />
 
                 {/* Tag */}
                 {product.tag && (
                   <div
-                    className="absolute top-4 left-4 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-lg"
+                    className="absolute top-4 left-4 px-4 py-1.5 rounded-full text-xs font-bold uppercase backdrop-blur-md"
                     style={{
                       background:
                         product.tag === "Sale"
                           ? "var(--color-crimson)"
                           : product.tag === "New"
-                          ? "rgba(255, 255, 255, 0.9)"
-                          : product.tag === "Exclusive"
-                          ? "var(--color-navy)"
-                          : "var(--color-peach)",
+                          ? "rgba(255,255,255,0.9)"
+                          : "var(--color-navy)",
                       color:
                         product.tag === "New" ? "var(--color-navy)" : "white",
                     }}
@@ -242,105 +95,74 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products = [] }) => {
                   </div>
                 )}
 
-                {/* Quick Actions */}
+                {/* Actions */}
                 <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
-                  <button
+                  <motion.button
                     onClick={() => addToWishlist(product)}
-                    className="backdrop-blur-sm p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
-                    style={{
-                      background: "rgba(255, 255, 255, 0.95)",
-                      color: "var(--color-slate)",
+                    className="backdrop-blur-sm p-3 inline-flex items-center bg-gradient-to-r bg-white rounded-full font-body font-bold text-base uppercase tracking-wider hover:shadow-2xl transition-all duration-500 animate-bounce-subtle"
+                    whileHover={{
+                      scale: 1,
+                      transition: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      },
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "var(--color-peach)";
-                      e.currentTarget.style.color = "white";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background =
-                        "rgba(255, 255, 255, 0.95)";
-                      e.currentTarget.style.color = "var(--color-slate)";
-                    }}
+                    whileTap={{ scale: 0.8 }}
                   >
                     <Heart size={18} />
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     onClick={() => addToCart(product)}
-                    className="backdrop-blur-sm p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
-                    style={{
-                      background: "rgba(255, 255, 255, 0.95)",
-                      color: "var(--color-slate)",
+                    className="backdrop-blur-sm inline-flex items-center bg-white p-3 rounded-full font-body font-bold text-base uppercase tracking-wider hover:shadow-2xl transition-all duration-500 animate-bounce-subtle"
+                    whileHover={{
+                      scale: 1,
+                      transition: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      },
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "var(--color-peach)";
-                      e.currentTarget.style.color = "white";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background =
-                        "rgba(255, 255, 255, 0.95)";
-                      e.currentTarget.style.color = "var(--color-slate)";
-                    }}
+                    whileTap={{ scale: 0.8 }}
                   >
                     <ShoppingBag size={18} />
-                  </button>
+                  </motion.button>
                 </div>
 
-                {/* CTA on Hover */}
+                {/* CTA with Framer Motion */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                  <button
+                  <motion.button
                     onClick={() => addToCart(product)}
-                    className="cyber-button w-full py-4 rounded-full font-semibold uppercase tracking-wider text-sm transition-all duration-300 shadow-2xl"
-                    style={{
-                      background: "white",
-                      color: "var(--color-navy)",
+                    className="w-full py-4 rounded-full font-semibold uppercase tracking-wider text-sm bg-white text-[var(--color-navy)] transition-colors duration-300 hover:bg-[var(--color-peach)] hover:text-white"
+                    whileHover={{
+                      scale: 1.05,
+                      transition: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 20,
+                      },
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "var(--color-peach)";
-                      e.currentTarget.style.color = "white";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "white";
-                      e.currentTarget.style.color = "var(--color-navy)";
-                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     Add to Cart
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 
-              {/* Product Info */}
+              {/* Info */}
               <div className="p-6">
-                <h3
-                  className="text-xl font-semibold mb-3 transition-colors duration-300 cursor-pointer"
-                  style={{ color: "var(--color-navy)" }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.color = "var(--color-crimson)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.color = "var(--color-navy)")
-                  }
-                >
+                <h3 className="text-xl font-semibold mb-3 text-[var(--color-navy)] hover:text-[var(--color-crimson)] transition-colors">
                   {product.name}
                 </h3>
 
                 {/* Colors */}
-                {product.colors && product.colors.length > 0 && (
+                {product.colors && (
                   <div className="flex gap-2 mb-4">
                     {product.colors.map((color, i) => (
-                      <div
+                      <span
                         key={i}
-                        className="w-6 h-6 rounded-full border-2 transition-all duration-300 hover:scale-125 cursor-pointer shadow-md"
-                        style={{
-                          backgroundColor: color,
-                          borderColor: "rgba(139, 149, 165, 0.2)",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.borderColor =
-                            "var(--color-peach)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.borderColor =
-                            "rgba(139, 149, 165, 0.2)")
-                        }
+                        className="w-6 h-6 rounded-full border-2 shadow-md"
+                        style={{ backgroundColor: color }}
                       />
                     ))}
                   </div>
@@ -348,34 +170,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products = [] }) => {
 
                 {/* Price */}
                 <div className="flex items-baseline gap-3">
-                  <span
-                    className="text-2xl font-bold"
-                    style={{ color: "var(--color-navy)" }}
-                  >
+                  <span className="text-2xl font-bold text-[var(--color-navy)]">
                     ${product.price}
                   </span>
                   {product.originalPrice && (
-                    <>
-                      <span
-                        className="text-lg line-through"
-                        style={{ color: "var(--color-steel)" }}
-                      >
-                        ${product.originalPrice}
-                      </span>
-                      <span
-                        className="text-sm font-bold px-2 py-1 rounded"
-                        style={{
-                          color: "var(--color-crimson)",
-                          background: "rgba(217, 58, 73, 0.1)",
-                        }}
-                      >
-                        -
-                        {Math.round(
-                          (1 - product.price / product.originalPrice) * 100
-                        )}
-                        %
-                      </span>
-                    </>
+                    <span className="text-lg line-through text-gray-400">
+                      ${product.originalPrice}
+                    </span>
                   )}
                 </div>
               </div>

@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   Mail,
   Lock,
@@ -14,39 +18,34 @@ import Link from "next/link";
 import { useLoginMutation } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 
+// Zod Schema
+const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  rememberMe: z.boolean().optional(),
+});
+
 // Types
+type LoginFormData = z.infer<typeof loginSchema>;
+
 interface Notification {
   message: string;
   type: "success" | "error";
-}
-
-interface Particle {
-  id: number;
-  left: number;
-  top: number;
-  animationDelay: number;
-  animationDuration: number;
-}
-
-interface LoginFormData {
-  email: string;
-  password: string;
-  rememberMe: boolean;
 }
 
 const Login: React.FC = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [notification, setNotification] = useState<Notification | null>(null);
-  const [login, { isLoading, error }] = useLoginMutation();
+  const [login, { isLoading }] = useLoginMutation();
 
-  // React Hook Form
+  // React Hook Form with Zod
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -54,21 +53,17 @@ const Login: React.FC = () => {
     },
   });
 
-  // Generate particles once using useState with initializer function
-  const [particles] = useState<Particle[]>(() =>
-    Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      animationDelay: Math.random() * 6,
-      animationDuration: 4 + Math.random() * 4,
-    }))
+  const showNotification = useCallback(
+    (message: string, type: "success" | "error" = "success"): void => {
+      setNotification({ message, type });
+      setTimeout(() => setNotification(null), 3000);
+    },
+    []
   );
 
   const onSubmit = async (data: LoginFormData): Promise<void> => {
     try {
-      console.log(data)
-      // Here you would handle the actual login
+      console.log(data);
       await login({
         email: data.email,
         password: data.password,
@@ -76,185 +71,35 @@ const Login: React.FC = () => {
 
       showNotification("Login successful!", "success");
       router.push("/");
-    } catch (err) {
-      showNotification("Login failed. Please try again.", "error");
+    } catch (err: any) {
+      showNotification(`Login failed. Please try again.${err}`, "error");
     }
   };
 
-  const showNotification = (
-    message: string,
-    type: "success" | "error" = "success"
-  ): void => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-amber-50 relative overflow-hidden flex items-center justify-center py-12 px-4">
-      <style jsx>{`
-        :root {
-          --color-navy: #1a1f3a;
-          --color-slate: #3d4c63;
-          --color-steel: #8b95a5;
-          --color-peach: #fdb4a8;
-          --color-crimson: #d93a49;
-          --color-burgundy: #8b1e3f;
-        }
-
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(180deg);
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        @keyframes slideInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .particle {
-          position: absolute;
-          width: 4px;
-          height: 4px;
-          background: var(--color-peach);
-          border-radius: 50%;
-          animation: float 6s ease-in-out infinite;
-          opacity: 0.4;
-        }
-
-        .glass-effect {
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(139, 149, 165, 0.15);
-        }
-
-        .cyber-button {
-          position: relative;
-          overflow: hidden;
-          transition: all 0.3s ease;
-        }
-
-        .cyber-button::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.2),
-            transparent
-          );
-          transition: left 0.5s ease;
-        }
-
-        .cyber-button:hover::before {
-          left: 100%;
-        }
-
-        .cyber-button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .animate-scale-in {
-          animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .animate-slide-up {
-          animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .input-group {
-          opacity: 0;
-          animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .input-group:nth-child(1) {
-          animation-delay: 0.1s;
-        }
-        .input-group:nth-child(2) {
-          animation-delay: 0.2s;
-        }
-        .input-group:nth-child(3) {
-          animation-delay: 0.3s;
-        }
-        .input-group:nth-child(4) {
-          animation-delay: 0.4s;
-        }
-
-        .error-message {
-          color: var(--color-crimson);
-          font-size: 0.875rem;
-          margin-top: 0.5rem;
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-        }
-
-        .input-error {
-          border-color: var(--color-crimson) !important;
-        }
-      `}</style>
-
-      {/* Floating particles background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {particles.map((particle) => (
-          <div
-            key={particle.id}
-            className="particle"
-            style={{
-              left: `${particle.left}%`,
-              top: `${particle.top}%`,
-              animationDelay: `${particle.animationDelay}s`,
-              animationDuration: `${particle.animationDuration}s`,
-            }}
-          />
-        ))}
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br relative overflow-hidden flex items-center justify-center py-12 px-4">
       {/* Notification Toast */}
       {notification && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-scale-in">
           <div
-            className={`glass-effect px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 ${
+            className={`glass px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-700 ease-out ${
               notification.type === "error"
-                ? "border-red-200"
-                : "border-green-200"
+                ? "border-[#B4182D]/30"
+                : "border-green-500/30"
             }`}
           >
             {notification.type === "error" ? (
               <AlertCircle
-                style={{ color: "var(--color-crimson)" }}
+                className="text-[#B4182D] transition-transform duration-500"
                 size={24}
               />
             ) : (
-              <Check className="text-green-600" size={24} />
+              <Check
+                className="text-green-600 transition-transform duration-500"
+                size={24}
+              />
             )}
-            <p className="font-semibold" style={{ color: "var(--color-navy)" }}>
+            <p className="font-semibold text-[#181A2F]">
               {notification.message}
             </p>
           </div>
@@ -263,94 +108,46 @@ const Login: React.FC = () => {
 
       {/* Login Card */}
       <div className="w-full max-w-md relative animate-scale-in">
-        <div className="glass-effect rounded-3xl p-8 shadow-2xl">
+        <div className="glass-dark rounded-3xl p-8 shadow-2xl transition-all duration-700 ease-out">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="relative inline-block mb-4">
-              <div
-                className="absolute inset-0 rounded-2xl blur-2xl opacity-20 animate-pulse"
-                style={{ background: "var(--color-crimson)" }}
-              ></div>
-              <div
-                className="relative w-16 h-16 mx-auto rounded-2xl flex items-center justify-center"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                }}
-              >
-                <Lock className="w-8 h-8 text-white" />
+              <div className="absolute inset-0 rounded-2xl blur-2xl opacity-20 animate-pulse bg-[#B4182D] transition-all duration-1000" />
+              <div className="relative w-16 h-16 mx-auto rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#B4182D] to-[#54162B] transition-transform duration-700 ease-out hover:scale-110">
+                <Lock className="w-8 h-8 text-white transition-transform duration-500" />
               </div>
             </div>
-            <h1
-              className="text-4xl font-black mb-2"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy), var(--color-navy))",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
+            <h1 className="text-4xl font-black mb-2 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] bg-clip-text text-transparent">
               Welcome Back
             </h1>
-            <p className="text-lg" style={{ color: "var(--color-slate)" }}>
-              Login to your account
-            </p>
+            <p className="text-lg text-[#242E49]">Login to your account</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Email Input */}
             <div className="input-group">
-              <label
-                className="block text-sm font-semibold mb-2"
-                style={{ color: "var(--color-slate)" }}
-              >
+              <label className="block text-sm font-semibold mb-2 text-[#242E49]">
                 Email Address
               </label>
               <div className="relative">
                 <Mail
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C] transition-colors duration-500"
                   size={20}
-                  style={{ color: "var(--color-steel)" }}
                 />
                 <input
                   type="email"
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Invalid email address",
-                    },
-                  })}
+                  {...register("email")}
                   placeholder="Enter your email"
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all outline-none ${
-                    errors.email ? "input-error" : ""
+                  className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-500 ease-out outline-none bg-white/50 text-[#181A2F] ${
+                    errors.email
+                      ? "border-[#B4182D]"
+                      : "border-[#37415C]/20 focus:border-[#FDA481] focus:shadow-[0_0_0_3px_rgba(253,164,129,0.1)]"
                   }`}
-                  style={{
-                    background: "rgba(255, 255, 255, 0.5)",
-                    borderColor: errors.email
-                      ? "var(--color-crimson)"
-                      : "rgba(139, 149, 165, 0.2)",
-                    color: "var(--color-navy)",
-                  }}
-                  onFocus={(e) => {
-                    if (!errors.email) {
-                      e.target.style.borderColor = "var(--color-peach)";
-                      e.target.style.boxShadow =
-                        "0 0 0 3px rgba(253, 180, 168, 0.1)";
-                    }
-                  }}
-                  onBlur={(e) => {
-                    if (!errors.email) {
-                      e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                      e.target.style.boxShadow = "none";
-                    }
-                  }}
                 />
               </div>
               {errors.email && (
-                <p className="error-message">
+                <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
                   <AlertCircle size={16} />
                   {errors.email.message}
                 </p>
@@ -359,69 +156,34 @@ const Login: React.FC = () => {
 
             {/* Password Input */}
             <div className="input-group">
-              <label
-                className="block text-sm font-semibold mb-2"
-                style={{ color: "var(--color-slate)" }}
-              >
+              <label className="block text-sm font-semibold mb-2 text-[#242E49]">
                 Password
               </label>
               <div className="relative">
                 <Lock
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C] transition-colors duration-500"
                   size={20}
-                  style={{ color: "var(--color-steel)" }}
                 />
                 <input
                   type={showPassword ? "text" : "password"}
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters",
-                    },
-                  })}
+                  {...register("password")}
                   placeholder="Enter your password"
-                  className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all outline-none ${
-                    errors.password ? "input-error" : ""
+                  className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all duration-500 ease-out outline-none bg-white/50 text-[#181A2F] ${
+                    errors.password
+                      ? "border-[#B4182D]"
+                      : "border-[#37415C]/20 focus:border-[#FDA481] focus:shadow-[0_0_0_3px_rgba(253,164,129,0.1)]"
                   }`}
-                  style={{
-                    background: "rgba(255, 255, 255, 0.5)",
-                    borderColor: errors.password
-                      ? "var(--color-crimson)"
-                      : "rgba(139, 149, 165, 0.2)",
-                    color: "var(--color-navy)",
-                  }}
-                  onFocus={(e) => {
-                    if (!errors.password) {
-                      e.target.style.borderColor = "var(--color-peach)";
-                      e.target.style.boxShadow =
-                        "0 0 0 3px rgba(253, 180, 168, 0.1)";
-                    }
-                  }}
-                  onBlur={(e) => {
-                    if (!errors.password) {
-                      e.target.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                      e.target.style.boxShadow = "none";
-                    }
-                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: "var(--color-steel)" }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.color = "var(--color-crimson)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.color = "var(--color-steel)")
-                  }
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D] transition-all duration-500 ease-out hover:scale-110"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
               {errors.password && (
-                <p className="error-message">
+                <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
                   <AlertCircle size={16} />
                   {errors.password.message}
                 </p>
@@ -430,30 +192,19 @@ const Login: React.FC = () => {
 
             {/* Remember Me & Forgot Password */}
             <div className="input-group flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
                   {...register("rememberMe")}
-                  className="w-4 h-4 rounded accent-crimson"
-                  style={{ accentColor: "var(--color-crimson)" }}
+                  className="w-4 h-4 rounded accent-[#B4182D] transition-transform duration-300 group-hover:scale-110"
                 />
-                <span
-                  className="text-sm font-medium"
-                  style={{ color: "var(--color-slate)" }}
-                >
+                <span className="text-sm font-medium text-[#242E49] transition-colors duration-300">
                   Remember me
                 </span>
               </label>
               <Link
                 href="/forgot-password"
-                className="text-sm font-semibold transition-colors"
-                style={{ color: "var(--color-crimson)" }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = "var(--color-burgundy)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--color-crimson)")
-                }
+                className="text-sm font-semibold text-[#B4182D] hover:text-[#54162B] transition-all duration-500 ease-out hover:scale-105 inline-block"
               >
                 Forgot Password?
               </Link>
@@ -464,54 +215,43 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="cyber-button w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy), var(--color-navy))",
-                  boxShadow: "0 10px 30px rgba(217, 58, 73, 0.3)",
-                }}
+                className="cyber-button w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl hover:scale-[1.02] transition-all duration-700 ease-out flex items-center justify-center gap-3 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 glow-crimson group"
               >
-                {isLoading ? "Loading..." : "Login"}
-                {!isLoading && <ArrowRight size={20} />}
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    Login
+                    <ArrowRight
+                      size={20}
+                      className="transition-transform duration-500 group-hover:translate-x-1"
+                    />
+                  </>
+                )}
               </button>
             </div>
           </form>
 
           {/* Divider */}
           <div className="flex items-center gap-4 my-6">
-            <div
-              className="flex-1 h-px"
-              style={{ background: "rgba(139, 149, 165, 0.2)" }}
-            ></div>
-            <span className="text-sm" style={{ color: "var(--color-steel)" }}>
-              OR
-            </span>
-            <div
-              className="flex-1 h-px"
-              style={{ background: "rgba(139, 149, 165, 0.2)" }}
-            ></div>
+            <div className="flex-1 h-px bg-[#37415C]/20" />
+            <span className="text-sm text-[#37415C]">OR</span>
+            <div className="flex-1 h-px bg-[#37415C]/20" />
           </div>
 
           {/* Social Login */}
           <div className="space-y-3">
             <button
               type="button"
-              className="w-full py-3 rounded-xl font-semibold transition-all border-2 flex items-center justify-center gap-3 hover:scale-[1.02]"
-              style={{
-                borderColor: "rgba(139, 149, 165, 0.2)",
-                color: "var(--color-navy)",
-                background: "rgba(255, 255, 255, 0.5)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-peach)";
-                e.currentTarget.style.background = "rgba(253, 180, 168, 0.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(139, 149, 165, 0.2)";
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.5)";
-              }}
+              className="w-full py-3 rounded-xl font-semibold transition-all duration-700 ease-out border-2 border-[#37415C]/20 flex items-center justify-center gap-3 hover:scale-[1.02] bg-white/50 text-[#181A2F] hover:border-[#FDA481] hover:bg-[#FDA481]/10"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 transition-transform duration-500"
+                viewBox="0 0 24 24"
+              >
                 <path
                   fill="currentColor"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -534,21 +274,11 @@ const Login: React.FC = () => {
           </div>
 
           {/* Sign Up Link */}
-          <p
-            className="text-center mt-6 text-sm"
-            style={{ color: "var(--color-slate)" }}
-          >
+          <p className="text-center mt-6 text-sm text-[#242E49]">
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="font-bold transition-colors"
-              style={{ color: "var(--color-crimson)" }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = "var(--color-burgundy)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "var(--color-crimson)")
-              }
+              className="font-bold text-[#B4182D] hover:text-[#54162B] transition-all duration-500 ease-out hover:scale-105 inline-block"
             >
               Sign Up
             </Link>

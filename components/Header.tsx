@@ -1,152 +1,231 @@
 "use client";
 import Link from "next/link";
 import { Heart, Menu, Search, ShoppingBag, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback, memo, useMemo, useEffect } from "react";
 import SearchSeaction from "./SearchSeaction";
 import { useLogoutMutation } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 
+// Types
+interface NavLink {
+  label: string;
+  sectionId: string;
+  isSpecial?: boolean;
+  icon?: string;
+}
+
+// Constants
+const NAV_LINKS: NavLink[] = [
+  { label: "Home", sectionId: "hero" },
+  { label: "Shop", sectionId: "products" },
+  { label: "Featured", sectionId: "featured" },
+  { label: "Reviews", sectionId: "testimonials" },
+  { label: "Hot Deals", sectionId: "deals", isSpecial: true, icon: "🔥" },
+];
+
+// Memoized Nav Link Button
+const NavLinkButton = memo<{
+  link: NavLink;
+  onClick: (sectionId: string) => void;
+  isMobile?: boolean;
+}>(({ link, onClick, isMobile = false }) => {
+  const baseClasses = isMobile
+    ? "font-sans text-base font-semibold uppercase tracking-wider py-3 border-b border-white/10 hover:pl-3 text-left transition-all duration-300"
+    : "font-sans text-sm font-semibold uppercase tracking-wider py-2 transition-all duration-300 relative group";
+
+  const colorClasses = link.isSpecial
+    ? "text-[#FDA481] hover:text-white"
+    : "text-white hover:text-[#FDA481]";
+
+  return (
+    <>
+      <button
+        onClick={() => onClick(link.sectionId)}
+        className={`relative overflow-hidden ${baseClasses} ${colorClasses} ${
+          link.isSpecial && !isMobile ? "font-bold flex items-center gap-2" : ""
+        }`}
+        onMouseEnter={(e) => {
+          const span = e.currentTarget.querySelector("span.underline-animate");
+          span?.classList.add("active");
+        }}
+        onMouseLeave={(e) => {
+          const span = e.currentTarget.querySelector("span.underline-animate");
+          span?.classList.remove("active");
+        }}
+      >
+        {link.icon && (
+          <span className={isMobile ? "" : "text-lg"}>{link.icon}</span>
+        )}
+        {link.label}
+        {!isMobile && <span className="underline-animate" />}
+      </button>
+    </>
+  );
+});
+
+NavLinkButton.displayName = "NavLinkButton";
+
+// Memoized Icon Button
+const IconButton = memo<{
+  icon: React.ReactNode;
+  onClick?: () => void;
+  href?: string;
+  label: string;
+  badge?: number;
+}>(({ icon, onClick, href, label, badge }) => {
+  const classes =
+    "text-white hover:text-[#FDA481] transition-all duration-300 transform hover:scale-110 hover:rotate-6 relative group";
+
+  const content = (
+    <>
+      <span className="transition-transform duration-300  inline-block">
+        {icon}
+      </span>
+      {badge !== undefined && badge > 0 && (
+        <span className="absolute -top-2 -right-2 bg-[#B4182D] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse hover:animate-bounce">
+          {badge}
+        </span>
+      )}
+      <span
+        className="
+    absolute inset-0 rounded-full
+    bg-[#FDA481]
+    blur-2xl
+    opacity-0
+    scale-75
+    transition-all duration-700 ease-out
+    glow
+  "
+      />
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={classes} aria-label={label}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button onClick={onClick} className={classes} aria-label={label}>
+      {content}
+    </button>
+  );
+});
+
+IconButton.displayName = "IconButton";
+
+// Main Header Component
 const Header = () => {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [logout, { isLoading }] = useLogoutMutation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [logout] = useLogoutMutation();
 
-  const scrollToSection = (sectionId: string) => {
+  // Check auth status on mount
+  useEffect(() => {
+    const access = localStorage.getItem("access");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsLoggedIn(!!access);
+  }, []);
+
+  // Memoized scroll function
+  const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
       setMobileMenuOpen(false);
     }
-  };
-  const access = localStorage.getItem("access");
-  const handleLogout = () => {
-    logout()
-      .then(() => {
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
-        // Remove all cart items & wishlist items on logout
-        // Promise.all(
-        //   items.map((item) =>
-        //     dispatch(RemoveCart({ product_id: item.product_id })).unwrap()
-        //   )
-        // );
-        // Promise.all(
-        //   items2.map((item) =>
-        //     dispatch(WishlistRemove(item.product_id)).unwrap()
-        //   )
-        // );
-        router.push("/");
-      })
-      .catch((err) => {});
-  };
+  }, []);
+
+  // Memoized logout handler
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout().unwrap();
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      setIsLoggedIn(false);
+      setMobileMenuOpen(false);
+      router.push("/");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  }, [logout, router]);
+
+  // Memoized menu toggle
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen((prev) => !prev);
+  }, []);
+
+  const toggleSearch = useCallback(() => {
+    setIsSearchOpen((prev) => !prev);
+  }, []);
+
+  const closeSearch = useCallback(() => {
+    setIsSearchOpen(false);
+  }, []);
+
+  // Memoize cart count (replace with actual Redux selector)
+  const cartCount = useMemo(() => 3, []);
+
   return (
     <>
-      <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap");
-
-        .font-serif {
-          font-family: "Playfair Display", serif;
-        }
-
-        .font-sans {
-          font-family: "Inter", sans-serif;
-        }
-      `}</style>
-
-      <header className="bg-gradient-to-r from-[#181A2F] via-[#242E49] to-[#181A2F] shadow-2xl sticky top-0 z-50 border-b border-white/10">
+      <header className="bg-linear-to-r from-[#181A2F] via-[#242E49] to-[#181A2F] shadow-2xl sticky top-0 z-50 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between py-5 lg:py-6">
             {/* Logo Section */}
             <div className="shrink-0">
               <Link
-                href={"/"}
-                // onClick={() => scrollToSection("hero")}
-                className="font-serif text-3xl lg:text-4xl font-bold text-white hover:text-[#FDA481] transition-colors duration-300 cursor-pointer"
+                href="/"
+                className="font-serif text-3xl lg:text-4xl font-bold text-white hover:text-[#FDA481] transition-colors duration-300 cursor-pointer transform inline-block"
               >
                 Novera
               </Link>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-10 xl:gap-12">
-              <button
-                onClick={() => scrollToSection("hero")}
-                className="font-sans text-sm font-semibold uppercase tracking-wider text-white hover:text-[#FDA481] transition-all duration-300 relative group py-2"
-              >
-                Home
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FDA481] group-hover:w-full transition-all duration-300"></span>
-              </button>
-              <button
-                onClick={() => scrollToSection("products")}
-                className="font-sans text-sm font-semibold uppercase tracking-wider text-white hover:text-[#FDA481] transition-all duration-300 relative group py-2"
-              >
-                Shop
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FDA481] group-hover:w-full transition-all duration-300"></span>
-              </button>
-              <button
-                onClick={() => scrollToSection("featured")}
-                className="font-sans text-sm font-semibold uppercase tracking-wider text-white hover:text-[#FDA481] transition-all duration-300 relative group py-2"
-              >
-                Featured
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FDA481] group-hover:w-full transition-all duration-300"></span>
-              </button>
-              <button
-                onClick={() => scrollToSection("testimonials")}
-                className="font-sans text-sm font-semibold uppercase tracking-wider text-white hover:text-[#FDA481] transition-all duration-300 relative group py-2"
-              >
-                Reviews
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#FDA481] group-hover:w-full transition-all duration-300"></span>
-              </button>
-              <button
-                onClick={() => scrollToSection("deals")}
-                className="font-sans text-sm font-bold uppercase tracking-wider text-[#FDA481] hover:text-white transition-all duration-300 relative group py-2 flex items-center gap-2"
-              >
-                <span className="text-lg">🔥</span> Hot Deals
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
-              </button>
+            {/* Desktop Navigation Links - All Together */}
+            <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+              {NAV_LINKS.map((link) => (
+                <NavLinkButton
+                  key={link.sectionId}
+                  link={link}
+                  onClick={scrollToSection}
+                />
+              ))}
             </nav>
 
             {/* Icons & Login Section */}
             <div className="flex items-center gap-5 lg:gap-6">
               {/* Search */}
-              <button
-                className="text-white cursor-pointer hover:text-[#FDA481] transition-all duration-300 hover:scale-110 transform group"
-                aria-label="Search"
-                onClick={() => setIsSearchOpen(true)}
-              >
-                <Search size={22} strokeWidth={2} />
-              </button>
-              <SearchSeaction
-                isOpen={isSearchOpen}
-                onClose={() => setIsSearchOpen(false)}
+              <IconButton
+                icon={<Search size={22} strokeWidth={2} />}
+                onClick={toggleSearch}
+                label="Search"
               />
+
               {/* Shopping Bag with Badge */}
-              <Link
-                href={"/cart"}
-                className="relative cursor-pointer text-white hover:text-[#FDA481] transition-all duration-300 hover:scale-110 transform"
-                aria-label="Shopping Cart"
-              >
-                <ShoppingBag size={22} strokeWidth={2} />
-                <span className="absolute -top-2 -right-2 bg-[#B4182D] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse">
-                  3
-                </span>
-              </Link>
+              <IconButton
+                icon={<ShoppingBag size={22} strokeWidth={2} />}
+                href="/cart"
+                label="Shopping Cart"
+                badge={cartCount}
+              />
 
               {/* Wishlist */}
-              <Link
-                href={"wishlist"}
-                className="text-white cursor-pointer hover:text-[#FDA481] transition-all duration-300 hover:scale-110 transform"
-                aria-label="Wishlist"
-              >
-                <Heart size={22} strokeWidth={2} />
-              </Link>
+              <IconButton
+                icon={<Heart size={22} strokeWidth={2} />}
+                href="/wishlist"
+                label="Wishlist"
+              />
 
               {/* Divider */}
-              <div className="w-px h-6 bg-white/20 hidden lg:block"></div>
+              <div className="w-px h-6 bg-white/20 hidden lg:block" />
 
-              {/* Desktop Login Button */}
-              {access ? (
+              {/* Desktop Login/Logout Button */}
+              {isLoggedIn ? (
                 <button
                   onClick={handleLogout}
                   className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
@@ -164,8 +243,8 @@ const Header = () => {
 
               {/* Mobile Menu Button */}
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden text-white hover:text-[#FDA481] transition-all duration-300 p-1"
+                onClick={toggleMobileMenu}
+                className="lg:hidden text-white hover:text-[#FDA481] transition-all duration-300 p-1 transform"
                 aria-label="Menu"
               >
                 {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
@@ -181,40 +260,20 @@ const Header = () => {
           }`}
         >
           <nav className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-4">
-            <button
-              onClick={() => scrollToSection("hero")}
-              className="font-sans text-base font-semibold uppercase tracking-wider text-white hover:text-[#FDA481] transition-all duration-300 py-3 border-b border-white/10 hover:pl-3 text-left"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => scrollToSection("products")}
-              className="font-sans text-base font-semibold uppercase tracking-wider text-white hover:text-[#FDA481] transition-all duration-300 py-3 border-b border-white/10 hover:pl-3 text-left"
-            >
-              Shop
-            </button>
-            <button
-              onClick={() => scrollToSection("featured")}
-              className="font-sans text-base font-semibold uppercase tracking-wider text-white hover:text-[#FDA481] transition-all duration-300 py-3 border-b border-white/10 hover:pl-3 text-left"
-            >
-              Featured
-            </button>
-            <button
-              onClick={() => scrollToSection("testimonials")}
-              className="font-sans text-base font-semibold uppercase tracking-wider text-white hover:text-[#FDA481] transition-all duration-300 py-3 border-b border-white/10 hover:pl-3 text-left"
-            >
-              Reviews
-            </button>
-            <button
-              onClick={() => scrollToSection("deals")}
-              className="font-sans text-base font-bold uppercase tracking-wider text-[#FDA481] hover:text-white transition-all duration-300 py-3 border-b border-white/10 hover:pl-3 flex items-center gap-2"
-            >
-              <span>🔥</span> Hot Deals
-            </button>
-            {access ? (
+            {NAV_LINKS.map((link) => (
+              <NavLinkButton
+                key={link.sectionId}
+                link={link}
+                onClick={scrollToSection}
+                isMobile
+              />
+            ))}
+
+            {/* Mobile Login/Logout Button */}
+            {isLoggedIn ? (
               <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white transition-all duration-300 text-center mt-4 shadow-xl"
+                onClick={handleLogout}
+                className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white transition-all duration-300 text-center mt-4 shadow-xl hover:scale-105 transform"
               >
                 Logout
               </button>
@@ -222,7 +281,7 @@ const Header = () => {
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white transition-all duration-300 text-center mt-4 shadow-xl"
+                className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white transition-all duration-300 text-center mt-4 shadow-xl hover:scale-105 transform"
               >
                 Login
               </Link>
@@ -230,8 +289,11 @@ const Header = () => {
           </nav>
         </div>
       </header>
+
+      {/* Search Modal */}
+      <SearchSeaction isOpen={isSearchOpen} onClose={closeSearch} />
     </>
   );
 };
 
-export default Header;
+export default memo(Header);

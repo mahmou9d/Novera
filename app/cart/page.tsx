@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useCallback, useMemo, memo } from "react";
 import {
   ShoppingCart,
   Trash2,
@@ -7,7 +8,6 @@ import {
   Minus,
   ArrowRight,
   Heart,
-  Tag,
   Lock,
   Truck,
   Shield,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Image from "next/image";
 
 // Types
 interface CartItem {
@@ -37,77 +38,357 @@ interface CartItem {
   originalPrice?: number;
 }
 
-interface PromoCode {
-  code: string;
-  discount: number;
-}
-
 interface Notification {
   message: string;
   type: "success" | "error";
 }
 
-const CartPage: React.FC = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Premium Wireless Headphones",
-      brand: "SONIC ELITE",
-      price: 299.99,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
-      colors: ["#000000", "#1a1a1a", "#2d2d2d"],
-      size: "One Size",
-      inStock: true,
-      maxQuantity: 5,
-    },
-    {
-      id: 2,
-      name: "Minimalist Leather Wallet",
-      brand: "CRAFT & CO",
-      price: 89.99,
-      quantity: 2,
-      image:
-        "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&q=80",
-      colors: ["#000000", "#1a1a1a", "#2d2d2d"],
-      size: "Standard",
-      inStock: true,
-      maxQuantity: 10,
-    },
-    {
-      id: 3,
-      name: "Smart Fitness Watch",
-      brand: "TECH SPORT",
-      price: 449.99,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
-      colors: ["#000000", "#1a1a1a", "#2d2d2d"],
-      size: "42mm",
-      inStock: true,
-      maxQuantity: 3,
-    },
-  ]);
+// Initial cart data
+const INITIAL_CART_ITEMS: CartItem[] = [
+  {
+    id: 1,
+    name: "Premium Wireless Headphones",
+    brand: "SONIC ELITE",
+    price: 299.99,
+    quantity: 1,
+    image:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80",
+    colors: ["#000000", "#1a1a1a", "#2d2d2d"],
+    size: "One Size",
+    inStock: true,
+    maxQuantity: 5,
+  },
+  {
+    id: 2,
+    name: "Minimalist Leather Wallet",
+    brand: "CRAFT & CO",
+    price: 89.99,
+    quantity: 2,
+    image:
+      "https://images.unsplash.com/photo-1627123424574-724758594e93?w=800&q=80",
+    colors: ["#8B4513", "#654321", "#3E2723"],
+    size: "Standard",
+    inStock: true,
+    maxQuantity: 10,
+  },
+  {
+    id: 3,
+    name: "Smart Fitness Watch",
+    brand: "TECH SPORT",
+    price: 449.99,
+    quantity: 1,
+    image:
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
+    colors: ["#000000", "#4169E1", "#DC143C"],
+    size: "42mm",
+    inStock: true,
+    maxQuantity: 3,
+  },
+];
+
+// Memoized CartItem Component
+const CartItemCard = memo<{
+  item: CartItem;
+  onUpdateQuantity: (id: number, delta: number) => void;
+  onRemove: (id: number) => void;
+  onQuickView: (item: CartItem) => void;
+}>(({ item, onUpdateQuantity, onRemove, onQuickView }) => (
+  <div className="cart-item glass-dark rounded-3xl overflow-hidden transition-all duration-300 shadow-xl hover:shadow-2xl border border-[#37415C]/10">
+    <div className="p-6">
+      <div className="flex gap-6">
+        {/* Product Image */}
+        <div className="relative w-36 h-36 shrink-0 rounded-2xl overflow-hidden group">
+          <Image
+            src={item.image}
+            alt={item.name}
+            fill
+            sizes="144px"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            priority={false}
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-[#B4182D]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out" />
+
+          {/* Quick View Button */}
+          <button
+            onClick={() => onQuickView(item)}
+            className="absolute top-3 right-3 backdrop-blur-sm bg-white/90 p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out shadow-lg hover:bg-[#B4182D] hover:text-white hover:scale-110"
+            aria-label="Quick view"
+          >
+            <Eye size={18} />
+          </button>
+        </div>
+
+        {/* Product Details */}
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-1 text-[#B4182D]">
+                  {item.brand}
+                </p>
+                <h3 className="text-xl font-bold mb-2 text-[#181A2F]">
+                  {item.name}
+                </h3>
+                <p className="text-sm text-[#37415C]">Size: {item.size}</p>
+              </div>
+              <button
+                onClick={() => onRemove(item.id)}
+                className="p-2 hover:bg-red-50 rounded-xl transition-all duration-300 group smooth-scale-button"
+                aria-label="Remove item"
+              >
+                <Trash2
+                  size={20}
+                  className="text-[#37415C] group-hover:text-[#B4182D] transition-colors duration-300"
+                />
+              </button>
+            </div>
+
+            {/* Color Options */}
+            {item.colors?.length > 0 && (
+              <div className="flex gap-2 mb-4">
+                {item.colors.map((color, i) => (
+                  <div
+                    key={i}
+                    className="w-6 h-6 rounded-full border-2 border-[#37415C]/20 hover:border-[#FDA481] cursor-pointer shadow-md smooth-scale-small"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between">
+            {/* Quantity Controls */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => onUpdateQuantity(item.id, -1)}
+                disabled={item.quantity <= 1}
+                className="w-11 h-11 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center font-bold border border-[#FDA481] bg-[#FDA481]/15 text-[#B4182D] hover:bg-[#FDA481]/30 disabled:border-[#37415C]/20 disabled:bg-[#37415C]/10 disabled:text-[#37415C] smooth-scale-button"
+                aria-label="Decrease quantity"
+              >
+                <Minus size={18} />
+              </button>
+              <span className="w-12 text-center font-bold text-xl text-[#B4182D]">
+                {item.quantity}
+              </span>
+              <button
+                onClick={() => onUpdateQuantity(item.id, 1)}
+                disabled={item.quantity >= item.maxQuantity}
+                className="w-11 h-11 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center font-bold border border-[#FDA481] bg-[#FDA481]/15 text-[#B4182D] hover:bg-[#FDA481]/30 disabled:border-[#37415C]/20 disabled:bg-[#37415C]/10 disabled:text-[#37415C] smooth-scale-button"
+                aria-label="Increase quantity"
+              >
+                <Plus size={18} />
+              </button>
+            </div>
+
+            {/* Price */}
+            <div className="text-right">
+              <p className="text-3xl font-black bg-linear-to-r from-[#B4182D] to-[#54162B] bg-clip-text text-transparent">
+                ${(item.price * item.quantity).toFixed(2)}
+              </p>
+              <p className="text-sm text-[#37415C]">
+                ${item.price.toFixed(2)} each
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+CartItemCard.displayName = "CartItemCard";
+
+// Empty Cart Component
+const EmptyCart = memo(() => (
+  <div className="glass-dark rounded-3xl p-20 text-center animate-scale-in shadow-xl">
+    <div className="relative inline-block mb-8">
+      <div className="absolute inset-0 rounded-full blur-3xl opacity-20 animate-pulse bg-[#B4182D]" />
+      <ShoppingCart
+        className="w-32 h-32 mx-auto relative text-[#37415C]"
+        strokeWidth={1}
+      />
+    </div>
+    <h2 className="text-4xl font-bold mb-4 text-[#181A2F]">
+      Your cart is empty
+    </h2>
+    <p className="text-lg mb-10 text-[#242E49]">
+      Add some items to get started!
+    </p>
+    <button className="cyber-button px-12 py-4 rounded-2xl text-white font-bold text-lg shadow-2xl inline-flex items-center gap-3 glow-crimson bg-linear-to-r from-[#B4182D] to-[#54162B] smooth-scale">
+      <Sparkles size={20} />
+      Start Shopping
+    </button>
+  </div>
+));
+
+EmptyCart.displayName = "EmptyCart";
+
+// Trust Badge Component
+const TrustBadge = memo<{
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  gradient: string;
+}>(({ icon, title, description, gradient }) => (
+  <div className="flex items-center gap-4 group cursor-pointer">
+    <div
+      className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg smooth-scale-button ${gradient}`}
+    >
+      {icon}
+    </div>
+    <div>
+      <p className="font-bold text-[#181A2F]">{title}</p>
+      <p className="text-sm text-[#37415C]">{description}</p>
+    </div>
+  </div>
+));
+
+TrustBadge.displayName = "TrustBadge";
+
+// Quick View Modal
+const QuickViewModal = memo<{
+  item: CartItem;
+  onClose: () => void;
+  onAddToCart: (item: CartItem) => void;
+}>(({ item, onClose, onAddToCart }) => (
+  <div
+    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+    onClick={onClose}
+  >
+    <div
+      className="bg-white rounded-3xl max-w-3xl w-full p-8 shadow-2xl animate-scale-in"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="flex justify-between items-start mb-6">
+        <h2 className="text-3xl font-bold text-[#181A2F]">Quick View</h2>
+        <button
+          onClick={onClose}
+          className="p-2 rounded-full text-[#242E49] hover:bg-[#37415C]/10 transition-all duration-300 smooth-scale-button hover:rotate-90"
+          aria-label="Close modal"
+        >
+          <X size={24} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="relative h-96 rounded-2xl overflow-hidden group">
+          <Image
+            src={item.image}
+            alt={item.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover shadow-lg smooth-scale-image"
+            priority
+          />
+        </div>
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wider mb-2 text-[#B4182D]">
+            {item.brand}
+          </p>
+          <h3 className="text-3xl font-bold mb-4 text-[#181A2F]">
+            {item.name}
+          </h3>
+          <div className="flex items-baseline gap-3 mb-6">
+            <span className="text-4xl font-bold bg-linear-to-r from-[#B4182D] to-[#54162B] bg-clip-text text-transparent">
+              ${item.price}
+            </span>
+            {item.originalPrice && (
+              <span className="text-xl line-through text-[#37415C]">
+                ${item.originalPrice}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-4 mb-8">
+            {item.rating && (
+              <div className="flex items-center gap-2">
+                <span className="text-[#242E49]">Rating:</span>
+                <span className="font-bold text-amber-500">
+                  {item.rating} ★
+                </span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-[#242E49]">Availability:</span>
+              <span
+                className={`font-bold ${
+                  item.inStock ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {item.inStock ? "In Stock" : "Out of Stock"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[#242E49]">Size:</span>
+              <span className="font-bold text-[#181A2F]">{item.size}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[#242E49]">Colors:</span>
+              <div className="flex gap-2">
+                {item.colors.map((color, i) => (
+                  <div
+                    key={i}
+                    className="w-6 h-6 rounded-full border-2 border-[#37415C]/30 cursor-pointer smooth-scale-small"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => onAddToCart(item)}
+            disabled={!item.inStock}
+            className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl ${
+              !item.inStock && "cursor-not-allowed opacity-50"
+            } ${
+              item.inStock
+                ? "bg-linear-to-r from-[#B4182D] to-[#54162B] text-white smooth-scale hover:shadow-[0_15px_30px_rgba(180,24,45,0.3)]"
+                : "bg-[#37415C]/20 text-[#37415C]"
+            }`}
+          >
+            {item.inStock ? "Add to Cart" : "Out of Stock"}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+QuickViewModal.displayName = "QuickViewModal";
+
+// Main CartPage Component
+const CartPage = () => {
+  const [cartItems, setCartItems] = useState<CartItem[]>(INITIAL_CART_ITEMS);
   const [selectedItem, setSelectedItem] = useState<CartItem | null>(null);
-  const [promoCode, setPromoCode] = useState<string>("");
-  const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
   const [notification, setNotification] = useState<Notification | null>(null);
 
-  // Generate particles once using useState with initializer function
-  const [particles] = useState(() =>
-    Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      animationDelay: Math.random() * 6,
-      animationDuration: 4 + Math.random() * 4,
-    }))
+  // Memoized calculations
+  const { subtotal, shipping, tax, total } = useMemo(() => {
+    const subtotal = cartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    const shipping = subtotal > 500 ? 0 : 15.99;
+    const tax = subtotal * 0.08;
+
+    const total = subtotal + shipping + tax;
+
+    return { subtotal, shipping, tax, total };
+  }, [cartItems]);
+
+  const showNotification = useCallback(
+    (message: string, type: "success" | "error" = "success"): void => {
+      setNotification({ message, type });
+      setTimeout(() => setNotification(null), 3000);
+    },
+    []
   );
 
-  const updateQuantity = (id: number, delta: number): void => {
-    setCartItems(
-      cartItems.map((item) => {
+  const updateQuantity = useCallback((id: number, delta: number): void => {
+    setCartItems((prev) =>
+      prev.map((item) => {
         if (item.id === id) {
           const newQuantity = Math.max(
             1,
@@ -118,382 +399,48 @@ const CartPage: React.FC = () => {
         return item;
       })
     );
-  };
+  }, []);
 
-  const removeItem = (id: number): void => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-    showNotification("Item removed from cart", "success");
-  };
-
-  const applyPromoCode = (): void => {
-    if (promoCode.toLowerCase() === "save10") {
-      setAppliedPromo({ code: "SAVE10", discount: 10 });
-      showNotification("Promo code applied successfully! 10% off", "success");
-    } else if (promoCode.toLowerCase() === "welcome20") {
-      setAppliedPromo({ code: "WELCOME20", discount: 20 });
-      showNotification("Promo code applied successfully! 20% off", "success");
-    } else {
-      showNotification("Invalid promo code", "error");
-    }
-  };
-
-  const showNotification = (
-    message: string,
-    type: "success" | "error" = "success"
-  ): void => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
-  const addToCart = (item: CartItem): void => {
-    // Add to cart logic here
-    showNotification(`${item.name} added to cart!`, "success");
-    setSelectedItem(null);
-  };
-
-  const subtotal: number = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
+  const removeItem = useCallback(
+    (id: number): void => {
+      setCartItems((prev) => prev.filter((item) => item.id !== id));
+      showNotification("Item removed from cart", "success");
+    },
+    [showNotification]
   );
-  const shipping: number = subtotal > 500 ? 0 : 15.99;
-  const tax: number = subtotal * 0.08;
-  const discount: number = appliedPromo
-    ? subtotal * (appliedPromo.discount / 100)
-    : 0;
-  const total: number = subtotal + shipping + tax - discount;
+
+  const handleQuickView = useCallback((item: CartItem) => {
+    setSelectedItem(item);
+  }, []);
+
+  const addToCart = useCallback(
+    (item: CartItem): void => {
+      showNotification(`${item.name} added to cart!`, "success");
+      setSelectedItem(null);
+    },
+    [showNotification]
+  );
 
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-amber-50 relative overflow-hidden">
-        <style jsx>{`
-          :root {
-            --color-navy: #1a1f3a;
-            --color-slate: #3d4c63;
-            --color-steel: #8b95a5;
-            --color-peach: #fdb4a8;
-            --color-crimson: #d93a49;
-            --color-burgundy: #8b1e3f;
-          }
-
-          /* Animated gradient background */
-          @keyframes moveGradient {
-            0% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-            100% {
-              background-position: 0% 50%;
-            }
-          }
-
-          .animated-bg {
-            background: linear-gradient(
-              135deg,
-              var(--color-navy),
-              var(--color-slate),
-              var(--color-steel),
-              #f5f5f5
-            );
-            background-size: 400% 400%;
-            animation: moveGradient 15s ease infinite;
-          }
-
-          /* Floating particles */
-          @keyframes float {
-            0%,
-            100% {
-              transform: translateY(0) rotate(0deg);
-            }
-            50% {
-              transform: translateY(-20px) rotate(180deg);
-            }
-          }
-
-          .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--color-peach);
-            border-radius: 50%;
-            animation: float 6s ease-in-out infinite;
-            opacity: 0.4;
-          }
-
-          /* Glow effects */
-          .glow-crimson {
-            box-shadow: 0 0 30px rgba(217, 58, 73, 0.3),
-              0 0 60px rgba(217, 58, 73, 0.1);
-          }
-
-          .glow-peach {
-            box-shadow: 0 0 30px rgba(253, 180, 168, 0.3),
-              0 0 60px rgba(253, 180, 168, 0.1);
-          }
-
-          .glow-burgundy {
-            box-shadow: 0 0 30px rgba(139, 30, 63, 0.3),
-              0 0 60px rgba(139, 30, 63, 0.1);
-          }
-
-          .glow-navy {
-            box-shadow: 0 0 30px rgba(26, 31, 58, 0.3),
-              0 0 60px rgba(26, 31, 58, 0.1);
-          }
-
-          /* Card animations */
-          @keyframes slideInUp {
-            from {
-              opacity: 0;
-              transform: translateY(40px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-
-          @keyframes slideInRight {
-            from {
-              opacity: 0;
-              transform: translateX(40px);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
-          }
-
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-            }
-            to {
-              opacity: 1;
-            }
-          }
-
-          @keyframes scaleIn {
-            from {
-              opacity: 0;
-              transform: scale(0.95);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-
-          .animate-slide-up {
-            animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          }
-
-          .animate-slide-right {
-            animation: slideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          }
-
-          .animate-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-          }
-
-          .animate-scale-in {
-            animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          }
-
-          /* Glass morphism */
-          .glass {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(253, 180, 168, 0.2);
-          }
-
-          .glass-dark {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(139, 149, 165, 0.15);
-          }
-
-          /* Neon border effect */
-          .neon-border {
-            position: relative;
-          }
-
-          .neon-border::before {
-            content: "";
-            position: absolute;
-            inset: -2px;
-            border-radius: inherit;
-            padding: 2px;
-            background: linear-gradient(
-              135deg,
-              var(--color-crimson),
-              var(--color-peach),
-              var(--color-burgundy)
-            );
-            -webkit-mask: linear-gradient(#fff 0 0) content-box,
-              linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-          }
-
-          .neon-border:hover::before {
-            opacity: 1;
-          }
-
-          /* Cyber button */
-          .cyber-button {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-          }
-
-          .cyber-button::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-              90deg,
-              transparent,
-              rgba(255, 255, 255, 0.1),
-              transparent
-            );
-            transition: left 0.5s ease;
-          }
-
-          .cyber-button:hover::before {
-            left: 100%;
-          }
-
-          /* Pulsing dot */
-          @keyframes pulse-ring {
-            0% {
-              transform: scale(0.8);
-              opacity: 1;
-            }
-            100% {
-              transform: scale(1.4);
-              opacity: 0;
-            }
-          }
-
-          .pulse-dot::before {
-            content: "";
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            background: inherit;
-            animation: pulse-ring 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955)
-              infinite;
-          }
-
-          /* Stagger animations */
-          .cart-item {
-            opacity: 0;
-            animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          }
-
-          .cart-item:nth-child(1) {
-            animation-delay: 0.1s;
-          }
-          .cart-item:nth-child(2) {
-            animation-delay: 0.2s;
-          }
-          .cart-item:nth-child(3) {
-            animation-delay: 0.3s;
-          }
-
-          /* Smooth transitions */
-          * {
-            transition: background-color 0.2s ease, transform 0.2s ease,
-              box-shadow 0.2s ease;
-          }
-
-          /* Custom scrollbar */
-          ::-webkit-scrollbar {
-            width: 8px;
-          }
-
-          ::-webkit-scrollbar-track {
-            background: rgba(139, 149, 165, 0.1);
-          }
-
-          ::-webkit-scrollbar-thumb {
-            background: var(--color-crimson);
-            border-radius: 4px;
-          }
-
-          ::-webkit-scrollbar-thumb:hover {
-            background: var(--color-burgundy);
-          }
-
-          /* Shimmer effect */
-          @keyframes shimmer {
-            0% {
-              background-position: -1000px 0;
-            }
-            100% {
-              background-position: 1000px 0;
-            }
-          }
-
-          .shimmer {
-            background: linear-gradient(
-              90deg,
-              rgba(255, 255, 255, 0) 0%,
-              rgba(255, 255, 255, 0.1) 50%,
-              rgba(255, 255, 255, 0) 100%
-            );
-            background-size: 1000px 100%;
-            animation: shimmer 2s infinite;
-          }
-        `}</style>
-
-        {/* Floating particles background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {particles.map((particle) => (
-            <div
-              key={particle.id}
-              className="particle"
-              style={{
-                left: `${particle.left}%`,
-                top: `${particle.top}%`,
-                animationDelay: `${particle.animationDelay}s`,
-                animationDuration: `${particle.animationDuration}s`,
-              }}
-            />
-          ))}
-        </div>
-
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-stone-50 to-amber-50 relative overflow-hidden">
         {/* Notification Toast */}
         {notification && (
           <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-scale-in">
             <div
-              className={`glass px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px] ${
+              className={`glass-dark px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 ${
                 notification.type === "error"
-                  ? "border-crimson/30"
+                  ? "border-[#B4182D]/30"
                   : "border-green-500/30"
               }`}
             >
               {notification.type === "error" ? (
-                <AlertCircle
-                  className="flex-shrink-0"
-                  style={{ color: "var(--color-crimson)" }}
-                  size={24}
-                />
+                <AlertCircle className="shrink-0 text-[#B4182D]" size={24} />
               ) : (
-                <Check className="text-green-600 flex-shrink-0" size={24} />
+                <Check className="text-green-600 shrink-0" size={24} />
               )}
-              <p
-                className="font-semibold"
-                style={{ color: "var(--color-navy)" }}
-              >
+              <p className="font-semibold text-[#181A2F]">
                 {notification.message}
               </p>
             </div>
@@ -506,45 +453,21 @@ const CartPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <div
-                    className="absolute inset-0 rounded-2xl blur-2xl opacity-20 animate-pulse"
-                    style={{ background: "var(--color-crimson)" }}
-                  ></div>
-                  <div
-                    className="relative p-4 rounded-2xl"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                    }}
-                  >
+                  <div className="absolute inset-0 rounded-2xl blur-2xl opacity-20 animate-pulse bg-[#B4182D]" />
+                  <div className="relative p-4 rounded-2xl bg-linear-to-br from-[#B4182D] to-[#54162B]">
                     <ShoppingCart
                       className="w-10 h-10 text-white"
                       strokeWidth={2}
                     />
                   </div>
                   {cartItems.length > 0 && (
-                    <div
-                      className="absolute -top-2 -right-2 text-white text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg pulse-dot"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, var(--color-peach), var(--color-crimson))",
-                      }}
-                    >
+                    <div className="absolute -top-2 -right-2 text-white text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg pulse-dot bg-linear-to-br from-[#FDA481] to-[#B4182D]">
                       {cartItems.length}
                     </div>
                   )}
                 </div>
                 <div>
-                  <h1
-                    className="text-5xl font-black min-h-20 flex items-center"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy), var(--color-navy))",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                    }}
-                  >
+                  <h1 className="text-5xl p-2 font-black bg-linear-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] bg-clip-text text-transparent">
                     Shopping Cart
                   </h1>
                 </div>
@@ -557,297 +480,38 @@ const CartPage: React.FC = () => {
             <div className="lg:col-span-2 space-y-6">
               {cartItems.length > 0 ? (
                 <>
-                  {cartItems.map((item, index) => (
-                    <div
+                  {cartItems.map((item) => (
+                    <CartItemCard
                       key={item.id}
-                      className="cart-item glass-dark rounded-3xl overflow-hidden neon-border  transition-all duration-300 shadow-xl"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <div className="p-6">
-                        <div className="flex gap-6">
-                          {/* Product Image */}
-                          <div className="relative w-36 h-36 shrink-0 rounded-2xl overflow-hidden group">
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <div
-                              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                              style={{
-                                background:
-                                  "linear-gradient(to top, rgba(217, 58, 73, 0.3), transparent)",
-                              }}
-                            ></div>
-
-                            {/* Quick View */}
-                            <button
-                              onClick={() => setSelectedItem(item)}
-                              className="absolute top-3 right-3 backdrop-blur-sm p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg"
-                              style={{
-                                background: "rgba(255, 255, 255, 0.9)",
-                                color: "var(--color-slate)",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  "var(--color-crimson)";
-                                e.currentTarget.style.color = "white";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  "rgba(255, 255, 255, 0.9)";
-                                e.currentTarget.style.color =
-                                  "var(--color-slate)";
-                              }}
-                            >
-                              <Eye size={18} />
-                            </button>
-                          </div>
-
-                          {/* Product Details */}
-                          <div className="flex-1 flex flex-col justify-between">
-                            <div>
-                              <div className="flex justify-between items-start mb-3">
-                                <div>
-                                  <p
-                                    className="text-xs font-bold uppercase tracking-wider mb-1"
-                                    style={{ color: "var(--color-crimson)" }}
-                                  >
-                                    {item.brand}
-                                  </p>
-                                  <h3
-                                    className="text-xl font-bold mb-2"
-                                    style={{ color: "var(--color-navy)" }}
-                                  >
-                                    {item.name}
-                                  </h3>
-                                </div>
-                                <button
-                                  onClick={() => removeItem(item.id)}
-                                  className="p-2 hover:bg-red-50 rounded-xl transition-all group"
-                                >
-                                  <Trash2
-                                    size={20}
-                                    className="transition-colors"
-                                    style={{ color: "var(--color-steel)" }}
-                                    onMouseEnter={(e) =>
-                                      (e.currentTarget.style.color =
-                                        "var(--color-crimson)")
-                                    }
-                                    onMouseLeave={(e) =>
-                                      (e.currentTarget.style.color =
-                                        "var(--color-steel)")
-                                    }
-                                  />
-                                </button>
-                              </div>
-
-                              {item.colors && item.colors.length > 0 && (
-                                <div className="flex gap-2 mb-4">
-                                  {item.colors.map((color, i) => (
-                                    <div
-                                      key={i}
-                                      className="w-6 h-6 rounded-full border-2 transition-all duration-300 hover:scale-125 cursor-pointer shadow-md"
-                                      style={{
-                                        backgroundColor: color,
-                                        borderColor: "rgba(139, 149, 165, 0.2)",
-                                      }}
-                                      onMouseEnter={(e) =>
-                                        (e.currentTarget.style.borderColor =
-                                          "var(--color-peach)")
-                                      }
-                                      onMouseLeave={(e) =>
-                                        (e.currentTarget.style.borderColor =
-                                          "rgba(139, 149, 165, 0.2)")
-                                      }
-                                    />
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                              {/* Quantity Controls */}
-                              <div className="flex items-center gap-3">
-                                <button
-                                  onClick={() => updateQuantity(item.id, -1)}
-                                  disabled={item.quantity <= 1}
-                                  className="cyber-button w-11 h-11 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center font-bold transition-all border"
-                                  style={{
-                                    background:
-                                      item.quantity > 1
-                                        ? "rgba(253, 180, 168, 0.15)"
-                                        : "rgba(139, 149, 165, 0.1)",
-                                    borderColor:
-                                      item.quantity > 1
-                                        ? "var(--color-peach)"
-                                        : "rgba(139, 149, 165, 0.2)",
-                                    color:
-                                      item.quantity > 1
-                                        ? "var(--color-crimson)"
-                                        : "var(--color-steel)",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (item.quantity > 1) {
-                                      e.currentTarget.style.background =
-                                        "rgba(253, 180, 168, 0.3)";
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (item.quantity > 1) {
-                                      e.currentTarget.style.background =
-                                        "rgba(253, 180, 168, 0.15)";
-                                    }
-                                  }}
-                                >
-                                  <Minus size={18} />
-                                </button>
-                                <span
-                                  className="w-12 text-center font-bold text-xl"
-                                  style={{ color: "var(--color-crimson)" }}
-                                >
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  onClick={() => updateQuantity(item.id, 1)}
-                                  disabled={item.quantity >= item.maxQuantity}
-                                  className="cyber-button w-11 h-11 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center font-bold transition-all border"
-                                  style={{
-                                    background:
-                                      item.quantity < item.maxQuantity
-                                        ? "rgba(253, 180, 168, 0.15)"
-                                        : "rgba(139, 149, 165, 0.1)",
-                                    borderColor:
-                                      item.quantity < item.maxQuantity
-                                        ? "var(--color-peach)"
-                                        : "rgba(139, 149, 165, 0.2)",
-                                    color:
-                                      item.quantity < item.maxQuantity
-                                        ? "var(--color-crimson)"
-                                        : "var(--color-steel)",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (item.quantity < item.maxQuantity) {
-                                      e.currentTarget.style.background =
-                                        "rgba(253, 180, 168, 0.3)";
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (item.quantity < item.maxQuantity) {
-                                      e.currentTarget.style.background =
-                                        "rgba(253, 180, 168, 0.15)";
-                                    }
-                                  }}
-                                >
-                                  <Plus size={18} />
-                                </button>
-                              </div>
-
-                              {/* Price */}
-                              <div className="text-right">
-                                <p
-                                  className="text-3xl font-black"
-                                  style={{
-                                    background:
-                                      "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
-                                    backgroundClip: "text",
-                                  }}
-                                >
-                                  ${(item.price * item.quantity).toFixed(2)}
-                                </p>
-                                <p
-                                  className="text-sm"
-                                  style={{ color: "var(--color-steel)" }}
-                                >
-                                  ${item.price.toFixed(2)} each
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      item={item}
+                      onUpdateQuantity={updateQuantity}
+                      onRemove={removeItem}
+                      onQuickView={handleQuickView}
+                    />
                   ))}
 
                   {/* Action Buttons */}
-                  <div
-                    className="glass-dark rounded-3xl p-6 animate-slide-up"
-                    style={{ animationDelay: "0.4s" }}
-                  >
+                  <div className="glass-dark rounded-3xl p-6">
                     <div className="flex items-center justify-between gap-4 flex-wrap">
-                      <button
-                        className="flex items-center gap-2 font-semibold transition-colors group"
-                        style={{ color: "var(--color-slate)" }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.color = "var(--color-crimson)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.color = "var(--color-slate)")
-                        }
-                      >
+                      <button className="flex items-center gap-2 font-semibold text-[#242E49] hover:text-[#B4182D] transition-all duration-300 group smooth-scale">
                         <Heart
                           size={20}
-                          className="group-hover:scale-110 transition-transform"
+                          className="transition-transform duration-300 ease-out group-hover:scale-110"
                         />
                         Save for Later
                       </button>
-                      <button
-                        className="flex items-center gap-2 font-semibold transition-colors group"
-                        style={{ color: "var(--color-slate)" }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.color = "var(--color-crimson)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.color = "var(--color-slate)")
-                        }
-                      >
+                      <button className="flex items-center gap-2 font-semibold text-[#242E49] hover:text-[#B4182D] transition-all duration-300 group smooth-scale">
                         Continue Shopping
                         <ArrowRight
                           size={20}
-                          className="group-hover:translate-x-1 transition-transform"
+                          className="group-hover:translate-x-1 transition-transform duration-300"
                         />
                       </button>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="glass-dark rounded-3xl p-20 text-center animate-scale-in shadow-xl">
-                  <div className="relative inline-block mb-8">
-                    <div
-                      className="absolute inset-0 rounded-full blur-3xl opacity-20 animate-pulse"
-                      style={{ background: "var(--color-crimson)" }}
-                    ></div>
-                    <ShoppingCart
-                      className="w-32 h-32 mx-auto relative"
-                      strokeWidth={1}
-                      style={{ color: "var(--color-steel)" }}
-                    />
-                  </div>
-                  <h2
-                    className="text-4xl font-bold mb-4"
-                    style={{ color: "var(--color-navy)" }}
-                  >
-                    Your cart is empty
-                  </h2>
-                  <p
-                    className="text-lg mb-10"
-                    style={{ color: "var(--color-slate)" }}
-                  >
-                    Add some items to get started!
-                  </p>
-                  <button
-                    className="cyber-button px-12 py-4 rounded-2xl text-white font-bold text-lg shadow-2xl hover:scale-105 transition-all inline-flex items-center gap-3 glow-crimson"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                    }}
-                  >
-                    <Sparkles size={20} />
-                    Start Shopping
-                  </button>
-                </div>
+                <EmptyCart />
               )}
             </div>
 
@@ -855,45 +519,21 @@ const CartPage: React.FC = () => {
             <div className="lg:col-span-1">
               <div className="sticky top-8 space-y-6">
                 {/* Summary Card */}
-                <div
-                  className="glass-dark rounded-3xl p-8 animate-slide-right border shadow-xl"
-                  style={{ borderColor: "rgba(139, 149, 165, 0.15)" }}
-                >
-                  <h2
-                    className="text-2xl font-bold mb-6"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                    }}
-                  >
+                <div className="glass-dark rounded-3xl p-8 border border-[#37415C]/15 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-6 bg-linear-to-r from-[#B4182D] to-[#54162B] bg-clip-text text-transparent">
                     Order Summary
                   </h2>
 
                   <div className="space-y-4 mb-6">
-                    <div
-                      className="flex justify-between"
-                      style={{ color: "var(--color-slate)" }}
-                    >
+                    <div className="flex justify-between text-[#242E49]">
                       <span>Subtotal</span>
-                      <span
-                        className="font-bold"
-                        style={{ color: "var(--color-navy)" }}
-                      >
+                      <span className="font-bold text-[#181A2F]">
                         ${subtotal.toFixed(2)}
                       </span>
                     </div>
-                    <div
-                      className="flex justify-between"
-                      style={{ color: "var(--color-slate)" }}
-                    >
+                    <div className="flex justify-between text-[#242E49]">
                       <span>Shipping</span>
-                      <span
-                        className="font-bold"
-                        style={{ color: "var(--color-navy)" }}
-                      >
+                      <span className="font-bold text-[#181A2F]">
                         {shipping === 0 ? (
                           <span className="text-green-600 flex items-center gap-1">
                             <Sparkles size={14} />
@@ -904,145 +544,32 @@ const CartPage: React.FC = () => {
                         )}
                       </span>
                     </div>
-                    <div
-                      className="flex justify-between"
-                      style={{ color: "var(--color-slate)" }}
-                    >
+                    <div className="flex justify-between text-[#242E49]">
                       <span>Tax (8%)</span>
-                      <span
-                        className="font-bold"
-                        style={{ color: "var(--color-navy)" }}
-                      >
+                      <span className="font-bold text-[#181A2F]">
                         ${tax.toFixed(2)}
                       </span>
                     </div>
-                    {appliedPromo && (
-                      <div
-                        className="flex justify-between text-green-600 px-3 py-2 rounded-xl"
-                        style={{ background: "rgba(34, 197, 94, 0.1)" }}
-                      >
-                        <span className="flex items-center gap-2">
-                          <Tag size={16} />
-                          Discount ({appliedPromo.discount}%)
-                        </span>
-                        <span className="font-bold">
-                          -${discount.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-
-                    <div
-                      className="pt-4 mt-4"
-                      style={{
-                        borderTop: "2px dashed rgba(139, 149, 165, 0.2)",
-                      }}
-                    >
+                    <div className="pt-4 mt-4 border-t-2 border-dashed border-[#37415C]/20">
                       <div className="flex justify-between items-center">
-                        <span
-                          className="text-xl font-bold"
-                          style={{ color: "var(--color-navy)" }}
-                        >
+                        <span className="text-xl font-bold text-[#181A2F]">
                           Total
                         </span>
-                        <span
-                          className="text-4xl font-black"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy), var(--color-navy))",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            backgroundClip: "text",
-                          }}
-                        >
+                        <span className="text-4xl font-black bg-linear-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] bg-clip-text text-transparent">
                           ${total.toFixed(2)}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Promo Code Input */}
-                  <div className="mb-6">
-                    <label
-                      className="block text-sm font-semibold mb-3"
-                      style={{ color: "var(--color-slate)" }}
-                    >
-                      Promo Code
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        placeholder="Enter code"
-                        className="flex-1 px-4 py-3 rounded-xl border-2 transition-all outline-none"
-                        style={{
-                          background: "rgba(255, 255, 255, 0.5)",
-                          borderColor: "rgba(139, 149, 165, 0.2)",
-                          color: "var(--color-navy)",
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = "var(--color-peach)";
-                          e.target.style.boxShadow =
-                            "0 0 0 3px rgba(253, 180, 168, 0.1)";
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor =
-                            "rgba(139, 149, 165, 0.2)";
-                          e.target.style.boxShadow = "none";
-                        }}
-                      />
-                      <button
-                        onClick={applyPromoCode}
-                        className="cyber-button px-6 py-3 text-white rounded-xl font-bold hover:scale-105 transition-all shadow-lg"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                        }}
-                      >
-                        Apply
-                      </button>
-                    </div>
-                    {appliedPromo && (
-                      <div
-                        className="mt-3 flex items-center gap-2 text-sm text-green-600 px-3 py-2 rounded-lg"
-                        style={{ background: "rgba(34, 197, 94, 0.1)" }}
-                      >
-                        <Gift size={16} />
-                        <span>
-                          Code &quot;{appliedPromo.code}&quot; applied!
-                        </span>
-                        <button
-                          onClick={() => setAppliedPromo(null)}
-                          className="ml-auto transition-colors"
-                          style={{ color: "var(--color-steel)" }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.color =
-                              "var(--color-crimson)")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.color = "var(--color-steel)")
-                          }
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
                   {/* Checkout Button */}
                   <button
                     disabled={cartItems.length === 0}
-                    className="w-full py-5 rounded-2xl text-white font-bold text-lg shadow-2xl hover:scale-[1.02] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3"
-                    style={{
-                      background:
-                        cartItems.length > 0
-                          ? "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy), var(--color-navy))"
-                          : "rgba(139, 149, 165, 0.3)",
-                      boxShadow:
-                        cartItems.length > 0
-                          ? "0 20px 40px rgba(217, 58, 73, 0.3)"
-                          : "none",
-                    }}
+                    className={`w-full py-5 rounded-2xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-3 ${
+                      cartItems.length > 0
+                        ? "bg-linear-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] smooth-scale hover:shadow-[0_20px_40px_rgba(180,24,45,0.3)]"
+                        : "bg-[#37415C]/30 opacity-30 cursor-not-allowed"
+                    }`}
                   >
                     <Lock size={20} />
                     Proceed to Checkout
@@ -1050,288 +577,60 @@ const CartPage: React.FC = () => {
 
                   {/* Free Shipping Progress */}
                   {shipping > 0 && cartItems.length > 0 && (
-                    <div
-                      className="mt-6 p-4 rounded-2xl border"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, rgba(253, 180, 168, 0.1), rgba(217, 58, 73, 0.05))",
-                        borderColor: "var(--color-peach)",
-                      }}
-                    >
-                      <p
-                        className="text-sm text-center mb-3"
-                        style={{ color: "var(--color-burgundy)" }}
-                      >
+                    <div className="mt-6 p-4 rounded-2xl border border-[#FDA481] bg-linear-to-br from-[#FDA481]/10 to-[#B4182D]/5">
+                      <p className="text-sm text-center mb-3 text-[#54162B]">
                         <span className="font-bold">
                           Add ${(500 - subtotal).toFixed(2)} more
                         </span>{" "}
                         for free shipping!
                       </p>
-                      <div
-                        className="w-full rounded-full h-3 overflow-hidden"
-                        style={{ background: "rgba(253, 180, 168, 0.2)" }}
-                      >
+                      <div className="w-full rounded-full h-3 overflow-hidden bg-[#FDA481]/20">
                         <div
-                          className="h-full transition-all duration-500 rounded-full"
+                          className="h-full transition-all duration-500 rounded-full bg-linear-to-r from-[#FDA481] to-[#B4182D]"
                           style={{
-                            width: `${(subtotal / 500) * 100}%`,
-                            background:
-                              "linear-gradient(90deg, var(--color-peach), var(--color-crimson))",
+                            width: `${Math.min((subtotal / 500) * 100, 100)}%`,
                           }}
-                        ></div>
+                        />
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Trust Badges */}
-                <div
-                  className="glass-dark rounded-3xl p-6 animate-slide-right border shadow-xl"
-                  style={{
-                    animationDelay: "0.2s",
-                    borderColor: "rgba(139, 149, 165, 0.15)",
-                  }}
-                >
+                <div className="glass-dark rounded-3xl p-6 border border-[#37415C]/15 shadow-xl">
                   <div className="space-y-5">
-                    <div className="flex items-center gap-4 group  transition-transform">
-                      <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #10b981, #059669)",
-                        }}
-                      >
-                        <Shield className="text-white" size={26} />
-                      </div>
-                      <div>
-                        <p
-                          className="font-bold"
-                          style={{ color: "var(--color-navy)" }}
-                        >
-                          Secure Payment
-                        </p>
-                        <p
-                          className="text-sm"
-                          style={{ color: "var(--color-steel)" }}
-                        >
-                          SSL Encrypted
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 group  transition-transform">
-                      <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg glow-crimson"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                        }}
-                      >
-                        <Truck className="text-white" size={26} />
-                      </div>
-                      <div>
-                        <p
-                          className="font-bold"
-                          style={{ color: "var(--color-navy)" }}
-                        >
-                          Fast Delivery
-                        </p>
-                        <p
-                          className="text-sm"
-                          style={{ color: "var(--color-steel)" }}
-                        >
-                          2-5 Business Days
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 group  transition-transform">
-                      <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg glow-peach"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, var(--color-peach), #f59e0b)",
-                        }}
-                      >
-                        <Gift className="text-white" size={26} />
-                      </div>
-                      <div>
-                        <p
-                          className="font-bold"
-                          style={{ color: "var(--color-navy)" }}
-                        >
-                          Easy Returns
-                        </p>
-                        <p
-                          className="text-sm"
-                          style={{ color: "var(--color-steel)" }}
-                        >
-                          30 Day Guarantee
-                        </p>
-                      </div>
-                    </div>
+                    <TrustBadge
+                      icon={<Shield className="text-white" size={26} />}
+                      title="Secure Payment"
+                      description="SSL Encrypted"
+                      gradient="bg-gradient-to-br from-green-500 to-green-600"
+                    />
+                    <TrustBadge
+                      icon={<Truck className="text-white" size={26} />}
+                      title="Fast Delivery"
+                      description="2-5 Business Days"
+                      gradient="bg-gradient-to-br from-[#B4182D] to-[#54162B] glow-crimson"
+                    />
+                    <TrustBadge
+                      icon={<Gift className="text-white" size={26} />}
+                      title="Easy Returns"
+                      description="30 Day Guarantee"
+                      gradient="bg-gradient-to-br from-[#FDA481] to-amber-500"
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         {/* Quick View Modal */}
         {selectedItem && (
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeInUp"
-            onClick={() => setSelectedItem(null)}
-          >
-            <div
-              className="bg-white rounded-3xl max-w-3xl w-full p-8 shadow-2xl animate-scaleIn"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-start mb-6">
-                <h2
-                  className="text-3xl font-bold"
-                  style={{ color: "var(--color-navy)" }}
-                >
-                  Quick View
-                </h2>
-                <button
-                  onClick={() => setSelectedItem(null)}
-                  className="p-2 rounded-full transition-colors"
-                  style={{ color: "var(--color-slate)" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      "rgba(139, 149, 165, 0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-8">
-                <img
-                  src={selectedItem.image}
-                  alt={selectedItem.name}
-                  className="w-full h-96 object-cover rounded-2xl shadow-lg"
-                />
-                <div>
-                  <p
-                    className="text-sm font-semibold uppercase tracking-wider mb-2"
-                    style={{ color: "var(--color-crimson)" }}
-                  >
-                    {selectedItem.brand}
-                  </p>
-                  <h3
-                    className="text-3xl font-bold mb-4"
-                    style={{ color: "var(--color-navy)" }}
-                  >
-                    {selectedItem.name}
-                  </h3>
-                  <div className="flex items-baseline gap-3 mb-6">
-                    <span
-                      className="text-4xl font-bold"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                        backgroundClip: "text",
-                      }}
-                    >
-                      ${selectedItem.price}
-                    </span>
-                    {selectedItem.originalPrice && (
-                      <span
-                        className="text-xl line-through"
-                        style={{ color: "var(--color-steel)" }}
-                      >
-                        ${selectedItem.originalPrice}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-4 mb-8">
-                    {selectedItem.rating && (
-                      <div className="flex items-center gap-2">
-                        <span style={{ color: "var(--color-slate)" }}>
-                          Rating:
-                        </span>
-                        <span className="font-bold text-amber-500">
-                          {selectedItem.rating} ★
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <span style={{ color: "var(--color-slate)" }}>
-                        Availability:
-                      </span>
-                      <span
-                        className={`font-bold ${
-                          selectedItem.inStock
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {selectedItem.inStock ? "In Stock" : "Out of Stock"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span style={{ color: "var(--color-slate)" }}>
-                        Colors:
-                      </span>
-                      <div className="flex gap-2">
-                        {selectedItem.colors.map((color, i) => (
-                          <div
-                            key={i}
-                            className="w-6 h-6 rounded-full border-2"
-                            style={{
-                              backgroundColor: color,
-                              borderColor: "rgba(139, 149, 165, 0.3)",
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => addToCart(selectedItem)}
-                    disabled={!selectedItem.inStock}
-                    className={`cyber-button w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-xl ${
-                      !selectedItem.inStock && "cursor-not-allowed opacity-50"
-                    }`}
-                    style={
-                      selectedItem.inStock
-                        ? {
-                            background:
-                              "linear-gradient(135deg, var(--color-crimson), var(--color-burgundy))",
-                            color: "white",
-                          }
-                        : {
-                            background: "rgba(139, 149, 165, 0.2)",
-                            color: "var(--color-steel)",
-                          }
-                    }
-                    onMouseEnter={(e) => {
-                      if (selectedItem.inStock) {
-                        e.currentTarget.style.transform = "scale(1.02)";
-                        e.currentTarget.style.boxShadow =
-                          "0 15px 30px rgba(217, 58, 73, 0.3)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (selectedItem.inStock) {
-                        e.currentTarget.style.transform = "scale(1)";
-                        e.currentTarget.style.boxShadow =
-                          "0 10px 15px rgba(0, 0, 0, 0.1)";
-                      }
-                    }}
-                  >
-                    {selectedItem.inStock ? "Add to Cart" : "Out of Stock"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <QuickViewModal
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+            onAddToCart={addToCart}
+          />
         )}
       </div>
       <Footer />
