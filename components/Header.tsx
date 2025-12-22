@@ -5,6 +5,7 @@ import { useState, useCallback, memo, useMemo, useEffect } from "react";
 import SearchSeaction from "./SearchSeaction";
 import { useLogoutMutation } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 // Types
 interface NavLink {
@@ -226,19 +227,40 @@ const Header = () => {
 
               {/* Desktop Login/Logout Button */}
               {isLoggedIn ? (
-                <button
+                <motion.button
                   onClick={handleLogout}
                   className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+                  whileHover={{
+                    scale: 1,
+                    transition: {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 20,
+                    },
+                  }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   Logout
-                </button>
+                </motion.button>
               ) : (
-                <Link
-                  href="/login"
-                  className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+                <motion.button
+                  whileHover={{
+                    scale: 1,
+                    transition: {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 20,
+                    },
+                  }}
+                  whileTap={{ scale: 0.9 }}
                 >
-                  Login
-                </Link>
+                  <Link
+                    href="/login"
+                    className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
+                  >
+                    Login
+                  </Link>
+                </motion.button>
               )}
 
               {/* Mobile Menu Button */}
