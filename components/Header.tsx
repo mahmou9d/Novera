@@ -312,7 +312,6 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Search Modal */}
       <SearchSeaction isOpen={isSearchOpen} onClose={closeSearch} />
     </>
   );
