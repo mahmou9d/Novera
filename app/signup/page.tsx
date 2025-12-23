@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import { useLoginMutation, useSignupMutation } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Zod Schema
 const signupSchema = z
@@ -111,63 +111,136 @@ const Signup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br relative overflow-hidden flex items-center justify-center py-12 px-4">
+      {/* Background Blobs */}
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.1, 0.15, 0.1],
+        }}
+        transition={{ duration: 6, repeat: Infinity }}
+        className="absolute top-20 left-10 w-72 h-72 bg-[#B4182D] rounded-full blur-3xl"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.3, 1],
+          opacity: [0.1, 0.15, 0.1],
+        }}
+        transition={{ duration: 7, repeat: Infinity, delay: 1 }}
+        className="absolute bottom-20 right-10 w-96 h-96 bg-[#FDA481] rounded-full blur-3xl"
+      />
+
       {/* Notification Toast */}
-      {notification && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-scale-in">
-          <div
-            className={`glass px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-700 ease-out ${
-              notification.type === "error"
-                ? "border-[#B4182D]/30"
-                : "border-green-500/30"
-            }`}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="fixed top-8 left-1/2 -translate-x-1/2 z-50"
           >
-            {notification.type === "error" ? (
-              <AlertCircle
-                className="text-[#B4182D] transition-transform duration-500"
-                size={24}
-              />
-            ) : (
-              <Check
-                className="text-green-600 transition-transform duration-500"
-                size={24}
-              />
-            )}
-            <p className="font-semibold text-[#181A2F]">
-              {notification.message}
-            </p>
-          </div>
-        </div>
-      )}
+            <div
+              className={`glass px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 ${
+                notification.type === "error"
+                  ? "border-[#B4182D]/30"
+                  : "border-green-500/30"
+              }`}
+            >
+              <motion.div
+                animate={{
+                  rotate: [0, 360],
+                  scale: [1, 1.2, 1],
+                }}
+                transition={{ duration: 0.6 }}
+              >
+                {notification.type === "error" ? (
+                  <AlertCircle className="text-[#B4182D]" size={24} />
+                ) : (
+                  <Check className="text-green-600" size={24} />
+                )}
+              </motion.div>
+              <p className="font-semibold text-[#181A2F]">
+                {notification.message}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Signup Card */}
-      <div className="w-full max-w-md relative animate-scale-in">
-        <div className="glass-dark rounded-3xl p-8 shadow-2xl transition-all duration-700 ease-out">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 50 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+        className="w-full max-w-md relative"
+      >
+        <div className="glass-dark rounded-3xl p-8 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="relative inline-block mb-4">
-              <div className="absolute inset-0 rounded-2xl blur-2xl opacity-20 animate-pulse bg-[#B4182D] transition-all duration-1000" />
-              <div className="relative w-16 h-16 mx-auto rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#B4182D] to-[#54162B] transition-transform duration-700 ease-out hover:scale-110">
-                <User className="w-8 h-8 text-white transition-transform duration-500" />
-              </div>
-            </div>
-            <h1 className="text-4xl font-black mb-2 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] bg-clip-text text-transparent">
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, duration: 0.6, type: "spring" }}
+              className="relative inline-block mb-4"
+            >
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.2, 0.3, 0.2],
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute inset-0 rounded-2xl blur-2xl bg-[#B4182D]"
+              />
+              <motion.div
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.6 }}
+                className="relative w-16 h-16 mx-auto rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#B4182D] to-[#54162B]"
+              >
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <User className="w-8 h-8 text-white" />
+                </motion.div>
+              </motion.div>
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-4xl font-black mb-2 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] bg-clip-text text-transparent"
+            >
               Create Account
-            </h1>
-            <p className="text-lg text-[#242E49]">Join us today</p>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-lg text-[#242E49]"
+            >
+              Join us today
+            </motion.p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Name Input */}
-            <div className="input-group">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="input-group"
+            >
               <label className="block text-sm font-semibold mb-2 text-[#242E49]">
                 Full Name
               </label>
               <div className="relative">
-                <User
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C] transition-colors duration-500"
-                  size={20}
-                />
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C]"
+                >
+                  <User size={20} />
+                </motion.div>
                 <input
                   type="text"
                   {...register("full_name")}
@@ -179,24 +252,38 @@ const Signup: React.FC = () => {
                   }`}
                 />
               </div>
-              {errors.full_name && (
-                <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
-                  <AlertCircle size={16} />
-                  {errors.full_name.message}
-                </p>
-              )}
-            </div>
+              <AnimatePresence>
+                {errors.full_name && (
+                  <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-[#B4182D] text-sm mt-2 flex items-center gap-1"
+                  >
+                    <AlertCircle size={16} />
+                    {errors.full_name.message}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
             {/* Email Input */}
-            <div className="input-group">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+              className="input-group"
+            >
               <label className="block text-sm font-semibold mb-2 text-[#242E49]">
                 Email Address
               </label>
               <div className="relative">
-                <Mail
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C] transition-colors duration-500"
-                  size={20}
-                />
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C]"
+                >
+                  <Mail size={20} />
+                </motion.div>
                 <input
                   type="email"
                   {...register("email")}
@@ -208,24 +295,38 @@ const Signup: React.FC = () => {
                   }`}
                 />
               </div>
-              {errors.email && (
-                <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
-                  <AlertCircle size={16} />
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+              <AnimatePresence>
+                {errors.email && (
+                  <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-[#B4182D] text-sm mt-2 flex items-center gap-1"
+                  >
+                    <AlertCircle size={16} />
+                    {errors.email.message}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
             {/* Password Input */}
-            <div className="input-group">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
+              className="input-group"
+            >
               <label className="block text-sm font-semibold mb-2 text-[#242E49]">
                 Password
               </label>
               <div className="relative">
-                <Lock
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C] transition-colors duration-500"
-                  size={20}
-                />
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C]"
+                >
+                  <Lock size={20} />
+                </motion.div>
                 <input
                   type={showPassword ? "text" : "password"}
                   {...register("password1")}
@@ -239,38 +340,45 @@ const Signup: React.FC = () => {
                 <motion.button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D] transition-all duration-500 ease-out"
-                  whileHover={{
-                    scale: 1,
-                    transition: {
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    },
-                  }}
-                  whileTap={{ scale: 0.95 }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D]"
+                  whileHover={{ scale: 1.2, rotate: 360 }}
+                  whileTap={{ scale: 0.9 }}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </motion.button>
               </div>
-              {errors.password1 && (
-                <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
-                  <AlertCircle size={16} />
-                  {errors.password1.message}
-                </p>
-              )}
-            </div>
+              <AnimatePresence>
+                {errors.password1 && (
+                  <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-[#B4182D] text-sm mt-2 flex items-center gap-1"
+                  >
+                    <AlertCircle size={16} />
+                    {errors.password1.message}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
             {/* Confirm Password Input */}
-            <div className="input-group">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+              className="input-group"
+            >
               <label className="block text-sm font-semibold mb-2 text-[#242E49]">
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C] transition-colors duration-500"
-                  size={20}
-                />
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C]"
+                >
+                  <Lock size={20} />
+                </motion.div>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   {...register("password2")}
@@ -285,15 +393,8 @@ const Signup: React.FC = () => {
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D]"
-                  whileHover={{
-                    scale: 1,
-                    transition: {
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 20,
-                    },
-                  }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.2, rotate: 360 }}
+                  whileTap={{ scale: 0.9 }}
                 >
                   {showConfirmPassword ? (
                     <EyeOff size={20} />
@@ -302,21 +403,35 @@ const Signup: React.FC = () => {
                   )}
                 </motion.button>
               </div>
-              {errors.password2 && (
-                <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
-                  <AlertCircle size={16} />
-                  {errors.password2.message}
-                </p>
-              )}
-            </div>
+              <AnimatePresence>
+                {errors.password2 && (
+                  <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-[#B4182D] text-sm mt-2 flex items-center gap-1"
+                  >
+                    <AlertCircle size={16} />
+                    {errors.password2.message}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
             {/* Terms & Conditions */}
-            <div className="input-group">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.9 }}
+              className="input-group"
+            >
               <label className="flex items-start gap-2 cursor-pointer group">
-                <input
+                <motion.input
                   type="checkbox"
                   {...register("acceptTerms")}
-                  className="w-4 h-4 mt-1 rounded accent-[#B4182D] transition-transform duration-300 group-hover:scale-110"
+                  className="w-4 h-4 mt-1 rounded accent-[#B4182D]"
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
                 />
                 <span className="text-sm text-[#242E49]">
                   I agree to the{" "}
@@ -335,73 +450,104 @@ const Signup: React.FC = () => {
                   </Link>
                 </span>
               </label>
-              {errors.acceptTerms && (
-                <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1 transition-all duration-500">
-                  <AlertCircle size={16} />
-                  {errors.acceptTerms.message}
-                </p>
-              )}
-            </div>
+              <AnimatePresence>
+                {errors.acceptTerms && (
+                  <motion.p
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="text-[#B4182D] text-sm mt-2 flex items-center gap-1"
+                  >
+                    <AlertCircle size={16} />
+                    {errors.acceptTerms.message}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
             {/* Submit Button */}
-            <div className="input-group">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="input-group"
+            >
               <motion.button
                 type="submit"
                 disabled={isLoading}
-                className="cyber-button w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-3 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 glow-crimson group"
-                whileHover={{
-                  scale: 1,
-                  transition: {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                  },
-                }}
-                whileTap={{ scale: 0.95 }}
+                className="w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-3 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] disabled:opacity-60 disabled:cursor-not-allowed group"
+                whileHover={
+                  !isLoading
+                    ? {
+                        y: -3,
+                        boxShadow: "0 25px 50px rgba(180, 24, 45, 0.4)",
+                      }
+                    : {}
+                }
+                whileTap={!isLoading ? { scale: 0.98 } : {}}
               >
                 {isLoading ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                    />
                     Creating Account...
                   </>
                 ) : (
                   <>
                     Create Account
-                    <ArrowRight
-                      size={20}
-                      className="transition-transform duration-500 group-hover:translate-x-1"
-                    />
+                    <motion.div
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <ArrowRight size={20} />
+                    </motion.div>
                   </>
                 )}
               </motion.button>
-            </div>
+            </motion.div>
           </form>
 
           {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.1 }}
+            className="flex items-center gap-4 my-6"
+          >
             <div className="flex-1 h-px bg-[#37415C]/20" />
             <span className="text-sm text-[#37415C]">OR</span>
             <div className="flex-1 h-px bg-[#37415C]/20" />
-          </div>
+          </motion.div>
 
           {/* Social Signup */}
-          <div className="space-y-3">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            className="space-y-3"
+          >
             <motion.button
               type="button"
-              className="w-full py-3 rounded-xl font-semibold transition-all duration-700 ease-out border-2 border-[#37415C]/20 flex items-center justify-center gap-3  bg-white/50 text-[#181A2F] hover:border-[#FDA481] hover:bg-[#FDA481]/10"
+              className="w-full py-3 rounded-xl font-semibold border-2 border-[#37415C]/20 flex items-center justify-center gap-3 bg-white/50 text-[#181A2F]"
               whileHover={{
-                scale: 1,
-                transition: {
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 20,
-                },
+                y: -2,
+                borderColor: "#FDA481",
+                backgroundColor: "rgba(253, 164, 129, 0.1)",
               }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <svg
-                className="w-5 h-5 transition-transform duration-500"
+              <motion.svg
+                className="w-5 h-5"
                 viewBox="0 0 24 24"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
               >
                 <path
                   fill="currentColor"
@@ -419,13 +565,18 @@ const Signup: React.FC = () => {
                   fill="currentColor"
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
-              </svg>
+              </motion.svg>
               Continue with Google
             </motion.button>
-          </div>
+          </motion.div>
 
           {/* Login Link */}
-          <p className="text-center mt-6 text-sm text-[#242E49]">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.3 }}
+            className="text-center mt-6 text-sm text-[#242E49]"
+          >
             Already have an account?{" "}
             <Link
               href="/login"
@@ -433,9 +584,9 @@ const Signup: React.FC = () => {
             >
               Login
             </Link>
-          </p>
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useMemo, memo } from "react";
 import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 import Productgrid from "./Productgrid";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Types
 interface Category {
@@ -117,12 +117,23 @@ const PRODUCTS: Product[] = [
 
 // Memoized Badge Component
 const CollectionBadge = memo(() => (
-  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-5 py-2 rounded-full mb-6 border border-white/20 transition-transform duration-300 mx-auto">
-    <Sparkles size={16} className="text-[#FDA481]" />
+  <motion.div
+    initial={{ opacity: 0, y: -20, scale: 0.8 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
+    whileHover={{ scale: 1.05 }}
+    className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-5 py-2 rounded-full mb-6 border border-white/20 mx-auto"
+  >
+    <motion.div
+      animate={{ rotate: [0, 15, -15, 0] }}
+      transition={{ duration: 2, repeat: Infinity }}
+    >
+      <Sparkles size={16} className="text-[#FDA481]" />
+    </motion.div>
     <span className="text-sm font-medium tracking-wider uppercase">
       Curated Collection
     </span>
-  </div>
+  </motion.div>
 ));
 
 CollectionBadge.displayName = "CollectionBadge";
@@ -132,36 +143,43 @@ const CategoryButton = memo<{
   category: Category;
   isActive: boolean;
   onClick: (id: string) => void;
-}>(({ category, isActive, onClick }) => (
+  index: number;
+}>(({ category, isActive, onClick, index }) => (
   <motion.button
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.05, duration: 0.4 }}
     onClick={() => onClick(category.id)}
     className={`group relative px-8 py-4 rounded-full font-medium text-sm tracking-wide transition-all duration-500 ${
       isActive
-        ? "bg-white text-[#181A2F] shadow-2xl "
+        ? "bg-white text-[#181A2F] shadow-2xl"
         : "bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm border border-white/10"
     }`}
     whileHover={{
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 20,
-      },
+      scale: 1.05,
+      y: -2,
     }}
     whileTap={{ scale: 0.98 }}
   >
     <span className="relative z-10 flex items-center gap-3">
       {category.name}
-      <span
-        className={`text-xs px-2 py-0.5 rounded-full transition-transform duration-300 ${
+      <motion.span
+        key={category.count}
+        initial={{ scale: 1.3, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className={`text-xs px-2 py-0.5 rounded-full ${
           isActive ? "bg-[#181A2F] text-white" : "bg-white/10"
         }`}
       >
         {category.count}
-      </span>
+      </motion.span>
     </span>
     {isActive && (
-      <div className="absolute inset-0 bg-linear-to-r from-[#FDA481]/20 to-transparent rounded-full blur-xl" />
+      <motion.div
+        layoutId="activeCategory"
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="absolute inset-0 bg-gradient-to-r from-[#FDA481]/20 to-transparent rounded-full blur-xl"
+      />
     )}
   </motion.button>
 ));
@@ -173,83 +191,132 @@ const SectionHeader = memo<{
   title: string;
   count: number;
 }>(({ title, count }) => (
-  <div className="flex items-end justify-between mb-12 opacity-0 animate-fade-up stagger-3">
+  <motion.div
+    initial={{ opacity: 0, y: 30 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6 }}
+    className="flex items-end justify-between mb-12"
+  >
     <div>
-      <h2 className="text-4xl lg:text-5xl font-bold text-[#181A2F] mb-2 transition-transform duration-300 inline-block">
+      <motion.h2
+        key={title}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-4xl lg:text-5xl font-bold text-[#181A2F] mb-2 inline-block"
+      >
         {title}
-      </h2>
-      <p className="text-gray-600 font-medium text-lg">
-        {count} pieces for your wardrobe
-      </p>
+      </motion.h2>
+      <motion.p
+        key={count}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="text-gray-600 font-medium text-lg"
+      >
+        <motion.span
+          key={count}
+          initial={{ scale: 1.2, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+        >
+          {count}
+        </motion.span>{" "}
+        pieces for your wardrobe
+      </motion.p>
     </div>
-    <button className="hidden lg:flex items-center gap-2 text-[#181A2F] font-medium hover:gap-4 transition-all duration-300 group transform">
+    <motion.button
+      whileHover={{ scale: 1.05, x: 5 }}
+      whileTap={{ scale: 0.98 }}
+      className="hidden lg:flex items-center gap-2 text-[#181A2F] font-medium group"
+    >
       View All
-      <ArrowRight
-        size={20}
-        className="group-hover:translate-x-1 transition-transform duration-300"
-      />
-    </button>
-  </div>
+      <motion.div
+        animate={{ x: [0, 5, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      >
+        <ArrowRight size={20} />
+      </motion.div>
+    </motion.button>
+  </motion.div>
 ));
 
 SectionHeader.displayName = "SectionHeader";
 
 // Memoized Wave Divider
 const WaveDivider = memo(() => (
-  <div className="absolute bottom-0 left-0 right-0 -mb-1">
-    <svg
+  <motion.div
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.8, duration: 0.8 }}
+    className="absolute bottom-0 left-0 right-0 -mb-1"
+  >
+    <motion.svg
+      animate={{ y: [0, -5, 0] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       viewBox="0 0 1440 120"
       className="w-full h-auto fill-[#faf9f7]"
       preserveAspectRatio="none"
       style={{ display: "block" }}
     >
       <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" />
-    </svg>
-  </div>
+    </motion.svg>
+  </motion.div>
 ));
 
 WaveDivider.displayName = "WaveDivider";
 
 // Memoized Top Wave Divider (Flipped)
 const TopWaveDivider = memo(() => (
-  <div className="absolute top-0 left-0 right-0 -mt-1 rotate-180">
-    <svg
+  <motion.div
+    initial={{ opacity: 0, y: -50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8 }}
+    className="absolute top-0 left-0 right-0 -mt-1 rotate-180"
+  >
+    <motion.svg
+      animate={{ y: [0, 5, 0] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       viewBox="0 0 1440 120"
       className="w-full h-auto fill-[#faf9f7]"
       preserveAspectRatio="none"
       style={{ display: "block" }}
     >
       <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" />
-    </svg>
-  </div>
+    </motion.svg>
+  </motion.div>
 ));
-
-WaveDivider.displayName = "WaveDivider";
 
 TopWaveDivider.displayName = "TopWaveDivider";
 
 // Memoized Load More Button
 const LoadMoreButton = memo(() => (
-  <div className="text-center mt-16 opacity-0 animate-fade-up stagger-6">
+  <motion.div
+    initial={{ opacity: 0, y: 30 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6 }}
+    className="text-center mt-16"
+  >
     <motion.button
-      className="group inline-flex items-center gap-3 bg-[#181A2F] text-white px-12 py-5 rounded-full font-semibold uppercase tracking-wider hover:bg-[#FDA481] transition-all duration-500 shadow-xl hover:shadow-2xl"
+      className="group inline-flex items-center gap-3 bg-[#181A2F] text-white px-12 py-5 rounded-full font-semibold uppercase tracking-wider shadow-xl"
       whileHover={{
-        scale: 1,
-        transition: {
-          type: "spring",
-          stiffness: 300,
-          damping: 20,
-        },
+        scale: 1.05,
+        y: -5,
+        backgroundColor: "#FDA481",
+        boxShadow: "0 25px 50px rgba(0,0,0,0.2)",
       }}
-      whileTap={{ scale: 0.9 }}
+      whileTap={{ scale: 0.98 }}
     >
       Discover More
-      <TrendingUp
-        size={20}
-        className="group-hover:rotate-12 transition-transform duration-300"
-      />
+      <motion.div
+        whileHover={{ rotate: 360, scale: 1.2 }}
+        transition={{ duration: 0.6 }}
+      >
+        <TrendingUp size={20} />
+      </motion.div>
     </motion.button>
-  </div>
+  </motion.div>
 ));
 
 LoadMoreButton.displayName = "LoadMoreButton";
@@ -284,43 +351,78 @@ const MainSection = () => {
   }, [activeCategory]);
 
   return (
-    <div id="hero" className=" min-h-screen">
+    <div id="hero" className="min-h-screen">
       {/* Hero Section with Categories */}
-      <div className="relative overflow-hidden bg-linear-to-br from-[#181A2F] via-[#242E49] to-[#1a1a2e] text-white pb-20 lg:pb-28 pt-20 lg:pt-28">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#181A2F] via-[#242E49] to-[#1a1a2e] text-white pb-20 lg:pb-28 pt-20 lg:pt-28">
         {/* Top Wave Divider */}
         <TopWaveDivider />
 
         {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-150 h-150 bg-[#FDA481]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-125 h-125 bg-[#B4182D]/10 rounded-full blur-3xl animate-pulse" />
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.1, 0.15, 0.1],
+          }}
+          transition={{ duration: 6, repeat: Infinity }}
+          className="absolute top-0 right-0 w-150 h-150 bg-[#FDA481]/10 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.1, 0.15, 0.1],
+          }}
+          transition={{ duration: 7, repeat: Infinity, delay: 1 }}
+          className="absolute bottom-0 left-0 w-125 h-125 bg-[#B4182D]/10 rounded-full blur-3xl"
+        />
 
         <div className="relative max-w-7xl mx-auto px-6 lg:px-12 py-20 lg:py-28">
-          <div className="flex flex-col text-center mb-16 opacity-0 animate-fade-up">
+          <div className="flex flex-col text-center mb-16">
             <CollectionBadge />
-            <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight transition-transform duration-500 inline-block">
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="text-5xl lg:text-7xl font-bold mb-6 leading-tight"
+            >
               Timeless Elegance,
               <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#FDA481] via-[#FFB88C] to-[#FDA481]">
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="text-transparent bg-clip-text bg-gradient-to-r from-[#FDA481] via-[#FFB88C] to-[#FDA481]"
+              >
                 Modern Spirit
-              </span>
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto font-light">
+              </motion.span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="text-xl text-gray-300 max-w-2xl mx-auto font-light"
+            >
               Discover pieces that transcend seasons and define your unique
               narrative
-            </p>
+            </motion.p>
           </div>
 
           {/* Categories Navigation */}
-          <div className="flex flex-wrap justify-center gap-3 opacity-0 animate-fade-up stagger-2">
-            {CATEGORIES.map((cat) => (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="flex flex-wrap justify-center gap-3"
+          >
+            {CATEGORIES.map((cat, index) => (
               <CategoryButton
                 key={cat.id}
                 category={cat}
                 isActive={activeCategory === cat.id}
                 onClick={handleCategoryChange}
+                index={index}
               />
             ))}
-          </div>
+          </motion.div>
         </div>
 
         {/* Bottom Wave Divider */}
@@ -336,7 +438,17 @@ const MainSection = () => {
         />
 
         {/* Products Grid */}
-        <Productgrid products={filteredProducts} />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Productgrid products={filteredProducts} />
+          </motion.div>
+        </AnimatePresence>
 
         {/* Load More */}
         <LoadMoreButton />
