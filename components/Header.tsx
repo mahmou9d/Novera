@@ -43,7 +43,7 @@ const Header = () => {
       },
     });
   };
-
+console.log("🔥 BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
   return (
     <>
       <header className="bg-linear-to-r from-[#181A2F] via-[#242E49] to-[#181A2F] shadow-2xl sticky top-0 z-50 border-b border-white/10">
