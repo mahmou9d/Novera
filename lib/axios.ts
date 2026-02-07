@@ -5,7 +5,12 @@ import axios, { AxiosError } from "axios";
 // import { toast } from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-console.log(BASE_URL);
+if (!BASE_URL) {
+  console.error("❌ NEXT_PUBLIC_BASE_URL is not defined!");
+  throw new Error("API Base URL is not configured");
+}
+
+console.log("✅ API Base URL:", BASE_URL);
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {
