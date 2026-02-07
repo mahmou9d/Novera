@@ -114,7 +114,7 @@ const Testimonials = () => {
           <div className="grid md:grid-cols-3 gap-6">
             {reviews.slice(0, 6).map((review, index) => (
               <div
-                key={review.id}
+                key={review.product_id}
                 className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
               >
                 <div className="flex gap-1 mb-4">
@@ -140,9 +140,6 @@ const Testimonials = () => {
                   <div>
                     <div className="text-sm font-semibold text-[#181A2F]">
                       {review.customer_name || "Anonymous"}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(review.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
@@ -300,13 +297,6 @@ const Testimonials = () => {
                     <div className="text-sm text-gray-600">
                       Verified Customer
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-gray-500">
-                        {new Date(
-                          currentReview?.created_at,
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -360,7 +350,7 @@ const Testimonials = () => {
             <div className="grid md:grid-cols-3 gap-6">
               {reviews.slice(0, 6).map((review, index) => (
                 <div
-                  key={review.id}
+                  key={review.product_id}
                   className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100"
                 >
                   <div className="flex gap-1 mb-4">
@@ -387,9 +377,7 @@ const Testimonials = () => {
                       <div className="text-sm font-semibold text-[#181A2F]">
                         {review.customer_name || "Anonymous"}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(review.created_at).toLocaleDateString()}
-                      </div>
+
                     </div>
                   </div>
                 </div>
