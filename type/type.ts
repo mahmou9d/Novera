@@ -341,7 +341,17 @@ export interface Variant {
   stock: number;
   images: string[];
 }
-
+export interface Product {
+  id: number;
+  price: string;
+  quantity: number;
+  subtotal: string;
+  name?: string;
+  category?: string;
+  description?: string;
+  material_composition?: string;
+  variants: Variant[];
+}
 // Type للـ Cart Item
 export interface CartItem {
   id: number;
@@ -352,17 +362,7 @@ export interface CartItem {
 }
 
 // Type للمنتج
-export interface Product {
-  id: number;
-  price: string;
-  quantity: number;
-  subtotal: string;
-  name?: string;
-  category?: string;
-  description?: string;
-  material_composition?: string;
-  variants: Variant[]; // استخدم نفس الـ Type
-}
+
 
 export interface ReviewsResponse {
   reviews: TReview[];

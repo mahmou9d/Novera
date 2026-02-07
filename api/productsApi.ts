@@ -17,10 +17,10 @@ interface ProductsDataRes {
 }
 export const productsAPI = {
   // api/productsApi.ts
-
   getProducts: async (page: number = 1): Promise<ProductsData> => {
     const { data } = await apiClient.get<ProductsDataRes>(
-      `https://web-production-1ab2d.up.railway.app/api/products/?page=${page}`,
+      `/products/`, // ← لاحظ: شيلت الـ full URL
+      { params: { page } }, // ← استخدم params object
     );
     console.log("Products Response:", data);
     return {
@@ -30,6 +30,18 @@ export const productsAPI = {
       previous: data.previous,
     };
   },
+  // getProducts: async (page: number = 1): Promise<ProductsData> => {
+  //   const { data } = await apiClient.get<ProductsDataRes>(
+  //     `/products/?page=${page}`,
+  //   );
+  //   console.log("Products Response:", data);
+  //   return {
+  //     products: data.results || [],
+  //     count: data.count,
+  //     next: data.next,
+  //     previous: data.previous,
+  //   };
+  // },
 
   getSingleProducts: async (id: number): Promise<Product> => {
     try {

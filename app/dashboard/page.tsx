@@ -1438,7 +1438,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { DashboardPage } from "./components/DashboardPage";
 import { OrdersPage } from "./components/OrdersPage";
-import { ProductsPage } from "./components/ProductsPage";
+import { EditProduct } from "./components/EditProduct";
 import { CustomersPage } from "./components/CustomersPage";
 import { AnalyticsPage } from "./components/AnalyticsPage";
 import { SettingsPage } from "./components/SettingsPage";
@@ -1468,7 +1468,7 @@ const CompleteDashboard = () => {
         );
       case "products":
         return (
-          <ProductsPage
+          <EditProduct
             products={productsData}
             getStatusColor={getStatusColor}
             getStatusIcon={getStatusIcon}

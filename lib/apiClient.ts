@@ -2,37 +2,28 @@
 "use client";
 
 import axios, { AxiosError } from "axios";
-// import { toast } from "react-hot-toast";
 
-// const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-const BASE_URL ="https://web-production-1ab2d.up.railway.app/api/"
-// ⚠️ Log only - don't throw error during build
-if (!BASE_URL) {
-  console.error("❌ NEXT_PUBLIC_BASE_URL is not defined!");
-  console.error(
-    "Please add NEXT_PUBLIC_BASE_URL to your environment variables",
-  );
-}
+// Use environment variable with fallback
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  "https://web-production-1ab2d.up.railway.app/api/";
 
-if (BASE_URL) {
-  console.log("✅ API Base URL:", BASE_URL);
-}
+console.log("🚀 apiClient initialized");
+console.log("🚀 BASE_URL:", BASE_URL);
 
 export const apiClient = axios.create({
-  baseURL: BASE_URL || "", // Use empty string as fallback
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
   timeout: 10000,
 });
 
+// Request Interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // Runtime check for BASE_URL
-    if (!BASE_URL && typeof window !== "undefined") {
-      console.error("❌ Cannot make API request: BASE_URL is not configured");
-      return Promise.reject(new Error("API Base URL is not configured"));
-    }
+    console.log("📤 API Request:", config.method?.toUpperCase(), config.url);
+    console.log("📤 Full URL:", `${config.baseURL}${config.url}`);
 
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("access");
@@ -43,6 +34,7 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error("❌ Request Error:", error);
     return Promise.reject(error);
   },
 );
@@ -61,9 +53,15 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Response Interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("✅ API Response:", response.config.url, response.status);
+    return response;
+  },
   async (error: AxiosError) => {
+    console.error("❌ API Error:", error.config?.url, error.response?.status);
+
     const originalRequest: any = error.config;
 
     if (originalRequest?.url?.includes("/auth/token/refresh/")) {
@@ -74,7 +72,6 @@ apiClient.interceptors.response.use(
         localStorage.removeItem("refresh");
 
         if (window.location.pathname !== "/login") {
-          // toast.error("انتهت جلستك، يرجى تسجيل الدخول مرة أخرى");
           window.location.href = "/login";
         }
       }
@@ -110,7 +107,6 @@ apiClient.interceptors.response.use(
           typeof window !== "undefined" &&
           window.location.pathname !== "/login"
         ) {
-          // toast.error("يرجى تسجيل الدخول");
           window.location.href = "/login";
         }
 
@@ -118,7 +114,7 @@ apiClient.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post(`${BASE_URL}/auth/token/refresh/`, {
+        const { data } = await axios.post(`${BASE_URL}auth/token/refresh/`, {
           refresh: refreshToken,
         });
 
@@ -146,22 +142,12 @@ apiClient.interceptors.response.use(
           localStorage.removeItem("refresh");
 
           if (window.location.pathname !== "/login") {
-            // toast.error("انتهت جلستك، يرجى تسجيل الدخول مرة أخرى");
             window.location.href = "/login";
           }
         }
 
         return Promise.reject(refreshError);
       }
-    }
-
-    // معالجة أخطاء أخرى
-    if (error.response?.status === 403) {
-      // toast.error("ليس لديك صلاحية للوصول");
-    } else if (error.response?.status === 404) {
-      // toast.error("المورد غير موجود");
-    } else if (error.response?.status === 500) {
-      // toast.error("خطأ في الخادم، يرجى المحاولة لاحقاً");
     }
 
     return Promise.reject(error);
