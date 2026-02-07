@@ -20,7 +20,7 @@ export const productsAPI = {
 
   getProducts: async (page: number = 1): Promise<ProductsData> => {
     const { data } = await apiClient.get<ProductsDataRes>(
-      `/products/?page=${page}`,
+      `https://web-production-1ab2d.up.railway.app/api/products/?page=${page}`,
     );
     console.log("Products Response:", data);
     return {
