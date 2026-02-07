@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { apiClient } from "@/lib/axios";
+import { apiClient } from "@/lib/apiClient";
 import { storage } from "@/lib/storage";
 import {
-    LoginRequest,
-    LoginResponse,
-    RefreshResponse,
-    SignupRequest,
-    SignupResponse,
+  LoginRequest,
+  LoginResponse,
+  RefreshResponse,
+  SignupRequest,
+  SignupResponse,
 } from "../type/type";
 
 interface Role {
-    email: string;
-    is_admin: boolean;
+  email: string;
+  is_admin: boolean;
 }
 
 export const authAPI = {

@@ -1,18 +1,18 @@
 // api/dashboardApi.ts
 "use client";
 
-import { apiClient } from "@/lib/axios";
+import { apiClient } from "@/lib/apiClient";
 import {
-    OrdersCountResponse,
-    UsersCountResponse,
-    TotalSalesResponse,
-    TopSellingProduct,
-    TopSellingResponse,
-    SalesOrder,
-    Counted,
-    OrderStatus,
-    RecentOrdersData,
-    RecentOrdersDatares,
+  OrdersCountResponse,
+  UsersCountResponse,
+  TotalSalesResponse,
+  TopSellingProduct,
+  TopSellingResponse,
+  SalesOrder,
+  Counted,
+  OrderStatus,
+  RecentOrdersData,
+  RecentOrdersDatares,
 } from "../type/type";
 
 export const dashboardAPI = {
@@ -39,8 +39,9 @@ export const dashboardAPI = {
     return data;
   },
   getReviewsCount: async (): Promise<Counted> => {
-    const { data } =
-      await apiClient.get<OrdersCountResponse>("/dashboard/reviews/");
+    const { data } = await apiClient.get<OrdersCountResponse>(
+      "/dashboard/reviews/",
+    );
     return data;
   },
   getUsersCount: async (): Promise<number> => {

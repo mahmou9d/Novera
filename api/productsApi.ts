@@ -1,6 +1,6 @@
 "use client";
 
-import { apiClient } from "@/lib/axios";
+import { apiClient } from "@/lib/apiClient";
 import { Product, TProduct } from "@/type/type";
 export interface ProductsData {
   products: TProduct[];
