@@ -5,14 +5,21 @@ import axios, { AxiosError } from "axios";
 // import { toast } from "react-hot-toast";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+// ⚠️ Log only - don't throw error during build
 if (!BASE_URL) {
   console.error("❌ NEXT_PUBLIC_BASE_URL is not defined!");
-  throw new Error("API Base URL is not configured");
+  console.error(
+    "Please add NEXT_PUBLIC_BASE_URL to your environment variables",
+  );
 }
 
-console.log("✅ API Base URL:", BASE_URL);
+if (BASE_URL) {
+  console.log("✅ API Base URL:", BASE_URL);
+}
+
 export const apiClient = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BASE_URL || "", // Use empty string as fallback
   headers: {
     "Content-Type": "application/json",
   },
@@ -21,6 +28,12 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
+    // Runtime check for BASE_URL
+    if (!BASE_URL && typeof window !== "undefined") {
+      console.error("❌ Cannot make API request: BASE_URL is not configured");
+      return Promise.reject(new Error("API Base URL is not configured"));
+    }
+
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("access");
       if (token) {
