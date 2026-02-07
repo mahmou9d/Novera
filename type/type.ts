@@ -42,8 +42,10 @@ export interface CartItem {
   id: number; // معرف الـ item في السلة
   variant: Variant; // تفاصيل المنتج
   quantity: number;
-  price: string; 
+  price: string;
   subtotal: string;
+  name?: string;
+  category_name?: string;
 }
 
 export interface CartResponse {

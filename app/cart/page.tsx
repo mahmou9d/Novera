@@ -51,12 +51,12 @@ interface Notification {
 // Helper function
 const convertCartItemToUI = (item: APICartItem): CartItemUI => {
   const variant = item.variant || {};
-  const product = item.product || {};
+  // const product = item.product || {};
 
   return {
     id: item.id,
-    name: product.name || "Product Name",
-    brand: product.category_name || "Brand",
+    name: item?.name || "Product Name",
+    brand: item?.category_name || "Brand",
     price: parseFloat(variant.price || "0"),
     quantity: item.quantity,
     images:
