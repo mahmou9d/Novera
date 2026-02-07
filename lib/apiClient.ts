@@ -4,8 +4,8 @@
 import axios, { AxiosError } from "axios";
 // import { toast } from "react-hot-toast";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
+// const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const BASE_URL ="https://web-production-1ab2d.up.railway.app/api/"
 // ⚠️ Log only - don't throw error during build
 if (!BASE_URL) {
   console.error("❌ NEXT_PUBLIC_BASE_URL is not defined!");
