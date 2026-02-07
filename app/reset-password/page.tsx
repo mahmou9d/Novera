@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -17,6 +17,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePasswordResetConfirm } from "@/hooks/useAuth";
+import Notification from "@/components/Notification";
 
 // ========================================
 // TYPES & SCHEMA
@@ -54,38 +55,7 @@ const NotificationToast = ({
   notification,
 }: {
   notification: Notification;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: -50, scale: 0.8 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    exit={{ opacity: 0, y: -50, scale: 0.8 }}
-    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-    className="fixed top-8 left-1/2 -translate-x-1/2 z-50"
-  >
-    <div
-      className={`glass px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 ${
-        notification.type === "error"
-          ? "border-[#B4182D]/30"
-          : "border-green-500/30"
-      }`}
-    >
-      <motion.div
-        animate={{
-          rotate: [0, 360],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{ duration: 0.6 }}
-      >
-        {notification.type === "error" ? (
-          <AlertCircle className="text-[#B4182D]" size={24} />
-        ) : (
-          <Check className="text-green-600" size={24} />
-        )}
-      </motion.div>
-      <p className="font-semibold text-[#181A2F]">{notification.message}</p>
-    </div>
-  </motion.div>
-);
+}) => <Notification type={notification.type} message={notification.message} />;
 
 // Background Blobs Component
 const BackgroundBlobs = () => (
@@ -342,11 +312,34 @@ const PasswordRequirements = () => (
   </motion.div>
 );
 
+// Loading Fallback Component
+const LoadingFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br relative overflow-hidden flex items-center justify-center py-12 px-4">
+    <BackgroundBlobs />
+    <div className="w-full max-w-md relative">
+      <div className="glass-dark rounded-3xl p-8 shadow-2xl">
+        <FormHeader />
+        <div className="flex items-center justify-center py-12">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="w-8 h-8 border-2 border-[#B4182D] border-t-transparent rounded-full"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // ========================================
-// MAIN COMPONENT
+// MAIN COMPONENT (with useSearchParams)
 // ========================================
 
-const ResetPassword = () => {
+const ResetPasswordContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [notification, setNotification] = useState<Notification | null>(null);
@@ -457,6 +450,18 @@ const ResetPassword = () => {
         </div>
       </motion.div>
     </div>
+  );
+};
+
+// ========================================
+// WRAPPER WITH SUSPENSE BOUNDARY
+// ========================================
+
+const ResetPassword = () => {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 };
 
