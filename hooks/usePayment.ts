@@ -13,9 +13,9 @@ export const useCreateCheckoutSession = () => {
             // toast.success("جاري تحويلك لصفحة الدفع...");
 
             // إعادة التوجيه لصفحة الدفع (Stripe/PayPal/etc)
-            if (data.checkout_url) {
-                window.location.href = data.checkout_url;
-            }
+            // if (data.checkout_url) {
+            //     window.location.href = data.checkout_url;
+            // }
         },
         onError: (error: any) => {
             console.error("Create checkout session failed:", error);
