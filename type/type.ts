@@ -83,15 +83,14 @@ export interface CheckoutSessionResponse {
   // عدّل حسب الـ response الفعلي من الـ API
 }
 export interface TReview {
-  id: number;
+  product_id: number;
   comment: string;
   rating: number;
   customer_name: string;
-  created_at: string;
 }
 
 export interface AddReviewRequest {
-  id: number;
+  product_id: number;
   comment: string;
   rating: number;
 }
@@ -363,4 +362,8 @@ export interface Product {
   description?: string;
   material_composition?: string;
   variants: Variant[]; // استخدم نفس الـ Type
+}
+
+export interface ReviewsResponse {
+  reviews: TReview[];
 }
