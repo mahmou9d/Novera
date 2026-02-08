@@ -128,21 +128,21 @@ export default function Footer() {
             <div className="space-y-3 mb-6">
               <a
                 href="mailto:hello@novera.com"
-                className="flex items-center gap-3 text-gray-400 hover:text-[#FDA481] transition-colors duration-300 text-sm group"
+                className="flex items-center gap-3 text-gray-400 hover:text-[#FDA481]   text-sm group"
               >
                 <Mail
                   size={16}
-                  className="group-hover:scale-110 transition-transform duration-300"
+                  className="group-hover:scale-110  "
                 />
                 <span>hello@novera.com</span>
               </a>
               <a
                 href="tel:+1234567890"
-                className="flex items-center gap-3 text-gray-400 hover:text-[#FDA481] transition-colors duration-300 text-sm group"
+                className="flex items-center gap-3 text-gray-400 hover:text-[#FDA481]   text-sm group"
               >
                 <Phone
                   size={16}
-                  className="group-hover:scale-110 transition-transform duration-300"
+                  className="group-hover:scale-110  "
                 />
                 <span>+1 (234) 567-890</span>
               </a>
@@ -161,7 +161,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className={`bg-white/5 p-3 rounded-full hover:bg-white/10 transition-all duration-300 hover:scale-110 ${social.color}`}
+                  className={`bg-white/5 p-3 rounded-full hover:bg-white/10  hover:scale-110 ${social.color}`}
                 >
                   <social.icon size={18} />
                 </a>
@@ -177,7 +177,7 @@ export default function Footer() {
                 <li key={idx}>
                   <Link
                     href={link.href}
-                    className="font-sans text-sm text-gray-400 hover:text-[#FDA481] transition-all duration-300 hover:translate-x-1 inline-block"
+                    className="font-sans text-sm text-gray-400 hover:text-[#FDA481]  hover:translate-x-1 inline-block"
                   >
                     {link.name}
                   </Link>
@@ -194,7 +194,7 @@ export default function Footer() {
                 <li key={idx}>
                   <Link
                     href={link.href}
-                    className="font-sans text-sm text-gray-400 hover:text-[#FDA481] transition-all duration-300 hover:translate-x-1 inline-block"
+                    className="font-sans text-sm text-gray-400 hover:text-[#FDA481]  hover:translate-x-1 inline-block"
                   >
                     {link.name}
                   </Link>
@@ -211,7 +211,7 @@ export default function Footer() {
                 <li key={idx}>
                   <Link
                     href={link.href}
-                    className="font-sans text-sm text-gray-400 hover:text-[#FDA481] transition-all duration-300 hover:translate-x-1 inline-block"
+                    className="font-sans text-sm text-gray-400 hover:text-[#FDA481]  hover:translate-x-1 inline-block"
                   >
                     {link.name}
                   </Link>
@@ -255,7 +255,7 @@ export default function Footer() {
 
             {/* Payment Methods */}
             <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3">
-              <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
                 <Shield size={14} className="text-[#FDA481]" />
                 <span className="font-sans text-xs text-gray-300 font-medium">
                   Secure Payment

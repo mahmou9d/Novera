@@ -72,8 +72,8 @@ const NotificationToast = ({
 // Background Blobs Component
 const BackgroundBlobs = () => (
   <>
-    <div className="absolute top-20 left-10 w-72 h-72 bg-[#B4182D] rounded-full blur-3xl" />
-    <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#FDA481] rounded-full blur-3xl" />
+    <div className="absolute top-20 left-10 w-72 h-72 bg-[#B4182D] rounded-full " />
+    <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#FDA481] rounded-full " />
   </>
 );
 
@@ -81,7 +81,7 @@ const BackgroundBlobs = () => (
 const FormHeader = () => (
   <div className="text-center mb-8">
     <div className="relative inline-block mb-4">
-      <div className="absolute inset-0 rounded-2xl blur-2xl bg-[#B4182D]" />
+      <div className="absolute inset-0 rounded-2xl  bg-[#B4182D]" />
       <div className="relative w-16 h-16 mx-auto rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#B4182D] to-[#54162B]">
         <div>
           <User className="w-8 h-8 text-white" />
@@ -125,7 +125,7 @@ const TextInput = ({
         type={type}
         {...register}
         placeholder={placeholder}
-        className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-500 ease-out outline-none bg-white/50 text-[#181A2F] ${
+        className={`w-full pl-12 pr-4 py-3 rounded-xl border-2  outline-none bg-white/50 text-[#181A2F] ${
           error
             ? "border-[#B4182D]"
             : "border-[#37415C]/20 focus:border-[#FDA481] focus:shadow-[0_0_0_3px_rgba(253,164,129,0.1)]"
@@ -169,7 +169,7 @@ const PasswordInput = ({
           type={showPassword ? "text" : "password"}
           {...register}
           placeholder={placeholder}
-          className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all duration-500 ease-out outline-none bg-white/50 text-[#181A2F] ${
+          className={`w-full pl-12 pr-12 py-3 rounded-xl border-2  outline-none bg-white/50 text-[#181A2F] ${
             error
               ? "border-[#B4182D]"
               : "border-[#37415C]/20 focus:border-[#FDA481] focus:shadow-[0_0_0_3px_rgba(253,164,129,0.1)]"
@@ -212,14 +212,14 @@ const TermsCheckbox = ({
         I agree to the{" "}
         <Link
           href="/terms"
-          className="font-semibold text-[#B4182D] hover:text-[#54162B] transition-all duration-500 ease-out hover:scale-105 inline-block"
+          className="font-semibold text-[#B4182D] hover:text-[#54162B]  hover:scale-105 inline-block"
         >
           Terms & Conditions
         </Link>{" "}
         and{" "}
         <Link
           href="/privacy"
-          className="font-semibold text-[#B4182D] hover:text-[#54162B] transition-all duration-500 ease-out hover:scale-105 inline-block"
+          className="font-semibold text-[#B4182D] hover:text-[#54162B]  hover:scale-105 inline-block"
         >
           Privacy Policy
         </Link>
@@ -303,7 +303,7 @@ const LoginLink = () => (
     Already have an account?{" "}
     <Link
       href="/login"
-      className="font-bold text-[#B4182D] hover:text-[#54162B] transition-all duration-500 ease-out hover:scale-105 inline-block"
+      className="font-bold text-[#B4182D] hover:text-[#54162B]  hover:scale-105 inline-block"
     >
       Login
     </Link>

@@ -1,36 +1,122 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { PieChart } from "lucide-react";
-
-const analyticsData = [
-  {
-    label: "Page Views",
-    value: "45,890",
-    change: "+18.2%",
-    trend: "up" as const,
-  },
-  {
-    label: "Conversion",
-    value: "3.24%",
-    change: "+0.8%",
-    trend: "up" as const,
-  },
-  {
-    label: "Avg Order",
-    value: "$156.90",
-    change: "+5.4%",
-    trend: "up" as const,
-  },
-  {
-    label: "Bounce Rate",
-    value: "42.8%",
-    change: "-3.2%",
-    trend: "down" as const,
-  },
-];
+import {
+  TrendingUp,
+  TrendingDown,
+  Star,
+  AlertTriangle,
+  Package,
+  Users,
+  ShoppingCart,
+  DollarSign,
+  MessageSquare,
+  BarChart3,
+} from "lucide-react";
+import {
+  useGetStatusCount,
+  useGetReviewsCount,
+  useGetProductLow,
+  useGetSalesOrders,
+} from "@/hooks/useDashboard";
 
 export const AnalyticsPage = () => {
+  const { data: statusCount } = useGetStatusCount();
+  const { data: reviewsData } = useGetReviewsCount();
+  const { data: lowStockData } = useGetProductLow();
+  const { data: salesData } = useGetSalesOrders();
+
+  console.log({ statusCount, reviewsData, lowStockData, salesData });
+
+  // Calculate analytics data from API
+  const totalOrders = statusCount?.orders?.total || 0;
+  const totalSales = statusCount?.sales || 0;
+  const avgOrder = totalOrders > 0 ? totalSales / totalOrders : 0;
+
+  const analyticsData = [
+    {
+      label: "Total Revenue",
+      value: `$${totalSales.toFixed(2)}`,
+      change: "+12.5%",
+      trend: "up" as const,
+      icon: DollarSign,
+      gradient: "from-emerald-500 to-emerald-600",
+    },
+    {
+      label: "Total Orders",
+      value: totalOrders.toString(),
+      change: "+8.2%",
+      trend: "up" as const,
+      icon: ShoppingCart,
+      gradient: "from-blue-500 to-blue-600",
+    },
+    {
+      label: "Avg Order Value",
+      value: `$${avgOrder.toFixed(2)}`,
+      change: "+5.4%",
+      trend: "up" as const,
+      icon: TrendingUp,
+      gradient: "from-[#fda481] to-[#b4182d]",
+    },
+    {
+      label: "Total Reviews",
+      value: reviewsData?.length || 0,
+      change: "+3.1%",
+      trend: "up" as const,
+      icon: MessageSquare,
+      gradient: "from-purple-500 to-purple-600",
+    },
+  ];
+
+  // Calculate order status distribution
+  const orderStats = [
+    {
+      label: "Pending",
+      value: statusCount?.orders?.pending || 0,
+      percentage:
+        totalOrders > 0
+          ? ((statusCount?.orders?.pending || 0) / totalOrders) * 100
+          : 0,
+      color: "from-yellow-500 to-yellow-600",
+    },
+    {
+      label: "Paid",
+      value: statusCount?.orders?.paid || 0,
+      percentage:
+        totalOrders > 0
+          ? ((statusCount?.orders?.paid || 0) / totalOrders) * 100
+          : 0,
+      color: "from-emerald-500 to-emerald-600",
+    },
+    {
+      label: "Delivered",
+      value: statusCount?.orders?.delivered || 0,
+      percentage:
+        totalOrders > 0
+          ? ((statusCount?.orders?.delivered || 0) / totalOrders) * 100
+          : 0,
+      color: "from-green-500 to-green-600",
+    },
+    {
+      label: "Cancelled",
+      value: statusCount?.orders?.cancelled || 0,
+      percentage:
+        totalOrders > 0
+          ? ((statusCount?.orders?.cancelled || 0) / totalOrders) * 100
+          : 0,
+      color: "from-red-500 to-red-600",
+    },
+  ];
+
+  // Calculate average rating
+  const averageRating =
+    reviewsData && reviewsData.length > 0
+      ? (
+          reviewsData.reduce((sum, review) => sum + review.rating, 0) /
+          reviewsData.length
+        ).toFixed(1)
+      : "0.0";
+
   return (
     <>
       <div className="mb-10">
@@ -42,88 +128,281 @@ export const AnalyticsPage = () => {
         </p>
       </div>
 
+      {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {analyticsData.map((item, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            whileHover={{ y: -4 }}
-            className="bg-[#1a1d29] rounded-2xl p-7 border border-white/10 hover:border-[#fda481]/50 transition-all"
-          >
-            <div className="flex items-center justify-between mb-5">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#fda481] to-[#b4182d] flex items-center justify-center shadow-2xl">
-                <PieChart className="w-7 h-7 text-white" />
+        {analyticsData.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <div
+              key={index}
+              className="bg-[#1a1d29] rounded-2xl p-7 border border-white/10 hover:border-[#fda481]/50"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div
+                  className={`w-14 h-14 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-2xl`}
+                >
+                  <Icon className="w-7 h-7 text-white" />
+                </div>
+                <span
+                  className={`text-sm font-bold px-3 py-1.5 rounded-full ${
+                    item.trend === "up"
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "bg-rose-500/10 text-rose-400"
+                  }`}
+                >
+                  {item.trend === "up" ? (
+                    <TrendingUp className="w-4 h-4 inline mr-1" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 inline mr-1" />
+                  )}
+                  {item.change}
+                </span>
               </div>
-              <span
-                className={`text-sm font-bold px-3 py-1.5 rounded-full ${
-                  item.trend === "up"
-                    ? "bg-emerald-500/10 text-emerald-400"
-                    : "bg-rose-500/10 text-rose-400"
-                }`}
-              >
-                {item.change}
-              </span>
+              <p className="text-gray-400 text-sm mb-2 font-medium">
+                {item.label}
+              </p>
+              <p className="text-3xl font-bold text-white">{item.value}</p>
             </div>
-            <p className="text-gray-400 text-sm mb-2 font-medium">
-              {item.label}
-            </p>
-            <p className="text-3xl font-bold text-white">{item.value}</p>
-          </motion.div>
-        ))}
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10">
-          <h2 className="text-xl font-bold text-white mb-6">Traffic Sources</h2>
+      {/* Second Row: Order Status & Reviews */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Order Status Distribution */}
+        <div
+          className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white">Order Status</h2>
+            <div className="flex items-center gap-2 text-gray-400">
+              <BarChart3 className="w-5 h-5" />
+              <span className="text-sm font-medium">
+                {totalOrders} Total Orders
+              </span>
+            </div>
+          </div>
           <div className="space-y-5">
-            {["Direct", "Organic Search", "Social Media", "Referral"].map(
-              (source, index) => (
-                <div key={index}>
-                  <div className="flex items-center justify-between mb-3">
+            {orderStats.map((stat, index) => (
+              <div key={index}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
                     <span className="text-base font-bold text-white">
-                      {source}
+                      {stat.label}
                     </span>
-                    <span className="text-base font-bold text-[#fda481]">
-                      {45 - index * 10}%
+                    <span className="text-sm text-gray-400">
+                      ({stat.value} orders)
                     </span>
                   </div>
-                  <div className="h-3 bg-[#0f1117] rounded-full overflow-hidden border border-white/5">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${45 - index * 10}%` }}
-                      transition={{ delay: index * 0.1, duration: 0.6 }}
-                      className="h-full bg-gradient-to-r from-[#fda481] to-[#b4182d] rounded-full"
-                    />
+                  <span className="text-base font-bold text-[#fda481]">
+                    {stat.percentage.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="h-3 bg-[#0f1117] rounded-full overflow-hidden border border-white/5">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${stat.percentage}%` }}
+                    transition={{ delay: 0.3 + index * 0.1, duration: 0.6 }}
+                    className={`h-full bg-gradient-to-r ${stat.color} rounded-full`}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Customer Reviews */}
+        <div
+          className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white">Recent Reviews</h2>
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+              <span className="text-lg font-bold text-white">
+                {averageRating}
+              </span>
+              <span className="text-sm text-gray-400">
+                ({reviewsData?.length || 0})
+              </span>
+            </div>
+          </div>
+          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+            {reviewsData && reviewsData.length > 0 ? (
+              reviewsData.slice(0, 5).map((review, index) => (
+                <div
+                  key={review.id}
+                  className="p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#fda481] to-[#b4182d] flex items-center justify-center text-white font-bold">
+                        {review.customer_name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white text-sm">
+                          {review.customer_name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(review.created_at).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < review.rating
+                              ? "text-yellow-500 fill-yellow-500"
+                              : "text-gray-600"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-300">{review.comment}</p>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-gray-400 py-12">
+                <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                <p className="font-semibold">No reviews yet</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Reviews will appear here
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Third Row: Low Stock & Product Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Low Stock Alert */}
+        <div
+          className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-white">Low Stock Alert</h2>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+              <span className="text-sm font-semibold text-red-400">
+                {lowStockData?.variants?.length || 0} Items
+              </span>
+            </div>
+          </div>
+          <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+            {lowStockData?.variants && lowStockData.variants.length > 0 ? (
+              lowStockData.variants.map((variant, index) => (
+                <div
+                  key={variant.id}
+                  className="flex items-center justify-between p-4 rounded-xl bg-red-500/5 hover:bg-red-500/10  border border-red-500/10"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500/20 to-red-600/20 flex items-center justify-center">
+                      <Package className="w-5 h-5 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-sm">
+                        {variant.name}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Stock: {variant.stock} units
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30">
+                      <span className="text-xs font-bold text-red-400">
+                        Low Stock
+                      </span>
+                    </div>
                   </div>
                 </div>
-              )
+              ))
+            ) : (
+              <div className="text-center text-gray-400 py-12">
+                <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                <p className="font-semibold">All products in stock</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  No low stock alerts
+                </p>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10">
-          <h2 className="text-xl font-bold text-white mb-6">Top Regions</h2>
+        {/* Product Statistics */}
+        <div
+          className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10"
+        >
+          <h2 className="text-xl font-bold text-white mb-6">
+            Product Statistics
+          </h2>
           <div className="space-y-4">
-            {["United States", "United Kingdom", "Canada", "Australia"].map(
-              (region, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#fda481] to-[#b4182d] flex items-center justify-center text-white font-bold shadow-xl">
-                      {index + 1}
-                    </div>
-                    <span className="font-bold text-white">{region}</span>
-                  </div>
-                  <span className="font-bold text-[#fda481] text-base">
-                    {32 - index * 5}%
-                  </span>
+            <div className="flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-blue-500/10 to-blue-600/10 border border-blue-500/20">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-xl">
+                  <Package className="w-6 h-6 text-white" />
                 </div>
-              )
-            )}
+                <div>
+                  <p className="text-sm text-gray-400 mb-1">Total Products</p>
+                  <p className="text-2xl font-bold text-white">
+                    {statusCount?.products?.count || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-xl">
+                  <BarChart3 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400 mb-1">Total Stock</p>
+                  <p className="text-2xl font-bold text-white">
+                    {statusCount?.products?.total_stock || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-purple-500/10 to-purple-600/10 border border-purple-500/20">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-xl">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400 mb-1">Total Users</p>
+                  <p className="text-2xl font-bold text-white">
+                    {statusCount?.users || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 border border-yellow-500/20">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center shadow-xl">
+                  <Star className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400 mb-1">Avg. Rating</p>
+                  <p className="text-2xl font-bold text-white">
+                    {averageRating} / 5.0
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

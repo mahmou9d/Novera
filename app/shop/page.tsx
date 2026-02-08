@@ -156,7 +156,7 @@ const Shop = () => {
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-8 py-3 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="px-8 py-3 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl "
               >
                 Try Again
               </button>
@@ -298,7 +298,7 @@ const Shop = () => {
                     <button
                       onClick={handlePreviousPage}
                       disabled={!hasPrevious || currentPage === 1}
-                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481] transition-all shadow-md"
+                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481]  shadow-md"
                     >
                       <ChevronLeft size={22} />
                     </button>
@@ -320,7 +320,7 @@ const Shop = () => {
                           <button
                             key={pageNum}
                             onClick={() => handlePageClick(pageNum)}
-                            className={`w-12 h-12 rounded-xl font-bold transition-all shadow-md ${
+                            className={`w-12 h-12 rounded-xl font-bold  shadow-md ${
                               currentPage === pageNum
                                 ? "bg-gradient-to-br from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30 scale-110"
                                 : "bg-white border-2 border-gray-200 hover:border-[#fca481] text-gray-700 hover:bg-[#fef5f1]"
@@ -335,7 +335,7 @@ const Shop = () => {
                     <button
                       onClick={handleNextPage}
                       disabled={!hasNext || currentPage === totalPages}
-                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481] transition-all shadow-md"
+                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481]  shadow-md"
                     >
                       <ChevronRight size={22} />
                     </button>
@@ -355,7 +355,7 @@ const Shop = () => {
                 </p>
                 <button
                   onClick={resetFilters}
-                  className="px-8 py-4 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2"
+                  className="px-8 py-4 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-bold shadow-lg hover:shadow-xl  inline-flex items-center gap-2"
                 >
                   <X size={20} />
                   Clear All Filters
@@ -385,7 +385,7 @@ const Shop = () => {
                         placeholder="Find your product..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-gradient-to-r from-gray-50 to-[#fef5f1] border-2 border-transparent rounded-xl focus:border-[#fca481] focus:from-white focus:to-white transition-all outline-none text-sm font-medium"
+                        className="w-full pl-11 pr-4 py-3 bg-gradient-to-r from-gray-50 to-[#fef5f1] border-2 border-transparent rounded-xl focus:border-[#fca481] focus:from-white focus:to-white  outline-none text-sm font-medium"
                       />
                       {searchTerm && (
                         <button
@@ -411,7 +411,7 @@ const Shop = () => {
                         <button
                           key={category.id}
                           onClick={() => setSelectedCategory(category.id)}
-                          className={`px-5 py-3 rounded-xl text-sm font-semibold transition-all text-left relative overflow-hidden group ${
+                          className={`px-5 py-3 rounded-xl text-sm font-semibold  text-left relative overflow-hidden group ${
                             selectedCategory === category.id
                               ? "bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30"
                               : "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-[#fef5f1] hover:to-[#fef5f1] border border-gray-200"
@@ -472,11 +472,11 @@ const Shop = () => {
                   {hasActiveFilters && (
                     <button
                       onClick={resetFilters}
-                      className="w-full px-5 py-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-xl font-bold hover:from-gray-800 hover:to-gray-700 transition-all flex items-center justify-center gap-2 shadow-xl group"
+                      className="w-full px-5 py-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-xl font-bold hover:from-gray-800 hover:to-gray-700  flex items-center justify-center gap-2 shadow-xl group"
                     >
                       <X
                         size={18}
-                        className="group-hover:rotate-90 transition-transform"
+                        className="group-hover:rotate-90"
                       />
                       Reset All Filters
                     </button>

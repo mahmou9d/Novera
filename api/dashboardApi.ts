@@ -37,24 +37,14 @@ export const dashboardAPI = {
     return data;
   },
 
-  getReviewsCount: async (): Promise<ReviewsResponse> => {
-    const { data } = await apiClient.get<ReviewsResponse>(
-      "/dashboard/reviews/",
-    );
-    return data;
-  },
+
   getSalesOrders: async (): Promise<SalesOrdersResponse> => {
     const { data } = await apiClient.get<SalesOrdersResponse>(
       "/charts/sales-orders/",
     );
     return data;
   },
-  getProductLow: async (): Promise<LowStockResponse> => {
-    const { data } = await apiClient.get<LowStockResponse>(
-      "/charts/products/low/",
-    );
-    return data || [];
-  },
+
   getTopSelling: async (): Promise<TopSellingResponse> => {
     const { data } = await apiClient.get<TopSellingResponse>(
       "/charts/products/top-selling/",
@@ -77,6 +67,19 @@ export const dashboardAPI = {
       { email: email },
     );
     return data;
+  },
+  ///
+    getReviewsCount: async (): Promise<ReviewsResponse> => {
+    const { data } = await apiClient.get<ReviewsResponse>(
+      "/dashboard/reviews/",
+    );
+    return data;
+  },
+    getProductLow: async (): Promise<LowStockResponse> => {
+    const { data } = await apiClient.get<LowStockResponse>(
+      "/charts/products/low/",
+    );
+    return data || [];
   },
   //wait
   getOrdersCount: async (): Promise<Counted> => {

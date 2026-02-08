@@ -52,7 +52,7 @@ console.log("🔥 BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
             {/* Logo */}
             <Link
               href="/"
-              className="font-serif text-3xl lg:text-4xl font-bold text-[#FDA481] transition-colors duration-300"
+              className="font-serif text-3xl lg:text-4xl font-bold text-[#FDA481]  "
             >
               Novera
             </Link>
@@ -167,7 +167,7 @@ console.log("🔥 BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
 
         {/* Mobile Menu */}
         <div
-          className={`lg:hidden bg-[#242E49]/98 border-t border-white/10 overflow-hidden transition-all duration-300 ${
+          className={`lg:hidden bg-[#242E49]/98 border-t border-white/10 overflow-hidden   ${
             mobileMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
           }`}
         >
@@ -176,7 +176,7 @@ console.log("🔥 BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
               <button
                 key={link.sectionId}
                 onClick={() => scrollToSection(link.sectionId)}
-                className={`font-sans text-base font-semibold uppercase tracking-wider py-3 border-b border-white/10 hover:pl-3 transition-all text-left ${
+                className={`font-sans text-base font-semibold uppercase tracking-wider py-3 border-b border-white/10 hover:pl-3  text-left ${
                   link.isSpecial
                     ? "text-[#FDA481] hover:text-white"
                     : "text-white hover:text-[#FDA481]"

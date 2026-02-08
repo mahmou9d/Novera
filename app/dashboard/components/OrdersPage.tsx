@@ -212,11 +212,9 @@ console.log(selectedOrder.id);
         <div className="flex items-center gap-3 flex-wrap">
           {/* Custom Status Filter Dropdown */}
           <div className="relative" ref={dropdownRef}>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="px-5 py-3 bg-[#1a1d29] border border-white/10 text-white rounded-xl font-semibold text-sm hover:border-[#fda481]/30 transition-all flex items-center gap-3 min-w-[180px]"
+              className="px-5 py-3 bg-[#1a1d29] border border-white/10 text-white rounded-xl font-semibold text-sm hover:border-[#fda481]/30 flex items-center gap-3 min-w-[180px]"
             >
               <div
                 className={`w-8 h-8 rounded-lg ${selectedOption.bgColor} flex items-center justify-center`}
@@ -231,22 +229,16 @@ console.log(selectedOrder.id);
                   {selectedOption.label}
                 </p>
               </div>
-              <motion.div
-                animate={{ rotate: isDropdownOpen ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
+              <div
               >
                 <ChevronDown className="w-5 h-5 text-gray-400" />
-              </motion.div>
-            </motion.button>
+              </div>
+            </button>
 
             {/* Dropdown Menu */}
             <AnimatePresence>
               {isDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
+                <div
                   className="absolute top-full left-0 mt-2 w-full min-w-[260px] bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
                 >
                   <div className="p-2">
@@ -255,16 +247,13 @@ console.log(selectedOrder.id);
                       const Icon = option.icon;
 
                       return (
-                        <motion.button
+                        <button
                           key={option.value}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.03 }}
                           onClick={() => {
                             setStatusFilter(option.value);
                             setIsDropdownOpen(false);
                           }}
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg  ${
                             isSelected
                               ? "bg-gradient-to-r from-[#fda481]/20 to-[#b4182d]/20 border border-[#fda481]/30"
                               : "hover:bg-white/5 border border-transparent"
@@ -289,15 +278,13 @@ console.log(selectedOrder.id);
                           </div>
 
                           {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
+                            <div
                               className="w-6 h-6 rounded-full bg-[#fda481] flex items-center justify-center flex-shrink-0"
                             >
                               <Check className="w-4 h-4 text-white" />
-                            </motion.div>
+                            </div>
                           )}
-                        </motion.button>
+                        </button>
                       );
                     })}
                   </div>
@@ -327,7 +314,7 @@ console.log(selectedOrder.id);
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
             </AnimatePresence>
           </div>
@@ -342,12 +329,12 @@ console.log(selectedOrder.id);
               placeholder="Search by customer or order ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-[#1a1d29] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 transition-colors"
+              className="w-full pl-12 pr-4 py-3 bg-[#1a1d29] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 "
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white "
               >
                 <X className="w-5 h-5" />
               </button>
@@ -363,12 +350,10 @@ console.log(selectedOrder.id);
           const Icon = option.icon;
 
           return (
-            <motion.button
+            <button
               key={option.value}
               onClick={() => setStatusFilter(option.value)}
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className={`bg-[#1a1d29] rounded-xl p-4 border transition-all ${
+              className={`bg-[#1a1d29] rounded-xl p-4 border  ${
                 statusFilter === option.value
                   ? "border-[#fda481]/50 shadow-lg shadow-[#fda481]/10"
                   : "border-white/10 hover:border-white/20"
@@ -385,13 +370,12 @@ console.log(selectedOrder.id);
               >
                 {option.count}
               </p>
-            </motion.button>
+            </button>
           );
         })}
 
         {/* Total Revenue Card */}
-        <motion.div
-          whileHover={{ scale: 1.03, y: -2 }}
+        <div
           className="bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 rounded-xl p-4 border border-[#fda481]/30"
         >
           <div className="w-10 h-10 rounded-lg bg-[#fda481]/20 flex items-center justify-center mb-3 mx-auto">
@@ -401,7 +385,7 @@ console.log(selectedOrder.id);
           <p className="text-2xl font-bold text-[#fda481]">
             ${ordersData.reduce((sum, o) => sum + (o.total_price || 0), 0)}
           </p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Orders Table */}
@@ -436,12 +420,9 @@ console.log(selectedOrder.id);
             <tbody className="divide-y divide-white/5">
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order, index) => (
-                  <motion.tr
+                  <tr
                     key={order.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    className="hover:bg-white/5 cursor-pointer transition-colors"
+                    className="hover:bg-white/5 cursor-pointer "
                     onClick={() => {
                       setSelectedOrder(order);
                       setTempStatus(null);
@@ -513,19 +494,19 @@ console.log(selectedOrder.id);
                             setSelectedOrder(order);
                             setTempStatus(null);
                           }}
-                          className="p-2.5 rounded-xl hover:bg-white/5 text-[#fda481] transition-colors"
+                          className="p-2.5 rounded-xl hover:bg-white/5 text-[#fda481] "
                         >
                           <Eye className="w-5 h-5" />
                         </button>
                         <button
                           onClick={(e) => e.stopPropagation()}
-                          className="p-2.5 rounded-xl hover:bg-white/5 text-gray-400 transition-colors"
+                          className="p-2.5 rounded-xl hover:bg-white/5 text-gray-400 "
                         >
                           <MoreVertical className="w-5 h-5" />
                         </button>
                       </div>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))
               ) : (
                 <tr>
@@ -563,13 +544,13 @@ console.log(selectedOrder.id);
             <div className="flex items-center gap-2">
               <button
                 disabled={!recentOrders?.previous}
-                className="p-2 rounded-lg hover:bg-white/5 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg hover:bg-white/5 text-gray-400  disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 disabled={!recentOrders?.next}
-                className="p-2 rounded-lg hover:bg-white/5 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg hover:bg-white/5 text-gray-400  disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -581,17 +562,12 @@ console.log(selectedOrder.id);
       {/* Order Detail Modal */}
       <AnimatePresence>
         {selectedOrder && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          <div
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedOrder(null)}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+            <div
+
               className="bg-[#1a1d29] rounded-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
@@ -605,7 +581,7 @@ console.log(selectedOrder.id);
                 </div>
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="p-2 rounded-xl hover:bg-white/5 text-gray-400 transition-colors"
+                  className="p-2 rounded-xl hover:bg-white/5 text-gray-400 "
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -617,12 +593,10 @@ console.log(selectedOrder.id);
                 <div className="flex items-center justify-between gap-4">
                   {/* Change Status Dropdown */}
                   <div className="relative flex-1" ref={statusDropdownRef}>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                    <button
                       onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
                       disabled={patchOrderMutation.isPending}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:border-[#fda481]/30 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:border-[#fda481]/30  flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div className={`w-10 h-10 rounded-lg ${getCurrentStatusOption().bgColor} flex items-center justify-center`}>
                         {/* <getCurrentStatusOption().icon className={`w-5 h-5 ${getCurrentStatusOption().color}`} /> */}
@@ -633,16 +607,13 @@ console.log(selectedOrder.id);
                           {patchOrderMutation.isPending ? "Updating..." : getCurrentStatusOption().label}
                         </p>
                       </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
-                    </motion.button>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
 
                     {/* Status Dropdown Menu */}
                     <AnimatePresence>
                       {isStatusDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        <div
                           className="absolute top-full left-0 right-0 mt-2 bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
                         >
                           <div className="p-2">
@@ -656,7 +627,7 @@ console.log(selectedOrder.id);
                                   key={option.value}
                                   onClick={() => handleStatusChange(option.value as OrderStatus)}
                                   disabled={patchOrderMutation.isPending}
-                                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all disabled:opacity-50 ${
+                                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg  disabled:opacity-50 ${
                                     isSelected
                                       ? "bg-gradient-to-r from-[#fda481]/20 to-[#b4182d]/20 border border-[#fda481]/30"
                                       : "hover:bg-white/5 border border-transparent"
@@ -679,7 +650,7 @@ console.log(selectedOrder.id);
                               );
                             })}
                           </div>
-                        </motion.div>
+                        </div>
                       )}
                     </AnimatePresence>
                   </div>
@@ -705,30 +676,24 @@ console.log(selectedOrder.id);
                 {/* Success/Error Messages */}
                 <AnimatePresence>
                   {patchOrderMutation.isSuccess && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                    <div
                       className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3"
                     >
                       <CheckCircle className="w-5 h-5 text-emerald-400" />
                       <span className="text-emerald-400 font-medium">
                         Order status updated successfully!
                       </span>
-                    </motion.div>
+                    </div>
                   )}
                   {patchOrderMutation.isError && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                    <div
                       className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3"
                     >
                       <AlertCircle className="w-5 h-5 text-red-400" />
                       <span className="text-red-400 font-medium">
                         {errorMessage}
                       </span>
-                    </motion.div>
+                    </div>
                   )}
                 </AnimatePresence>
 
@@ -822,8 +787,8 @@ console.log(selectedOrder.id);
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
       </AnimatePresence>
     </>

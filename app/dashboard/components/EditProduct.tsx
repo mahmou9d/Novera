@@ -373,7 +373,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
           <Plus className="w-5 h-5" />
           Add Product
         </motion.button>
-        <button className="px-7 py-3 bg-[#1a1d29] border border-white/10 text-white rounded-xl font-semibold text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
+        <button className="px-7 py-3 bg-[#1a1d29] border border-white/10 text-white rounded-xl font-semibold text-sm hover:bg-white/5  flex items-center gap-2">
           <Upload className="w-5 h-5" />
           Import
         </button>
@@ -388,7 +388,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
             whileHover={{ y: -4 }}
-            className="bg-[#1a1d29] rounded-2xl p-7 border border-white/10 hover:border-[#fda481]/50 transition-all cursor-pointer"
+            className="bg-[#1a1d29] rounded-2xl p-7 border border-white/10 hover:border-[#fda481]/50  cursor-pointer"
           >
             <div className="flex items-start justify-between mb-5">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 flex items-center justify-center text-4xl border border-white/10">
@@ -437,12 +437,12 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowAddProduct(true)}
-                className="flex-1 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#fda481]/20 hover:shadow-2xl hover:shadow-[#fda481]/30 transition-all"
+                className="flex-1 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-[#fda481]/20 hover:shadow-2xl hover:shadow-[#fda481]/30 "
               >
                 <Edit className="w-4 h-4" />
                 Edit
               </button>
-              <button className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors border border-white/10">
+              <button className="p-3 bg-white/5 rounded-xl hover:bg-white/10  border border-white/10">
                 <Trash2 className="w-5 h-5 text-gray-400" />
               </button>
             </div>
@@ -457,7 +457,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
             onClick={() => setShowAddProduct(false)}
           >
             <motion.div
@@ -479,7 +479,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                 </div>
                 <button
                   onClick={() => setShowAddProduct(false)}
-                  className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/5 rounded-lg "
                 >
                   <X className="w-6 h-6 text-gray-400" />
                 </button>
@@ -505,7 +505,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-6 py-4 text-sm font-semibold relative transition-colors ${
+                    className={`px-6 py-4 text-sm font-semibold relative  ${
                       activeTab === tab.id
                         ? "text-white"
                         : "text-gray-400 hover:text-gray-300"
@@ -678,7 +678,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                         </h3>
 
                         <div className="space-y-4">
-                          <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#fda481]/50 transition-colors bg-[#0f1117]">
+                          <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#fda481]/50  bg-[#0f1117]">
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                               <Upload className="w-10 h-10 text-gray-400 mb-3" />
                               <p className="mb-2 text-sm text-gray-400">
@@ -715,7 +715,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                                   />
                                   <button
                                     onClick={() => removeProductImage(img.id)}
-                                    className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-lg opacity-0 group-hover:opacity-100"
                                   >
                                     <X className="w-4 h-4 text-white" />
                                   </button>
@@ -753,7 +753,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                                 <button
                                   key={color.name}
                                   onClick={() => handleColorToggle(index)}
-                                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+                                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border  ${
                                     color.selected
                                       ? "bg-white/10 border-[#fda481]"
                                       : "bg-[#0f1117] border-white/10 hover:bg-white/5"
@@ -784,7 +784,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                                 <button
                                   key={size.size}
                                   onClick={() => handleSizeToggle(index)}
-                                  className={`px-6 py-2 rounded-lg border font-medium transition-all ${
+                                  className={`px-6 py-2 rounded-lg border font-medium  ${
                                     size.selected
                                       ? "bg-white/10 border-[#fda481] text-white"
                                       : "bg-[#0f1117] border-white/10 text-gray-400 hover:bg-white/5"
@@ -803,7 +803,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                               colors.filter((c) => c.selected).length === 0 ||
                               sizes.filter((s) => s.selected).length === 0
                             }
-                            className="px-6 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-lg font-bold hover:shadow-xl hover:shadow-[#fda481]/30 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-6 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-lg font-bold hover:shadow-xl hover:shadow-[#fda481]/30  flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Plus className="w-5 h-5" />
                             Generate{" "}
@@ -857,7 +857,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                                   >
                                     <td className="py-3 px-4">
                                       <label className="cursor-pointer">
-                                        <div className="w-12 h-12 bg-[#0f1117] border border-white/10 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors overflow-hidden">
+                                        <div className="w-12 h-12 bg-[#0f1117] border border-white/10 rounded-lg flex items-center justify-center hover:bg-white/5  overflow-hidden">
                                           {variant.images.length > 0 ? (
                                             <img
                                               src={variant.images[0]}
@@ -925,7 +925,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                                         onClick={() =>
                                           handleDeleteVariant(index)
                                         }
-                                        className="p-2 bg-white/5 border border-white/10 text-gray-400 rounded hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50 transition-all"
+                                        className="p-2 bg-white/5 border border-white/10 text-gray-400 rounded hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50 "
                                       >
                                         <Trash2 className="w-4 h-4" />
                                       </button>
@@ -1063,7 +1063,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                     resetForm();
                   }}
                   disabled={isLoading}
-                  className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-lg font-semibold hover:bg-white/10 transition-colors disabled:opacity-50"
+                  className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-lg font-semibold hover:bg-white/10  disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -1079,7 +1079,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                         }
                       }}
                       disabled={isLoading}
-                      className="px-6 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-lg font-bold flex items-center gap-2 hover:shadow-xl hover:shadow-[#fda481]/30 transition-all disabled:opacity-50"
+                      className="px-6 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-lg font-bold flex items-center gap-2 hover:shadow-xl hover:shadow-[#fda481]/30  disabled:opacity-50"
                     >
                       Save & Next
                       <ChevronRight className="w-5 h-5" />
@@ -1089,7 +1089,7 @@ export const EditProduct: React.FC<ProductsPageProps> = ({
                     <button
                       onClick={saveProduct}
                       disabled={isLoading}
-                      className="px-6 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-lg font-bold flex items-center gap-2 hover:shadow-xl hover:shadow-[#fda481]/30 transition-all disabled:opacity-50"
+                      className="px-6 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-lg font-bold flex items-center gap-2 hover:shadow-xl hover:shadow-[#fda481]/30  disabled:opacity-50"
                     >
                       {isLoading ? (
                         <>

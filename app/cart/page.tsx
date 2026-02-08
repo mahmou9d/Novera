@@ -191,7 +191,7 @@ const CartPage = () => {
           {cartItems.length > 0 && (
             <button
               onClick={handleClearCart}
-              className="text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl transition-colors"
+              className="text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl"
             >
               Clear Cart
             </button>
@@ -209,7 +209,7 @@ const CartPage = () => {
                   return (
                     <div
                       key={item.id}
-                      className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] transition-all mb-4"
+                      className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] mb-4"
                     >
                       <div className="flex flex-col sm:flex-row gap-5">
                         {/* Image Gallery */}
@@ -234,7 +234,7 @@ const CartPage = () => {
                                 onClick={() =>
                                   prevImage(item.id, item.images.length)
                                 }
-                                className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1 rounded-full opacity-0 group-hover:opacity-100  shadow-md"
                               >
                                 <ChevronLeft
                                   size={16}
@@ -245,7 +245,7 @@ const CartPage = () => {
                                 onClick={() =>
                                   nextImage(item.id, item.images.length)
                                 }
-                                className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1 rounded-full opacity-0 group-hover:opacity-100  shadow-md"
                               >
                                 <ChevronRight
                                   size={16}
@@ -261,7 +261,7 @@ const CartPage = () => {
                                     onClick={() =>
                                       setImageIndex(item.id, index)
                                     }
-                                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                    className={`w-1.5 h-1.5 rounded-full ${
                                       index === currentImageIndex
                                         ? "bg-[#fca481] w-3"
                                         : "bg-white/60 hover:bg-white"
@@ -309,7 +309,7 @@ const CartPage = () => {
                             </div>
                             <button
                               onClick={() => handleRemove(item.id)}
-                              className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                              className="text-gray-400 hover:text-red-500 p-1"
                             >
                               <Trash2 size={20} />
                             </button>
@@ -322,7 +322,7 @@ const CartPage = () => {
                                   handleUpdateQuantity(item.id, -1)
                                 }
                                 disabled={item.quantity <= 1}
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600 hover:bg-[#fca481] hover:text-white transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600 hover:bg-[#fca481] hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600"
                               >
                                 <Minus size={16} />
                               </button>
@@ -332,7 +332,7 @@ const CartPage = () => {
                               <button
                                 onClick={() => handleUpdateQuantity(item.id, 1)}
                                 disabled={item.quantity >= item.maxQuantity}
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600 hover:bg-[#fca481] hover:text-white transition-colors disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600"
+                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600 hover:bg-[#fca481] hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600"
                               >
                                 <Plus size={16} />
                               </button>
@@ -396,7 +396,7 @@ const CartPage = () => {
                   </div>
                 </div>
 
-                <button className="w-full bg-[#fca481] hover:bg-[#fb8c5f] text-white py-4 rounded-xl font-bold text-base shadow-lg transition-all flex items-center justify-center gap-2 mb-6">
+                <button className="w-full bg-[#fca481] hover:bg-[#fb8c5f] text-white py-4 rounded-xl font-bold text-base shadow-lg flex items-center justify-center gap-2 mb-6">
                   <Lock size={20} />
                   Checkout Now
                 </button>
@@ -429,7 +429,7 @@ const CartPage = () => {
             <p className="text-gray-500 mb-8">
               Looks like you haven&apos;t added anything to your cart yet.
             </p>
-            <button className="bg-[#fca481] hover:bg-[#fb8c5f] text-white px-10 py-4 rounded-xl font-bold transition-all">
+            <button className="bg-[#fca481] hover:bg-[#fb8c5f] text-white px-10 py-4 rounded-xl font-bold">
               Explore Products
             </button>
           </div>

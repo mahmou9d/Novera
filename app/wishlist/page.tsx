@@ -99,7 +99,7 @@ const WishlistPage = () => {
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-8 py-3 rounded-xl bg-[#fca481] hover:bg-[#fb8c5f] text-white font-bold transition-all"
+              className="px-8 py-3 rounded-xl bg-[#fca481] hover:bg-[#fb8c5f] text-white font-bold "
             >
               Retry
             </button>
@@ -148,14 +148,9 @@ const WishlistPage = () => {
           {wishlistItems.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {wishlistItems.map((item, index) => (
-                <motion.div
+                <div
                   key={item.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
-                  transition={{ delay: index * 0.08 }}
-                  className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] transition-all"
+                  className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] "
                 >
                   <div className="flex gap-5">
                     {/* Image */}
@@ -209,21 +204,21 @@ const WishlistPage = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => addToCart(item)}
-                          className="flex-1 bg-[#fca481] hover:bg-[#fb8c5f] text-white py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                          className="flex-1 bg-[#fca481] hover:bg-[#fb8c5f] text-white py-2.5 rounded-xl font-bold text-sm  flex items-center justify-center gap-2"
                         >
                           <ShoppingCart size={16} />
                           Add to Cart
                         </button>
                         <button
                           onClick={() => removeItem(Number(item.id))}
-                          className="px-4 py-2.5 rounded-xl border-2 border-gray-200 hover:border-red-400 hover:bg-red-50 text-gray-600 hover:text-red-500 transition-all"
+                          className="px-4 py-2.5 rounded-xl border-2 border-gray-200 hover:border-red-400 hover:bg-red-50 text-gray-600 hover:text-red-500 "
                         >
                           <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           ) : (
@@ -239,7 +234,7 @@ const WishlistPage = () => {
                 Start adding items you love and we&apos;ll keep them safe here
                 for you!
               </p>
-              <button className="bg-[#fca481] hover:bg-[#fb8c5f] text-white px-10 py-4 rounded-xl font-bold transition-all inline-flex items-center gap-2">
+              <button className="bg-[#fca481] hover:bg-[#fb8c5f] text-white px-10 py-4 rounded-xl font-bold  inline-flex items-center gap-2">
                 <ShoppingCart size={20} />
                 Start Shopping
               </button>

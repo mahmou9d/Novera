@@ -158,7 +158,7 @@ export default function FeaturedTrending() {
                 src={mainProduct.image}
                 alt={mainProduct.name}
                 fill
-                className="object-cover  transition-transform duration-700"
+                className="object-cover   "
               />
 
               <div
@@ -181,7 +181,7 @@ export default function FeaturedTrending() {
                   </p>
 
                   {/* Title */}
-                  <h3 className="text-4xl lg:text-5xl font-bold mb-4 group-hover:text-[#FDA481] transition-colors">
+                  <h3 className="text-4xl lg:text-5xl font-bold mb-4 group-hover:text-[#FDA481] ">
                     {mainProduct.name}
                   </h3>
 
@@ -216,7 +216,7 @@ export default function FeaturedTrending() {
                     src={product.image}
                     alt={product.name}
                     fill
-                    className="object-cover transition-transform duration-700"
+                    className="object-cover  "
                   />
 
                   <div
@@ -237,7 +237,7 @@ export default function FeaturedTrending() {
                         {product.category}
                       </p>
 
-                      <h4 className="text-2xl lg:text-3xl font-bold mb-3 group-hover:text-[#FDA481] transition-colors">
+                      <h4 className="text-2xl lg:text-3xl font-bold mb-3 group-hover:text-[#FDA481] ">
                         {product.name}
                       </h4>
 
@@ -276,7 +276,7 @@ export default function FeaturedTrending() {
                   src={product.image}
                   alt={product.name}
                   fill
-                  className="object-cover transition-transform duration-700"
+                  className="object-cover  "
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -307,7 +307,7 @@ export default function FeaturedTrending() {
                   </p>
 
                   <h4
-                    className={`font-bold mb-2 group-hover:text-[#FDA481] transition-colors ${
+                    className={`font-bold mb-2 group-hover:text-[#FDA481]  ${
                       index === 0 ? "text-3xl" : "text-xl"
                     }`}
                   >

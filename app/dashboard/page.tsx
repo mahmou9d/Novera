@@ -9,7 +9,7 @@ import { OrdersPage } from "./components/OrdersPage";
 import { EditProduct } from "./components/EditProduct";
 import { CustomersPage } from "./components/CustomersPage";
 import { AnalyticsPage } from "./components/AnalyticsPage";
-import {  productsData, customersData } from "./data/mockData";
+import { productsData, customersData } from "./data/mockData";
 import { getStatusColor, getStatusIcon } from "@/utils/helpers";
 import { StatType } from "@/type/type";
 import { DollarSign, Package, ShoppingCart, Users } from "lucide-react";
@@ -104,17 +104,7 @@ const CompleteDashboard = () => {
         <Header />
 
         <div className="flex-1 p-8 overflow-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeMenu}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {renderContent()}
-            </motion.div>
-          </AnimatePresence>
+          <div key={activeMenu}>{renderContent()}</div>
         </div>
       </main>
     </div>

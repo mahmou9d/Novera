@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Send, UserPlus, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, Send, UserPlus, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { useMakeAdmin } from "@/hooks/useDashboard";
+import IsLoading from "@/components/IsLoading";
 
 export const CustomersPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -61,9 +62,7 @@ export const CustomersPage: React.FC = () => {
 
       <div className="max-w-2xl">
         {/* Main Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="bg-[#1a1d29] rounded-2xl border border-white/10 overflow-hidden"
         >
           {/* Header */}
@@ -100,35 +99,26 @@ export const CustomersPage: React.FC = () => {
                   }}
                   placeholder="admin@example.com"
                   disabled={makeAdminMutation.isPending}
-                  className="w-full pl-12 pr-4 py-4 bg-[#0f1117] border border-white/10 rounded-xl text-white text-lg placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 focus:ring-2 focus:ring-[#fda481]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full pl-12 pr-4 py-4 bg-[#0f1117] border border-white/10 rounded-xl text-white text-lg placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 focus:ring-2 focus:ring-[#fda481]/20  disabled:opacity-50 disabled:cursor-not-allowed"
                   autoFocus
                 />
               </div>
 
               {/* Error Message */}
-              <AnimatePresence>
                 {(error || makeAdminMutation.isError) && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                  <div
                     className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3"
                   >
                     <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                     <span className="text-red-400 font-medium">
                       {error || "Failed to add admin"}
                     </span>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
 
               {/* Success Message */}
-              <AnimatePresence>
                 {makeAdminMutation.isSuccess && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                  <div
                     className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3"
                   >
                     <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
@@ -136,30 +126,21 @@ export const CustomersPage: React.FC = () => {
                       {makeAdminMutation.data?.message ||
                         "Invitation sent successfully!"}
                     </span>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
             </div>
 
-
             {/* Submit Button */}
-            <motion.button
+            <button
               type="submit"
-              whileHover={{ scale: makeAdminMutation.isPending ? 1 : 1.02 }}
-              whileTap={{ scale: makeAdminMutation.isPending ? 1 : 0.98 }}
               disabled={makeAdminMutation.isPending}
-              className="w-full px-8 py-4 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-xl font-bold text-lg shadow-xl shadow-[#fda481]/25 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full px-8 py-4 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-xl font-bold text-lg shadow-xl shadow-[#fda481]/25 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed "
             >
               {makeAdminMutation.isPending ? (
                 <>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full"
+                  <RefreshCw
+                    className="animate-spin text-[#fca481]"
+                    size={25}
                   />
                   Sending Invitation...
                 </>
@@ -169,15 +150,12 @@ export const CustomersPage: React.FC = () => {
                   Send Invitation
                 </>
               )}
-            </motion.button>
+            </button>
           </form>
-        </motion.div>
+        </div>
 
         {/* Optional: Hint */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+        <div
           className="mt-6 p-6 bg-[#1a1d29]/50 border border-white/5 rounded-xl"
         >
           <div className="flex items-center gap-2 text-gray-400">
@@ -187,7 +165,7 @@ export const CustomersPage: React.FC = () => {
               used once.
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
     </>
   );

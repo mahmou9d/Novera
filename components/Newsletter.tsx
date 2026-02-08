@@ -79,7 +79,7 @@ export default function Newsletter() {
                 {BENEFITS.map((benefit, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-3 bg-white rounded-xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-shadow"
+                    className="flex items-center gap-3 bg-white rounded-xl p-4 shadow-md border border-gray-100 hover:shadow-lg"
                   >
                     <span className="text-2xl">{benefit.icon}</span>
                     <span className="font-sans text-sm text-gray-700 font-medium">
@@ -113,7 +113,7 @@ export default function Newsletter() {
                     Subscribe & Save 15%
                     <ArrowRight
                       size={20}
-                      className="group-hover:translate-x-1 transition-transform"
+                      className="group-hover:translate-x-1"
                     />
                   </button>
                 </form>

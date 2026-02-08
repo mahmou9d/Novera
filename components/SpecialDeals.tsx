@@ -95,7 +95,7 @@ export default function SpecialDeals() {
         </div>
 
         {/* Countdown Timer */}
-        <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 lg:p-12 mb-16 relative overflow-hidden">
+        <div className="bg-white/10 border-2 border-white/20 rounded-3xl p-8 lg:p-12 mb-16 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
           <div className="relative z-10">
@@ -153,7 +153,7 @@ export default function SpecialDeals() {
                   src={deal.image}
                   alt={deal.name}
                   fill
-                  className="object-cover transition-transform duration-500"
+                  className="object-cover"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -204,12 +204,12 @@ export default function SpecialDeals() {
 
         {/* Bottom CTA */}
         <div className="text-center mt-16">
-          <button className="group inline-flex items-center gap-4 bg-white text-[#B4182D] px-12 py-6 rounded-full font-body font-bold text-base uppercase tracking-wider shadow-2xl hover:bg-gray-100 transition-colors">
+          <button className="group inline-flex items-center gap-4 bg-white text-[#B4182D] px-12 py-6 rounded-full font-body font-bold text-base uppercase tracking-wider shadow-2xl hover:bg-gray-100">
             <TrendingUp size={24} />
             View All Deals
             <ArrowRight
               size={20}
-              className="group-hover:translate-x-1 transition-transform"
+              className="group-hover:translate-x-1 "
             />
           </button>
         </div>

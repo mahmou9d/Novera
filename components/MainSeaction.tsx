@@ -148,7 +148,7 @@ const MainSection = () => {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`group relative px-8 py-4 rounded-full font-medium text-sm tracking-wide transition-all duration-500 ${
+                className={`group relative px-8 py-4 rounded-full font-medium text-sm tracking-wide ${
                   activeCategory === cat.id
                     ? "bg-white text-[#181A2F] shadow-2xl"
                     : "bg-white/5 text-white hover:bg-white/10 border border-white/10"

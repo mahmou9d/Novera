@@ -156,7 +156,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             </p>
             <button
               onClick={() => router.push("/")}
-              className="bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white px-8 py-3 rounded-full hover:shadow-xl transition-all inline-flex items-center gap-2 hover:from-[#fd9166] hover:to-[#fca481]"
+              className="bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white px-8 py-3 rounded-full hover:shadow-xl  inline-flex items-center gap-2 hover:from-[#fd9166] hover:to-[#fca481]"
             >
               <ArrowLeft size={18} />
               Back to Home
@@ -176,7 +176,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <button
             onClick={() => router.push("/")}
-            className="hover:text-[#fca481] transition-colors"
+            className="hover:text-[#fca481] "
           >
             Home
           </button>
@@ -217,7 +217,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                     src={productImages[selectedImage]}
                     alt={product.name as string}
                     fill
-                    className={`object-cover transition-transform duration-300 ${
+                    className={`object-cover   ${
                       showImageZoom ? "scale-110" : "scale-100"
                     }`}
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -234,7 +234,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`bg-white rounded-xl overflow-hidden aspect-square relative border-2 transition-all shadow-md ${
+                    className={`bg-white rounded-xl overflow-hidden aspect-square relative border-2  shadow-md ${
                       selectedImage === index
                         ? "border-[#fca481] ring-2 ring-[#fca481] ring-offset-2"
                         : "border-gray-200 hover:border-[#fca481] hover:border-opacity-50"
@@ -336,7 +336,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                     key={option.id}
                     onClick={() => handleVariantChange(option.id)}
                     disabled={option.stock === 0}
-                    className={`px-5 py-2.5 rounded-xl border-2 transition-all text-sm font-medium shadow-sm ${
+                    className={`px-5 py-2.5 rounded-xl border-2  text-sm font-medium shadow-sm ${
                       selectedVariant.id === option.id
                         ? "border-[#fca481] bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg ring-2 ring-[#fca481] ring-opacity-30"
                         : option.stock === 0
@@ -368,7 +368,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                     key={option.id}
                     onClick={() => handleVariantChange(option.id)}
                     disabled={option.stock === 0}
-                    className={`px-5 py-2.5 rounded-xl border-2 transition-all text-sm font-medium shadow-sm min-w-[60px] ${
+                    className={`px-5 py-2.5 rounded-xl border-2  text-sm font-medium shadow-sm min-w-[60px] ${
                       selectedVariant.id === option.id
                         ? "border-[#fca481] bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg ring-2 ring-[#fca481] ring-opacity-30"
                         : option.stock === 0
@@ -414,10 +414,10 @@ const ProductPage = ({ productId }: ProductPageProps) => {
               <label className="text-sm font-semibold text-gray-900">
                 Quantity:
               </label>
-              <div className="flex items-center gap-0 bg-white border-2 border-[#fca481] border-opacity-30 rounded-xl shadow-sm hover:border-opacity-60 transition-all">
+              <div className="flex items-center gap-0 bg-white border-2 border-[#fca481] border-opacity-30 rounded-xl shadow-sm hover:border-opacity-60 ">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-3 hover:bg-[#fef5f1] transition-colors rounded-l-xl text-[#fca481]"
+                  className="p-3 hover:bg-[#fef5f1]  rounded-l-xl text-[#fca481]"
                 >
                   <Minus size={16} />
                 </button>
@@ -428,7 +428,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                   onClick={() =>
                     setQuantity(Math.min(selectedVariant.stock, quantity + 1))
                   }
-                  className="p-3 hover:bg-[#fef5f1] transition-colors rounded-r-xl text-[#fca481]"
+                  className="p-3 hover:bg-[#fef5f1]  rounded-r-xl text-[#fca481]"
                   disabled={quantity >= selectedVariant.stock}
                 >
                   <Plus size={16} />
@@ -443,7 +443,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
               <button
                 onClick={addToCart}
                 disabled={selectedVariant.stock === 0 || isAddingToCart}
-                className="flex-1 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white py-4 rounded-xl font-semibold hover:shadow-2xl disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 shadow-lg hover:from-[#fd9166] hover:to-[#fca481]"
+                className="flex-1 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white py-4 rounded-xl font-semibold hover:shadow-2xl disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed  flex items-center justify-center gap-3 shadow-lg hover:from-[#fd9166] hover:to-[#fca481]"
               >
                 {addedToCart ? (
                   <>
@@ -465,11 +465,11 @@ const ProductPage = ({ productId }: ProductPageProps) => {
               <button
                 onClick={addToWishlist}
                 disabled={isTogglingWishlist}
-                className="border-2 border-gray-300 bg-white rounded-xl px-5 hover:border-[#fca481] hover:bg-[#fef5f1] transition-all disabled:opacity-50 shadow-md"
+                className="border-2 border-gray-300 bg-white rounded-xl px-5 hover:border-[#fca481] hover:bg-[#fef5f1]  disabled:opacity-50 shadow-md"
               >
                 <Heart
                   size={24}
-                  className={`transition-all duration-300 ${
+                  className={`  ${
                     isInWishlist
                       ? "fill-[#fca481] text-[#fca481] scale-110"
                       : "text-gray-600"
@@ -482,21 +482,21 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             <div
               className="grid grid-cols-3 gap-4 pt-8 border-t-2 border-gray-100"
             >
-              <div className="text-center p-4 bg-gradient-to-br from-[#fef5f1] to-white rounded-xl border border-[#fca481] border-opacity-20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="text-center p-4 bg-gradient-to-br from-[#fef5f1] to-white rounded-xl border border-[#fca481] border-opacity-20 shadow-sm hover:shadow-md">
                 <Truck className="mx-auto mb-3 text-[#fca481]" size={28} />
                 <p className="text-sm font-bold text-gray-900 mb-1">
                   Free Shipping
                 </p>
                 <p className="text-xs text-gray-600">On orders $50+</p>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-[#fef5f1] to-white rounded-xl border border-[#fca481] border-opacity-20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="text-center p-4 bg-gradient-to-br from-[#fef5f1] to-white rounded-xl border border-[#fca481] border-opacity-20 shadow-sm hover:shadow-md">
                 <RotateCcw className="mx-auto mb-3 text-[#fca481]" size={28} />
                 <p className="text-sm font-bold text-gray-900 mb-1">
                   Easy Returns
                 </p>
                 <p className="text-xs text-gray-600">Within 30 days</p>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-[#fef5f1] to-white rounded-xl border border-[#fca481] border-opacity-20 shadow-sm hover:shadow-md transition-shadow">
+              <div className="text-center p-4 bg-gradient-to-br from-[#fef5f1] to-white rounded-xl border border-[#fca481] border-opacity-20 shadow-sm hover:shadow-md">
                 <Shield className="mx-auto mb-3 text-[#fca481]" size={28} />
                 <p className="text-sm font-bold text-gray-900 mb-1">
                   Secure Pay
@@ -517,7 +517,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                 {product.description}
               </p>
               {product.material_composition && (
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-[#fca481] hover:border-opacity-40 transition-colors">
+                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-[#fca481] hover:border-opacity-40 ">
                   <span className="font-semibold text-gray-900">
                     Material:{" "}
                   </span>

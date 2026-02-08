@@ -97,7 +97,7 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
             <div
               key={product.id}
               onClick={() => handleProductClick(product.id)}
-              className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-500 cursor-pointer"
+              className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl cursor-pointer"
             >
               {/* Image */}
               <div className="relative w-full h-80 overflow-hidden bg-gray-100">
@@ -112,7 +112,7 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
                 </div>
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100  " />
 
                 {/* Category Badge */}
                 <div className="absolute top-4 left-4 bg-white/90 text-gray-800 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg">
@@ -123,11 +123,11 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
                 <div className="absolute top-4 right-4 flex flex-col gap-3">
                   <button
                     onClick={(e) => addToWishlist(e, product)}
-                    className="p-3 inline-flex items-center bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="p-3 inline-flex items-center bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100  "
                   >
                     <Heart
                       size={20}
-                      className={`transition-colors duration-300 ${
+                      className={`  ${
                         isWishlisted
                           ? "fill-red-500 text-red-500"
                           : "text-red-500"
@@ -137,7 +137,7 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
 
                   <button
                     onClick={(e) => addToCart(e, product)}
-                    className="inline-flex items-center bg-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="inline-flex items-center bg-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100  "
                   >
                     <ShoppingBag size={20} className="text-blue-600" />
                   </button>
@@ -146,7 +146,7 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
 
               {/* Info */}
               <div className="p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
+                <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 ">
                   {product.name}
                 </h3>
 

@@ -212,7 +212,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ stats }) => {
                                 stiffness: 100,
                                 damping: 15,
                               }}
-                              className={`w-full max-w-[50px] rounded-t-xl transition-all duration-300 relative ${
+                              className={`w-full max-w-[50px] rounded-t-xl relative ${
                                 hasData
                                   ? "bg-gradient-to-t from-[#b4182d] via-[#fda481] to-[#ffd4c1] cursor-pointer shadow-lg"
                                   : "bg-gradient-to-t from-white/5 to-white/10"
