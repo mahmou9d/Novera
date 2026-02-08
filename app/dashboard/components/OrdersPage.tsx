@@ -3,9 +3,7 @@
 import React, { JSX, useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plus,
   Filter,
-  Download,
   Eye,
   MoreVertical,
   Search,
@@ -17,16 +15,17 @@ import {
   Phone,
   Calendar,
   DollarSign,
-  ChevronDown,
   Check,
   Clock,
   CreditCard,
   Truck,
   CheckCircle,
   XCircle,
+  ChevronDown,
+  AlertCircle,
 } from "lucide-react";
 import { CustomerStatus, Order, OrderItem, OrderStatus, ProductStatus } from "@/type/type";
-import { useGetRecentOrders } from "@/hooks/useDashboard";
+import { useGetRecentOrders, usePatchOrders } from "@/hooks/useDashboard";
 
 interface OrdersPageProps {
   getStatusColor: (
@@ -89,16 +88,25 @@ const statusOptions = [
   },
 ];
 
+// Status options for changing order status (without "all")
+const orderStatusOptions = statusOptions.filter(opt => opt.value !== "all");
+
 export const OrdersPage: React.FC<OrdersPageProps> = ({
   getStatusColor,
   getStatusIcon,
 }) => {
   const { data: recentOrders } = useGetRecentOrders();
-  const [selectedOrder, setSelectedOrder] = useState<Order|null>(null);
+  const patchOrderMutation = usePatchOrders();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [tempStatus, setTempStatus] = useState<OrderStatus | null>(null);
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   console.log(recentOrders);
 
@@ -122,6 +130,12 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
       ) {
         setIsDropdownOpen(false);
       }
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsStatusDropdownOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -142,6 +156,46 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
     statusOptionsWithCounts.find((opt) => opt.value === statusFilter) ||
     statusOptionsWithCounts[0];
 
+  // Handle status change
+  const handleStatusChange = (newStatus: OrderStatus) => {
+    if (!selectedOrder) return;
+console.log(selectedOrder.id);
+    patchOrderMutation.mutate(
+      {
+        id: String(selectedOrder.id),
+        status: newStatus,
+      },
+      {
+        onSuccess: () => {
+          setTempStatus(newStatus);
+          setIsStatusDropdownOpen(false);
+          // Update selected order locally
+          if (selectedOrder) {
+            setSelectedOrder({
+              ...selectedOrder,
+              status: newStatus,
+            });
+          }
+        },
+        onError: (err) => {
+          // Extract error message from API response
+          const errorMessage =
+            err?.response?.data?.status ||
+            err?.response?.data?.error ||
+            err?.status ||
+            "Failed to add admin. Please try again.";
+            setErrorMessage(errorMessage);
+        },
+      },
+    );
+  };
+
+  // Get current status option
+  const getCurrentStatusOption = () => {
+    const currentStatus = tempStatus || selectedOrder?.status;
+    return orderStatusOptions.find(opt => opt.value === currentStatus) || orderStatusOptions[0];
+  };
+
   return (
     <>
       <div className="mb-10">
@@ -158,9 +212,11 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
         <div className="flex items-center gap-3 flex-wrap">
           {/* Custom Status Filter Dropdown */}
           <div className="relative" ref={dropdownRef}>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="px-5 py-3 bg-[#1a1d29] border border-white/10 text-white rounded-xl font-semibold text-sm hover:border-[#fda481]/30 flex items-center gap-3 min-w-[180px]"
+              className="px-5 py-3 bg-[#1a1d29] border border-white/10 text-white rounded-xl font-semibold text-sm hover:border-[#fda481]/30 transition-all flex items-center gap-3 min-w-[180px]"
             >
               <div
                 className={`w-8 h-8 rounded-lg ${selectedOption.bgColor} flex items-center justify-center`}
@@ -175,84 +231,105 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                   {selectedOption.label}
                 </p>
               </div>
-            </button>
+              <motion.div
+                animate={{ rotate: isDropdownOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              </motion.div>
+            </motion.button>
 
             {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-full min-w-[260px] bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
-                <div className="p-2">
-                  {statusOptionsWithCounts.map((option, index) => {
-                    const isSelected = option.value === statusFilter;
-                    const Icon = option.icon;
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full left-0 mt-2 w-full min-w-[260px] bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+                >
+                  <div className="p-2">
+                    {statusOptionsWithCounts.map((option, index) => {
+                      const isSelected = option.value === statusFilter;
+                      const Icon = option.icon;
 
-                    return (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setStatusFilter(option.value);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg  ${
-                          isSelected
-                            ? "bg-gradient-to-r from-[#fda481]/20 to-[#b4182d]/20 border border-[#fda481]/30"
-                            : "hover:bg-white/5 border border-transparent"
-                        }`}
-                      >
-                        <div
-                          className={`w-10 h-10 rounded-lg ${option.bgColor} flex items-center justify-center shrink-0`}
+                      return (
+                        <motion.button
+                          key={option.value}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.03 }}
+                          onClick={() => {
+                            setStatusFilter(option.value);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                            isSelected
+                              ? "bg-gradient-to-r from-[#fda481]/20 to-[#b4182d]/20 border border-[#fda481]/30"
+                              : "hover:bg-white/5 border border-transparent"
+                          }`}
                         >
-                          <Icon className={`w-5 h-5 ${option.color}`} />
-                        </div>
-
-                        <div className="flex-1 text-left">
-                          <p
-                            className={`font-semibold text-sm ${isSelected ? "text-white" : "text-gray-300"}`}
+                          <div
+                            className={`w-10 h-10 rounded-lg ${option.bgColor} flex items-center justify-center shrink-0`}
                           >
-                            {option.label}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {option.count}{" "}
-                            {option.count === 1 ? "order" : "orders"}
-                          </p>
-                        </div>
-
-                        {isSelected && (
-                          <div className="w-6 h-6 rounded-full bg-[#fda481] flex items-center justify-center flex-shrink-0">
-                            <Check className="w-4 h-4 text-white" />
+                            <Icon className={`w-5 h-5 ${option.color}`} />
                           </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
 
-                {/* Quick Stats Footer */}
-                <div className="border-t border-white/10 p-4 bg-white/5">
-                  <div className="grid grid-cols-2 gap-3 text-center">
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Active</p>
-                      <p className="text-lg font-bold text-emerald-400">
-                        {
-                          ordersData.filter(
-                            (o) =>
-                              o.status === "paid" || o.status === "shipped",
-                          ).length
-                        }
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Pending</p>
-                      <p className="text-lg font-bold text-yellow-400">
-                        {
-                          ordersData.filter((o) => o.status === "pending")
-                            .length
-                        }
-                      </p>
+                          <div className="flex-1 text-left">
+                            <p
+                              className={`font-semibold text-sm ${isSelected ? "text-white" : "text-gray-300"}`}
+                            >
+                              {option.label}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {option.count}{" "}
+                              {option.count === 1 ? "order" : "orders"}
+                            </p>
+                          </div>
+
+                          {isSelected && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-6 h-6 rounded-full bg-[#fda481] flex items-center justify-center flex-shrink-0"
+                            >
+                              <Check className="w-4 h-4 text-white" />
+                            </motion.div>
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Quick Stats Footer */}
+                  <div className="border-t border-white/10 p-4 bg-white/5">
+                    <div className="grid grid-cols-2 gap-3 text-center">
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Active</p>
+                        <p className="text-lg font-bold text-emerald-400">
+                          {
+                            ordersData.filter(
+                              (o) =>
+                                o.status === "paid" || o.status === "shipped",
+                            ).length
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">Pending</p>
+                        <p className="text-lg font-bold text-yellow-400">
+                          {
+                            ordersData.filter((o) => o.status === "pending")
+                              .length
+                          }
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -265,12 +342,12 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
               placeholder="Search by customer or order ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-[#1a1d29] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 "
+              className="w-full pl-12 pr-4 py-3 bg-[#1a1d29] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 transition-colors"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white "
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -286,10 +363,12 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
           const Icon = option.icon;
 
           return (
-            <button
+            <motion.button
               key={option.value}
               onClick={() => setStatusFilter(option.value)}
-              className={`bg-[#1a1d29] rounded-xl p-4 border  ${
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className={`bg-[#1a1d29] rounded-xl p-4 border transition-all ${
                 statusFilter === option.value
                   ? "border-[#fda481]/50 shadow-lg shadow-[#fda481]/10"
                   : "border-white/10 hover:border-white/20"
@@ -306,12 +385,13 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
               >
                 {option.count}
               </p>
-            </button>
+            </motion.button>
           );
         })}
 
         {/* Total Revenue Card */}
-        <div
+        <motion.div
+          whileHover={{ scale: 1.03, y: -2 }}
           className="bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 rounded-xl p-4 border border-[#fda481]/30"
         >
           <div className="w-10 h-10 rounded-lg bg-[#fda481]/20 flex items-center justify-center mb-3 mx-auto">
@@ -321,7 +401,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
           <p className="text-2xl font-bold text-[#fda481]">
             ${ordersData.reduce((sum, o) => sum + (o.total_price || 0), 0)}
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {/* Orders Table */}
@@ -356,10 +436,16 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
             <tbody className="divide-y divide-white/5">
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order, index) => (
-                  <tr
+                  <motion.tr
                     key={order.id}
-                    className="hover:bg-white/5 cursor-pointer"
-                    onClick={() => setSelectedOrder(order)}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className="hover:bg-white/5 cursor-pointer transition-colors"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setTempStatus(null);
+                    }}
                   >
                     <td className="px-6 py-5 whitespace-nowrap">
                       <span className="font-bold text-white text-sm">
@@ -425,20 +511,21 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedOrder(order);
+                            setTempStatus(null);
                           }}
-                          className="p-2.5 rounded-xl hover:bg-white/5 text-[#fda481] "
+                          className="p-2.5 rounded-xl hover:bg-white/5 text-[#fda481] transition-colors"
                         >
                           <Eye className="w-5 h-5" />
                         </button>
                         <button
                           onClick={(e) => e.stopPropagation()}
-                          className="p-2.5 rounded-xl hover:bg-white/5 text-gray-400"
+                          className="p-2.5 rounded-xl hover:bg-white/5 text-gray-400 transition-colors"
                         >
                           <MoreVertical className="w-5 h-5" />
                         </button>
                       </div>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))
               ) : (
                 <tr>
@@ -476,13 +563,13 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
             <div className="flex items-center gap-2">
               <button
                 disabled={!recentOrders?.previous}
-                className="p-2 rounded-lg hover:bg-white/5 text-gray-400  disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg hover:bg-white/5 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 disabled={!recentOrders?.next}
-                className="p-2 rounded-lg hover:bg-white/5 text-gray-400  disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg hover:bg-white/5 text-gray-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -491,13 +578,20 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
         )}
       </div>
 
-      {/* Order Detail Modal - Same as before */}
+      {/* Order Detail Modal */}
+      <AnimatePresence>
         {selectedOrder && (
-          <div
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedOrder(null)}
           >
-            <div
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               className="bg-[#1a1d29] rounded-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
@@ -511,7 +605,7 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                 </div>
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="p-2 rounded-xl hover:bg-white/5 text-gray-400 "
+                  className="p-2 rounded-xl hover:bg-white/5 text-gray-400 transition-colors"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -520,16 +614,77 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
               {/* Content */}
               <div className="p-6 space-y-6">
                 {/* Status & Date */}
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${getStatusColor(
-                      selectedOrder?.status,
-                    )}`}
-                  >
-                    {getStatusIcon(selectedOrder?.status)}
-                    {selectedOrder.status.charAt(0).toUpperCase() +
-                      selectedOrder.status.slice(1)}
-                  </span>
+                <div className="flex items-center justify-between gap-4">
+                  {/* Change Status Dropdown */}
+                  <div className="relative flex-1" ref={statusDropdownRef}>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                      disabled={patchOrderMutation.isPending}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:border-[#fda481]/30 transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <div className={`w-10 h-10 rounded-lg ${getCurrentStatusOption().bgColor} flex items-center justify-center`}>
+                        {/* <getCurrentStatusOption().icon className={`w-5 h-5 ${getCurrentStatusOption().color}`} /> */}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="text-xs text-gray-400">Order Status</p>
+                        <p className="font-bold text-white">
+                          {patchOrderMutation.isPending ? "Updating..." : getCurrentStatusOption().label}
+                        </p>
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                    </motion.button>
+
+                    {/* Status Dropdown Menu */}
+                    <AnimatePresence>
+                      {isStatusDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          className="absolute top-full left-0 right-0 mt-2 bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+                        >
+                          <div className="p-2">
+                            {orderStatusOptions.map((option) => {
+                              const currentStatus = tempStatus || selectedOrder.status;
+                              const isSelected = option.value === currentStatus;
+                              const Icon = option.icon;
+
+                              return (
+                                <button
+                                  key={option.value}
+                                  onClick={() => handleStatusChange(option.value as OrderStatus)}
+                                  disabled={patchOrderMutation.isPending}
+                                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all disabled:opacity-50 ${
+                                    isSelected
+                                      ? "bg-gradient-to-r from-[#fda481]/20 to-[#b4182d]/20 border border-[#fda481]/30"
+                                      : "hover:bg-white/5 border border-transparent"
+                                  }`}
+                                >
+                                  <div className={`w-10 h-10 rounded-lg ${option.bgColor} flex items-center justify-center`}>
+                                    <Icon className={`w-5 h-5 ${option.color}`} />
+                                  </div>
+                                  <div className="flex-1 text-left">
+                                    <p className={`font-semibold text-sm ${isSelected ? "text-white" : "text-gray-300"}`}>
+                                      {option.label}
+                                    </p>
+                                  </div>
+                                  {isSelected && (
+                                    <div className="w-6 h-6 rounded-full bg-[#fda481] flex items-center justify-center">
+                                      <Check className="w-4 h-4 text-white" />
+                                    </div>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Date */}
                   <div className="flex items-center gap-2 text-gray-400">
                     <Calendar className="w-4 h-4" />
                     <span className="text-sm">
@@ -546,6 +701,36 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                     </span>
                   </div>
                 </div>
+
+                {/* Success/Error Messages */}
+                <AnimatePresence>
+                  {patchOrderMutation.isSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3"
+                    >
+                      <CheckCircle className="w-5 h-5 text-emerald-400" />
+                      <span className="text-emerald-400 font-medium">
+                        Order status updated successfully!
+                      </span>
+                    </motion.div>
+                  )}
+                  {patchOrderMutation.isError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3"
+                    >
+                      <AlertCircle className="w-5 h-5 text-red-400" />
+                      <span className="text-red-400 font-medium">
+                        {errorMessage}
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Customer Info */}
                 <div className="bg-white/5 rounded-xl p-5 border border-white/10">
@@ -637,9 +822,10 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
+      </AnimatePresence>
     </>
   );
 };

@@ -1,119 +1,193 @@
 "use client";
 
-import React, { JSX } from "react";
-import { motion } from "framer-motion";
-import { Plus, Mail, Phone, MapPin } from "lucide-react";
-import {
-  CustomerType,
-  OrderStatus,
-  ProductStatus,
-  CustomerStatus,
-} from "@/type/type";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Send, UserPlus, CheckCircle, AlertCircle } from "lucide-react";
+import { useMakeAdmin } from "@/hooks/useDashboard";
 
-interface CustomersPageProps {
-  customers: CustomerType[];
-  getStatusColor: (
-    status: OrderStatus | ProductStatus | CustomerStatus,
-  ) => string;
-  getStatusIcon: (
-    status: OrderStatus | ProductStatus | CustomerStatus,
-  ) => JSX.Element;
-}
+export const CustomersPage: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
 
-export const CustomersPage: React.FC<CustomersPageProps> = ({
-  customers,
-  getStatusColor,
-  getStatusIcon,
-}) => {
+  const makeAdminMutation = useMakeAdmin();
+
+  // Email validation
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Add Admin
+  const handleAddAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email.trim()) {
+      setError("Please enter an email address");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    makeAdminMutation.mutate(email, {
+      onSuccess: (data) => {
+        setEmail("");
+        // يمكنك إضافة toast notification هنا
+        console.log(data.message);
+      },
+      onError: (err) => {
+        // Extract error message from API response
+        const errorMessage =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Failed to add admin. Please try again.";
+        setError(errorMessage);
+      },
+    });
+  };
+
   return (
     <>
       <div className="mb-10">
-        <h1 className="text-4xl font-bold text-white mb-3">
-          Customers Directory
-        </h1>
-        <p className="text-gray-400 text-base">Manage customer relationships</p>
+        <h1 className="text-4xl font-bold text-white mb-3">Add New Admin</h1>
+        <p className="text-gray-400 text-base">
+          Send an invitation to add a new admin user
+        </p>
       </div>
 
-      <div className="flex items-center gap-3 mb-6">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="px-7 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-xl font-bold text-sm shadow-xl shadow-[#fda481]/25 flex items-center gap-2"
+      <div className="max-w-2xl">
+        {/* Main Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#1a1d29] rounded-2xl border border-white/10 overflow-hidden"
         >
-          <Plus className="w-5 h-5" />
-          Add Customer
-        </motion.button>
-        <button className="px-7 py-3 bg-[#1a1d29] border border-white/10 text-white rounded-xl font-semibold text-sm hover:bg-white/5 transition-colors flex items-center gap-2">
-          <Mail className="w-5 h-5" />
-          Send Email
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {customers.map((customer, index) => (
-          <motion.div
-            key={customer.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            whileHover={{ y: -4 }}
-            className="bg-[#1a1d29] rounded-2xl p-7 border border-white/10 hover:border-[#fda481]/50 transition-all cursor-pointer"
-          >
-            <div className="flex items-start gap-4 mb-5">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#fda481] to-[#b4182d] flex items-center justify-center text-white font-bold text-lg shadow-xl">
-                {customer.avatar}
+          {/* Header */}
+          <div className="p-8 border-b border-white/10">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 flex items-center justify-center">
+                <UserPlus className="w-8 h-8 text-[#fda481]" />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-white text-lg mb-1">
-                  {customer.name}
-                </h3>
-                <p className="text-sm text-gray-400 truncate font-medium">
-                  {customer.email}
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1">
+                  Admin Invitation
+                </h2>
+                <p className="text-sm text-gray-400">
+                  Enter the email address of the new admin
                 </p>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-3 mb-5">
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Phone className="w-4 h-4" />
-                <span className="font-medium">{customer.phone}</span>
+          {/* Form */}
+          <form onSubmit={handleAddAdmin} className="p-8">
+            <div className="mb-8">
+              <label className="block text-sm font-bold text-white mb-3">
+                Email Address <span className="text-red-400">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="admin@example.com"
+                  disabled={makeAdminMutation.isPending}
+                  className="w-full pl-12 pr-4 py-4 bg-[#0f1117] border border-white/10 rounded-xl text-white text-lg placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 focus:ring-2 focus:ring-[#fda481]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  autoFocus
+                />
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <MapPin className="w-4 h-4" />
-                <span className="font-medium">{customer.location}</span>
-              </div>
+
+              {/* Error Message */}
+              <AnimatePresence>
+                {(error || makeAdminMutation.isError) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3"
+                  >
+                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                    <span className="text-red-400 font-medium">
+                      {error || "Failed to add admin"}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Success Message */}
+              <AnimatePresence>
+                {makeAdminMutation.isSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3"
+                  >
+                    <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                    <span className="text-emerald-400 font-medium">
+                      {makeAdminMutation.data?.message ||
+                        "Invitation sent successfully!"}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-5">
-              <div className="bg-[#0f1117] rounded-xl p-4 border border-white/5">
-                <p className="text-xs text-gray-400 mb-1 font-medium">Orders</p>
-                <p className="font-bold text-white text-lg">
-                  {customer.orders}
-                </p>
-              </div>
-              <div className="bg-[#0f1117] rounded-xl p-4 border border-white/5">
-                <p className="text-xs text-gray-400 mb-1 font-medium">Spent</p>
-                <p className="font-bold text-[#fda481] text-lg">
-                  {customer.totalSpent}
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(
-                  customer.status,
-                )}`}
-              >
-                {getStatusIcon(customer.status)}
-                {customer.status}
-              </span>
-              <span className="text-xs text-gray-400 font-medium">
-                {customer.joinDate}
-              </span>
-            </div>
-          </motion.div>
-        ))}
+            {/* Submit Button */}
+            <motion.button
+              type="submit"
+              whileHover={{ scale: makeAdminMutation.isPending ? 1 : 1.02 }}
+              whileTap={{ scale: makeAdminMutation.isPending ? 1 : 0.98 }}
+              disabled={makeAdminMutation.isPending}
+              className="w-full px-8 py-4 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-xl font-bold text-lg shadow-xl shadow-[#fda481]/25 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {makeAdminMutation.isPending ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full"
+                  />
+                  Sending Invitation...
+                </>
+              ) : (
+                <>
+                  <Send className="w-6 h-6" />
+                  Send Invitation
+                </>
+              )}
+            </motion.button>
+          </form>
+        </motion.div>
+
+        {/* Optional: Hint */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-6 p-6 bg-[#1a1d29]/50 border border-white/5 rounded-xl"
+        >
+          <div className="flex items-center gap-2 text-gray-400">
+            <AlertCircle className="w-4 h-4" />
+            <p className="text-sm">
+              Make sure the email address is correct. The invitation can only be
+              used once.
+            </p>
+          </div>
+        </motion.div>
       </div>
     </>
   );

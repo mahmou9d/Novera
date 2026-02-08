@@ -16,6 +16,7 @@ export const dashboardKeys = {
   reviewsCount: () => [...dashboardKeys.all, "reviews", "count"] as const,
   users: () => [...dashboardKeys.all, "users"] as const,
   usersCount: () => [...dashboardKeys.users(), "count"] as const,
+  admins: () => [...dashboardKeys.users(), "admins"] as const,
   sales: () => [...dashboardKeys.all, "sales"] as const,
   totalSales: () => [...dashboardKeys.sales(), "total"] as const,
   salesOrders: () => [...dashboardKeys.sales(), "orders"] as const,
@@ -100,7 +101,7 @@ export const usePatchOrders = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: { id: number; status: OrderStatus }) =>
+    mutationFn: (payload: { id: string; status: OrderStatus }) =>
       dashboardAPI.patchOrders(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: dashboardKeys.orders() });
@@ -114,6 +115,29 @@ export const usePatchOrders = () => {
       //     error?.response?.data?.message ||
       //     error?.response?.data?.error ||
       //     "فشل تحديث حالة الطلب";
+      // toast.error(message);
+    },
+  });
+};
+
+export const useMakeAdmin = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (email: string) => dashboardAPI.makeAdmin(email),
+    onSuccess: (data) => {
+      // Invalidate admins query if you have one
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.admins() });
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.users() });
+      // toast.success(data.message || "Admin added successfully");
+      console.log("Success:", data.message);
+    },
+    onError: (error: any) => {
+      console.error("Make admin failed:", error);
+      // const message =
+      //   error?.response?.data?.message ||
+      //   error?.response?.data?.error ||
+      //   "Failed to add admin";
       // toast.error(message);
     },
   });

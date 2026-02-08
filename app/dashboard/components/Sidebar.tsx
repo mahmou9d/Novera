@@ -7,7 +7,6 @@ import {
   ShoppingCart,
   Package,
   Users,
-  Settings,
   BarChart3,
   ShoppingBag,
   Menu,
@@ -29,7 +28,6 @@ const menuItems: MenuItemType[] = [
   { id: "products", icon: Package, label: "Products" },
   { id: "customers", icon: Users, label: "Customers" },
   { id: "analytics", icon: BarChart3, label: "Analytics" },
-  { id: "settings", icon: Settings, label: "Settings" },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({

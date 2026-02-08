@@ -9,7 +9,6 @@ import { OrdersPage } from "./components/OrdersPage";
 import { EditProduct } from "./components/EditProduct";
 import { CustomersPage } from "./components/CustomersPage";
 import { AnalyticsPage } from "./components/AnalyticsPage";
-import { SettingsPage } from "./components/SettingsPage";
 import {  productsData, customersData } from "./data/mockData";
 import { getStatusColor, getStatusIcon } from "@/utils/helpers";
 import { StatType } from "@/type/type";
@@ -87,8 +86,6 @@ const CompleteDashboard = () => {
         );
       case "analytics":
         return <AnalyticsPage />;
-      case "settings":
-        return <SettingsPage />;
       default:
         return <DashboardPage stats={stats} />;
     }

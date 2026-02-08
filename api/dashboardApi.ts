@@ -62,12 +62,19 @@ export const dashboardAPI = {
     return data || [];
   },
   patchOrders: async (payload: {
-    id: number;
+    id: string;
     status: OrderStatus;
   }): Promise<Order> => {
     const { data } = await apiClient.patch<Order>(
       `/dashboard/order/${payload.id}/`,
       { status: payload.status },
+    );
+    return data;
+  },
+  makeAdmin: async (email: string): Promise<{message: string}> => {
+    const { data } = await apiClient.post<{ message: string }>(
+      `/dashboard/make-admin/`,
+      { email: email },
     );
     return data;
   },
