@@ -25,7 +25,7 @@ interface SidebarProps {
 
 const menuItems: MenuItemType[] = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { id: "orders", icon: ShoppingCart, label: "Orders", badge: "12" },
+  { id: "orders", icon: ShoppingCart, label: "Orders" },
   { id: "products", icon: Package, label: "Products" },
   { id: "customers", icon: Users, label: "Customers" },
   { id: "analytics", icon: BarChart3, label: "Analytics" },
@@ -134,10 +134,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <div className="flex items-center gap-3 p-3.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
               <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#fda481] to-[#b4182d] flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                JD
+                MF
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-white text-sm">John Doe</p>
+                <p className="font-bold text-white text-sm">Mohamed Foaud</p>
                 <p className="text-xs text-gray-500">Administrator</p>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-gray-400 transition-colors" />

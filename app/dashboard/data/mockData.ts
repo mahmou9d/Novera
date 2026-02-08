@@ -7,44 +7,7 @@ import {
 } from "lucide-react";
 
 
-export const stats: StatType[] = [
-    {
-        id: 1,
-        title: "Total Revenue",
-        value: "$245,680",
-        change: "+12.5%",
-        trend: "up",
-        icon: DollarSign,
-        gradient: "from-[#fda481] to-[#b4182d]",
-    },
-    {
-        id: 2,
-        title: "Total Orders",
-        value: "1,234",
-        change: "+8.2%",
-        trend: "up",
-        icon: ShoppingCart,
-        gradient: "from-[#b4182d] to-[#54162b]",
-    },
-    {
-        id: 3,
-        title: "New Customers",
-        value: "892",
-        change: "+15.3%",
-        trend: "up",
-        icon: Users,
-        gradient: "from-[#37415c] to-[#242e49]",
-    },
-    {
-        id: 4,
-        title: "Active Products",
-        value: "456",
-        change: "-2.4%",
-        trend: "down",
-        icon: Package,
-        gradient: "from-[#fda481] to-[#b4182d]",
-    },
-];
+
 
 export const ordersData: OrderType[] = [
     {

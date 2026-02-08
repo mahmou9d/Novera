@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import {
   ProductType,
-  OrderStatus2,
+  OrderStatus,
   ProductStatus,
   CustomerStatus,
   Product,
@@ -29,10 +29,10 @@ import {
 interface ProductsPageProps {
   products: ProductType[];
   getStatusColor: (
-    status: OrderStatus2 | ProductStatus | CustomerStatus,
+    status: OrderStatus | ProductStatus | CustomerStatus,
   ) => string;
   getStatusIcon: (
-    status: OrderStatus2 | ProductStatus | CustomerStatus,
+    status: OrderStatus| ProductStatus | CustomerStatus,
   ) => JSX.Element;
 }
 

@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BASE_URL:
       process.env.NEXT_PUBLIC_BASE_URL ||
-      "https://web-production-1ab2d.up.railway.app/api/",
+      "https://web-production-1ab2d.up.railway.app/api",
   },
   images: {
     remotePatterns: [

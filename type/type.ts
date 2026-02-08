@@ -94,65 +94,15 @@ export interface AddReviewRequest {
   comment: string;
   rating: number;
 }
-
-type OrderItem = {
-  id: number;
-  product_name: string;
-  price: string;
-  quantity: number;
-  subtotal: number;
-};
-
-export type OrderStatus =
-  | "pending"
-  | "paid"
-  | "shipped"
-  | "delivered"
-  | "cancelled"
-  ;
-
-export type OrderRecent = {
-  id: number;
-  customer: string;
-  full_name: string;
-  email: string;
-  phone_number: string;
-  full_address: string;
-  country: string;
-  status: OrderStatus;
-  order_notes: string;
-  total_price: number;
-  created: string; // يمكن تحويلها لاحقًا إلى Date إذا أحببت
-  items: OrderItem[];
-};
-export interface RecentOrdersData {
-  orders: OrderRecent[];
-  count: number;
-  next: string | null;
-  previous: string | null;
-}
-export interface RecentOrdersDatares {
-  results: OrderRecent[];
-  count: number;
-  next: string | null;
-  previous: string | null;
-}
 export interface SalesOrder {
   month: string;
   orders: number;
   sales: number;
 }
 
-export interface TopSellingProduct {
-  id: number;
-  name: string;
-  sales: number;
-}
+
 
 // Response Types
-export interface OrderRecentResponse {
-  orders: OrderRecent[];
-}
 
 export interface OrdersCountResponse {
   orders: string;
@@ -168,10 +118,6 @@ export interface UsersCountResponse {
 
 export interface TotalSalesResponse {
   total_sales: number;
-}
-
-export interface TopSellingResponse {
-  topSelling: TopSellingProduct[];
 }
 export interface TProduct {
   id: number;
@@ -214,9 +160,8 @@ export interface Counted {
   pending: string;
   delivered: string;
   cancelled?: string;
-  paid?: string
+  paid?: string;
 }
-
 
 export type MenuItemType = {
   id: string;
@@ -363,7 +308,106 @@ export interface CartItem {
 
 // Type للمنتج
 
-
-export interface ReviewsResponse {
-  reviews: TReview[];
+export interface OrderItem {
+  variant_name: string;
+  quantity: number;
+  price: string;
+  subtotal: number;
 }
+
+export interface Order {
+  id: string;
+  status: OrderStatus;
+  total_price: number;
+  created_at: string;
+  items: OrderItem[];
+  full_name: string;
+  full_address: string;
+  phone_number: string;
+  country: string;
+}
+
+export interface RecentOrdersDatares {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Order[];
+}
+
+export interface RecentOrdersData {
+  orders: Order[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
+export interface Order {
+  message: string;
+  status:OrderStatus
+}
+export type OrderStatus =
+  | "pending"
+  | "paid"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+export interface ProductsStats {
+  count: number;
+  total_stock: number;
+}
+
+export interface OrdersStats {
+  total: number;
+  pending: number;
+  paid: number;
+  delivered: number;
+  shipped: number;
+  cancelled: number;
+}
+
+export interface DashboardStats {
+  sales: number;
+  products: ProductsStats;
+  users: number;
+  orders: OrdersStats;
+}
+
+export interface Review {
+  id: number;
+  customer_name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
+export type ReviewsResponse = Review[];
+
+
+export interface SalesOrder {
+  name: string;
+  orders: number;
+  sales: number;
+}
+
+export type SalesOrdersResponse = SalesOrder[];
+
+export interface ProductVariant {
+  id: number;
+  name: string;
+  stock: number;
+}
+
+export interface LowStockResponse {
+  variants: ProductVariant[];
+}
+
+export interface TopSellingProduct {
+  product__name: string;
+  color_name: string;
+  total_sold: number;
+}
+
+export interface TopSellingResponse {
+  topSelling: TopSellingProduct[];
+}
+

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Plus, Mail, Phone, MapPin } from "lucide-react";
 import {
   CustomerType,
-  OrderStatus2,
+  OrderStatus,
   ProductStatus,
   CustomerStatus,
 } from "@/type/type";
@@ -13,10 +13,10 @@ import {
 interface CustomersPageProps {
   customers: CustomerType[];
   getStatusColor: (
-    status: OrderStatus2 | ProductStatus | CustomerStatus,
+    status: OrderStatus | ProductStatus | CustomerStatus,
   ) => string;
   getStatusIcon: (
-    status: OrderStatus2 | ProductStatus | CustomerStatus,
+    status: OrderStatus | ProductStatus | CustomerStatus,
   ) => JSX.Element;
 }
 

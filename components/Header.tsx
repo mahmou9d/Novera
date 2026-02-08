@@ -22,7 +22,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const { isAuthenticated, isLoading, logout } = useAuth();
+  const { isAuthenticated, isLoading, logout,isAdmin } = useAuth();
   const { data: cartItems = [] } = useGetCartItems();
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -117,14 +117,24 @@ console.log("🔥 BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
               {!isLoading && (
                 <>
                   {isAuthenticated ? (
-                    <motion.button
-                      onClick={handleLogout}
-                      className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-8 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] shadow-xl"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Logout
-                    </motion.button>
+                    <div className="flex gap-1">
+                      <motion.button
+                        onClick={handleLogout}
+                        className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-5 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] shadow-xl"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Logout
+                      </motion.button>
+                      {isAdmin && (
+                        <Link
+                          href="/dashboard"
+                          className="hidden lg:flex items-center gap-2 bg-[#FDA481] text-[#181A2F] px-5 py-3 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-[#181A2F] shadow-xl"
+                        >
+                          dashboard
+                        </Link>
+                      )}
+                    </div>
                   ) : (
                     <motion.div
                       whileHover={{ scale: 1.05 }}
@@ -146,9 +156,8 @@ console.log("🔥 BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="lg:hidden text-white hover:text-[#FDA481]"
                 aria-label="Menu"
-                
               >
-                <div >
+                <div>
                   {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
                 </div>
               </button>
@@ -181,12 +190,20 @@ console.log("🔥 BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
             {!isLoading && (
               <>
                 {isAuthenticated ? (
-                  <button
-                    onClick={handleLogout}
-                    className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white text-center mt-4 shadow-xl"
-                  >
-                    Logout
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={handleLogout}
+                      className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white text-center mt-4 shadow-xl"
+                    >
+                      Logout
+                    </button>
+                    <Link
+                      href="/dashboard"
+                      className="bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white text-center mt-4 shadow-xl"
+                    >
+                      Dashboard
+                    </Link>
+                  </div>
                 ) : (
                   <Link
                     href="/login"
