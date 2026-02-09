@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { CheckoutFormData } from "@/app/cart/Checkoutform";
+import { CheckoutFormData } from "@/components/Checkoutform";
 import { apiClient } from "@/lib/apiClient";
 export interface CheckoutSessionResponse {
   url: string;

@@ -3,7 +3,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { paymentAPI, PayPalCapture } from "../api/paymentApi";
-import { CheckoutFormData } from "@/app/cart/Checkoutform";
+import { CheckoutFormData } from "@/components/Checkoutform";
 // import { toast } from "react-hot-toast";
 
 // Stripe Checkout Session
@@ -38,9 +38,9 @@ export const useCreatePayPalOrder = () => {
       console.log("PayPal order created:", data);
       // toast.success("جاري تحويلك لـ PayPal...");
 
-    //   if (data.approval_url) {
-    //     window.location.href = data.approval_url;
-    //   }
+      //   if (data.approval_url) {
+      //     window.location.href = data.approval_url;
+      //   }
     },
     onError: (error: any) => {
       console.error("Create PayPal order failed:", error);
