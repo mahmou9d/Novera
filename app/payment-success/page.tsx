@@ -104,14 +104,14 @@ const PaymentSuccess = () => {
           <div
             className="bg-white/30 rounded-2xl p-6 mb-6 space-y-4"
           >
-            <div className="flex justify-between items-center">
+            {paymentData?.data.id&&<div className="flex justify-between items-center">
               <span className="text-sm font-semibold text-[#37415C]">
                 Transaction ID
               </span>
               <span className="text-sm font-bold text-[#181A2F]">
                 {paymentData?.data.id || "#TXN123456789"}
               </span>
-            </div>
+            </div>}
             
             <div className="h-px bg-[#37415C]/20" />
             <div className="flex justify-between items-center">
