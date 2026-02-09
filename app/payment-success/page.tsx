@@ -55,8 +55,8 @@ const PaymentSuccess = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FDA481]/10 via-white to-[#B4182D]/10 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="animate-spin text-[#fca481]" size={20} />
-          <p className="text-xl font-bold text-[#181A2F]">
+          <RefreshCw className="animate-spin text-[#fca481]" size={50} />
+          <p className="text-3xl font-bold text-[#181A2F]">
             Processing payment...
           </p>
         </div>
@@ -112,8 +112,6 @@ const PaymentSuccess = () => {
                 {paymentData?.data.id || "#TXN123456789"}
               </span>
             </div>
-
-            <div className="h-px bg-[#37415C]/20" />
             
             <div className="h-px bg-[#37415C]/20" />
             <div className="flex justify-between items-center">
