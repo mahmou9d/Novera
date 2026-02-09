@@ -54,9 +54,9 @@ const PaymentSuccess = () => {
   if (isProcessing || isPending) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FDA481]/10 via-white to-[#B4182D]/10 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="animate-spin text-[#fca481]" size={50} />
-          <p className="text-3xl font-bold text-[#181A2F]">
+        <div className="text-center flex gap-2">
+          <RefreshCw className="animate-spin text-[#fca481]" size={30} />
+          <p className="text-2xl font-bold text-[#181A2F]">
             Processing payment...
           </p>
         </div>
