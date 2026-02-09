@@ -112,15 +112,7 @@ const PaymentSuccess = () => {
                 {paymentData?.data.id || "#TXN123456789"}
               </span>
             </div>
-            <div className="h-px bg-[#37415C]/20" />
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-semibold text-[#37415C]">
-                Amount Paid
-              </span>
-              <span className="text-2xl font-black text-[#B4182D]">
-                ${paymentData?.data.status}
-              </span>
-            </div>
+
             <div className="h-px bg-[#37415C]/20" />
             
             <div className="h-px bg-[#37415C]/20" />
