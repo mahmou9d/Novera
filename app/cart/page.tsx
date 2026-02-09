@@ -26,6 +26,14 @@ import {
 import { CartItem as APICartItem } from "@/type/type";
 import IsLoading from "@/components/IsLoading";
 import Notification from "@/components/Notification";
+import {
+  usePlaceOrder,
+  useCreatePayPalOrder,
+  useCreateStripeSession,
+} from "@/hooks/usePayment";
+import CheckoutForm, { CheckoutFormData } from "./Checkoutform";
+import PaymentMethodModal from "./PaymentMethodModal";
+import { useSearchParams } from "next/navigation";
 
 // UI Types
 interface CartItemUI {
@@ -76,16 +84,23 @@ const convertCartItemToUI = (item: APICartItem): CartItemUI => {
 
 // Main Cart Page
 const CartPage = () => {
+  const searchParams = useSearchParams();
   const [notification, setNotification] = useState<Notification | null>(null);
   const [imageIndexes, setImageIndexes] = useState<{ [key: number]: number }>(
     {},
   );
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState<number | null>(null);
 
   // API Hooks
   const { data: apiCartItems = [], isLoading } = useGetCartItems();
   const updateQuantityMutation = useUpdateCartQuantity();
   const removeItemMutation = useRemoveFromCart();
   const clearCartMutation = useClearCart();
+  const placeOrderMutation = usePlaceOrder();
+  const createPayPalOrderMutation = useCreatePayPalOrder();
+  const createStripeSessionMutation = useCreateStripeSession();
 
   const cartItems = useMemo(
     () => apiCartItems.map(convertCartItemToUI),
@@ -140,6 +155,97 @@ const CartPage = () => {
     }
   };
 
+  const handleCheckoutSubmit = (formData: CheckoutFormData) => {
+    console.log("Checkout form data:", formData);
+
+    placeOrderMutation.mutate(formData, {
+      onSuccess: (data) => {
+        console.log("Order placed successfully:", data);
+        showNotification("Order placed successfully!", "success");
+
+        // Store the order ID and show payment method selection
+        if (data.order_id) {
+          localStorage.setItem("order_id", data.order_id.toString());
+          setCurrentOrderId(data.order_id);
+          setShowCheckoutForm(false);
+          setShowPaymentMethodModal(true);
+        }
+      },
+      onError: (error: any) => {
+        console.error("Place order failed:", error);
+        const message =
+          error?.response?.data?.message || "Failed to place order";
+        showNotification(message, "error");
+      },
+    });
+  };
+
+  const handlePayPalPayment = () => {
+    if (!currentOrderId) return;
+
+createPayPalOrderMutation.mutate(currentOrderId, {
+  onSuccess: (data) => {
+    console.log("PayPal order created:", data);
+    showNotification("Redirecting to PayPal...", "success");
+
+    const approveLink = data?.links?.find(
+      (link: any) => link.rel === "approve",
+    );
+
+    if (approveLink?.href) {
+      // ✅ تحويل href إلى URL
+      const url = new URL(approveLink.href);
+
+      // ✅ استخراج token
+      const token = url.searchParams.get("token");
+
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+      // ✅ التحويل إلى PayPal
+      window.location.href = approveLink.href;
+    } else if (data?.links?.length > 0) {
+      // fallback
+      window.location.href = data.links[0].href;
+    }
+  },
+
+  onError: (error: any) => {
+    console.error("PayPal payment failed:", error);
+
+    const message =
+      error?.response?.data?.message || "Failed to create PayPal payment";
+
+    showNotification(message, "error");
+    setShowPaymentMethodModal(false);
+  },
+});
+
+  };
+
+  const handleStripePayment = () => {
+    if (!currentOrderId) return;
+
+    createStripeSessionMutation.mutate(currentOrderId, {
+      onSuccess: (data) => {
+        console.log("Stripe session created:", data);
+        showNotification("Redirecting to Stripe...", "success");
+
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      },
+      onError: (error: any) => {
+        console.error("Stripe payment failed:", error);
+        const message =
+          error?.response?.data?.message || "Failed to create Stripe payment";
+        showNotification(message, "error");
+        setShowPaymentMethodModal(false);
+      },
+    });
+  };
+
   const nextImage = (itemId: number, totalImages: number) => {
     setImageIndexes((prev) => ({
       ...prev,
@@ -169,9 +275,25 @@ const CartPage = () => {
 
       {/* Notification Toast */}
       {notification && (
-        <Notification
-          message={notification.message}
-          type={notification.type}
+        <Notification message={notification.message} type={notification.type} />
+      )}
+
+      {/* Checkout Form Modal */}
+      {showCheckoutForm && (
+        <CheckoutForm
+          onClose={() => setShowCheckoutForm(false)}
+          onSubmit={handleCheckoutSubmit}
+          isSubmitting={placeOrderMutation.isPending}
+          totalAmount={total}
+        />
+      )}
+
+      {/* Payment Method Selection Modal */}
+      {showPaymentMethodModal && (
+        <PaymentMethodModal
+          onClose={() => setShowPaymentMethodModal(false)}
+          onSelectPayPal={handlePayPalPayment}
+          onSelectStripe={handleStripePayment}
         />
       )}
 
@@ -396,7 +518,10 @@ const CartPage = () => {
                   </div>
                 </div>
 
-                <button className="w-full bg-[#fca481] hover:bg-[#fb8c5f] text-white py-4 rounded-xl font-bold text-base shadow-lg flex items-center justify-center gap-2 mb-6">
+                <button
+                  onClick={() => setShowCheckoutForm(true)}
+                  className="w-full bg-[#fca481] hover:bg-[#fb8c5f] text-white py-4 rounded-xl font-bold text-base shadow-lg flex items-center justify-center gap-2 mb-6"
+                >
                   <Lock size={20} />
                   Checkout Now
                 </button>
