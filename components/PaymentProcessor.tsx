@@ -77,7 +77,7 @@ export default function PaymentProcessor() {
       <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
         {(status === "processing" || status === "success") && (
           <>
-            <RefreshCw className="animate-spin text-[#fca481] mx-auto mb-4" size={20} />
+            <RefreshCw className="animate-spin text-[#fca481] mx-auto mb-4" size={50} />
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               Processing Payment...
             </h3>
