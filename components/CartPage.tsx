@@ -12,6 +12,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  Package,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -102,19 +103,15 @@ const CartPage = () => {
   const createPayPalOrderMutation = useCreatePayPalOrder();
   const createStripeSessionMutation = useCreateStripeSession();
 
-  const cartItems = useMemo(
-    () => apiCartItems.map(convertCartItemToUI),
-    [apiCartItems],
-  );
-
+console.log(apiCartItems, "mmmmmmmmmmmmm");
   const { subtotal, shipping, total } = useMemo(() => {
-    const sub = cartItems.reduce(
-      (acc, item) => acc + item.price * item.quantity,
+    const sub = apiCartItems.reduce(
+      (acc, item) => acc + Number(item.price) * item.quantity,
       0,
     );
     const ship = sub > 500 || sub === 0 ? 0 : 20.0;
     return { subtotal: sub, shipping: ship, total: sub + ship };
-  }, [cartItems]);
+  }, [apiCartItems]);
 
   const showNotification = useCallback(
     (message: string, type: "success" | "error" = "success") => {
@@ -124,20 +121,35 @@ const CartPage = () => {
     [],
   );
 
-  const handleUpdateQuantity = (id: number, delta: number) => {
-    const item = cartItems.find((i) => i.id === id);
-    if (!item) return;
-    const newQty = item.quantity + delta;
+const handleUpdateQuantity = (id: number, delta: number) => {
+  const item = apiCartItems.find((i) => i.id === id);
+  if (!item) return;
+  const newQty = item.quantity + delta;
 
-    if (newQty > 0 && newQty <= item.maxQuantity) {
-      updateQuantityMutation.mutate(
-        { itemId: id, quantity: newQty },
-        {
-          onError: () => showNotification("Failed to update quantity", "error"),
+  // لو بيحاول يزود فوق الـ stock المتاح
+  if (delta > 0 && newQty >Number(item.variant?.stock)) {
+    showNotification(
+      `Maximum available quantity is ${item.variant?.stock}`,
+      "error",
+    );
+    return;
+  }
+
+  if (newQty > 0) {
+    updateQuantityMutation.mutate(
+      { itemId: id, quantity: newQty },
+      {
+        onSuccess: () => showNotification("Quantity updated successfully"),
+        onError: (error: any) => {
+          // عرض رسالة الـ API لو في error
+          const message =
+            error?.response?.data?.message || "Failed to update quantity";
+          showNotification(message, "error");
         },
-      );
-    }
-  };
+      },
+    );
+  }
+};
 
   const handleRemove = (id: number) => {
     removeItemMutation.mutate(id, {
@@ -245,26 +257,26 @@ const CartPage = () => {
     });
   };
 
-  const nextImage = (itemId: number, totalImages: number) => {
-    setImageIndexes((prev) => ({
-      ...prev,
-      [itemId]: ((prev[itemId] || 0) + 1) % totalImages,
-    }));
-  };
+  // const nextImage = (itemId: number, totalImages: number) => {
+  //   setImageIndexes((prev) => ({
+  //     ...prev,
+  //     [itemId]: ((prev[itemId] || 0) + 1) % totalImages,
+  //   }));
+  // };
 
-  const prevImage = (itemId: number, totalImages: number) => {
-    setImageIndexes((prev) => ({
-      ...prev,
-      [itemId]: ((prev[itemId] || 0) - 1 + totalImages) % totalImages,
-    }));
-  };
+  // const prevImage = (itemId: number, totalImages: number) => {
+  //   setImageIndexes((prev) => ({
+  //     ...prev,
+  //     [itemId]: ((prev[itemId] || 0) - 1 + totalImages) % totalImages,
+  //   }));
+  // };
 
-  const setImageIndex = (itemId: number, index: number) => {
-    setImageIndexes((prev) => ({
-      ...prev,
-      [itemId]: index,
-    }));
-  };
+  // const setImageIndex = (itemId: number, index: number) => {
+  //   setImageIndexes((prev) => ({
+  //     ...prev,
+  //     [itemId]: index,
+  //   }));
+  // };
 
   if (isLoading) return <IsLoading />;
 
@@ -306,10 +318,10 @@ const CartPage = () => {
               Your Cart
             </h1>
             <p className="text-gray-600 mt-2 ml-1">
-              You have {cartItems.length} items in your bag
+              You have {apiCartItems.length} items in your bag
             </p>
           </div>
-          {cartItems.length > 0 && (
+          {apiCartItems.length > 0 && (
             <button
               onClick={handleClearCart}
               className="text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl"
@@ -319,14 +331,14 @@ const CartPage = () => {
           )}
         </div>
 
-        {cartItems.length > 0 ? (
+        {apiCartItems.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left: Items List */}
             <div className="lg:col-span-2">
               <AnimatePresence mode="popLayout">
-                {cartItems.map((item, idx) => {
+                {apiCartItems.map((item, idx) => {
                   const currentImageIndex = imageIndexes[item.id] || 0;
-
+console.log(item)
                   return (
                     <div
                       key={item.id}
@@ -340,8 +352,12 @@ const CartPage = () => {
                             className="relative w-full h-full"
                           >
                             <Image
-                              src={item.images[currentImageIndex]}
-                              alt={`${item.name} - Image ${currentImageIndex + 1}`}
+                              src={
+                                String(item?.variant?.images[0]).length === 0
+                                  ? "/placeholder.jpg"
+                                  : String(item?.variant?.images[0])
+                              }
+                              alt={`${item.variant?.product_name} - Image ${currentImageIndex + 1}`}
                               fill
                               className="object-cover"
                               unoptimized
@@ -349,11 +365,14 @@ const CartPage = () => {
                           </div>
 
                           {/* Navigation Buttons */}
-                          {item.images.length > 1 && (
+                          {String(item?.variant?.images[0]).length > 1 && (
                             <>
-                              <button
+                              {/* <button
                                 onClick={() =>
-                                  prevImage(item.id, item.images.length)
+                                  prevImage(
+                                    item.id,
+                                    String(item?.variant?.images[0]).length,
+                                  )
                                 }
                                 className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1 rounded-full opacity-0 group-hover:opacity-100  shadow-md"
                               >
@@ -364,7 +383,10 @@ const CartPage = () => {
                               </button>
                               <button
                                 onClick={() =>
-                                  nextImage(item.id, item.images.length)
+                                  nextImage(
+                                    item.id,
+                                    String(item?.variant?.images[0]).length,
+                                  )
                                 }
                                 className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1 rounded-full opacity-0 group-hover:opacity-100  shadow-md"
                               >
@@ -372,11 +394,11 @@ const CartPage = () => {
                                   size={16}
                                   className="text-gray-700"
                                 />
-                              </button>
+                              </button> */}
 
                               {/* Image Indicators */}
-                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                                {item.images.map((_, index) => (
+                              {/* <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                                {item?.variant?.images.map((_, index) => (
                                   <button
                                     key={index}
                                     onClick={() =>
@@ -389,7 +411,7 @@ const CartPage = () => {
                                     }`}
                                   />
                                 ))}
-                              </div>
+                              </div> */}
                             </>
                           )}
                         </div>
@@ -399,32 +421,28 @@ const CartPage = () => {
                           <div className="flex justify-between items-start">
                             <div>
                               <span className="text-xs font-bold text-[#fca481] uppercase">
-                                {item.brand}
+                                {item.variant?.category_name}
                               </span>
                               <h3 className="text-base font-bold text-gray-900 leading-tight mt-1">
-                                {item.name}
+                                {item.variant?.product_name}
                               </h3>
                               <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
                                 <span className="flex items-center gap-1">
                                   Size:{" "}
-                                  <b className="text-gray-900">{item.size}</b>
+                                  <b className="text-gray-900">
+                                    {item.variant?.size}
+                                  </b>
                                 </span>
                                 <span className="flex items-center gap-1">
                                   Color:
-                                  {item.colorHex && (
-                                    <span
-                                      className="w-3 h-3 rounded-full border border-gray-300"
-                                      style={{ backgroundColor: item.colorHex }}
-                                    />
-                                  )}
                                   <b className="text-gray-900">
-                                    {item.colorName}
+                                    {item.variant?.color_name}
                                   </b>
                                 </span>
                               </div>
-                              {item.images.length > 1 && (
+                              {String(item?.variant?.images).length > 1 && (
                                 <span className="text-xs text-gray-400 mt-1 inline-block">
-                                  {item.images.length} photos
+                                  {item.variant?.images.length} photos
                                 </span>
                               )}
                             </div>
@@ -452,24 +470,31 @@ const CartPage = () => {
                               </span>
                               <button
                                 onClick={() => handleUpdateQuantity(item.id, 1)}
-                                disabled={item.quantity >= item.maxQuantity}
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600 hover:bg-[#fca481] hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600"
+                                className={`w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600   ${
+                                  item.quantity >= Number(item.variant?.stock)
+                                    ? ""
+                                    : "hover:bg-[#fca481] hover:text-white"
+                                }`}
                               >
                                 <Plus size={16} />
                               </button>
                             </div>
 
                             <div className="text-right">
-                              {item.originalPrice && (
+                              {item.variant?.compare_at_price && (
                                 <span className="text-sm text-gray-400 line-through block">
                                   $
-                                  {(item.originalPrice * item.quantity).toFixed(
-                                    2,
-                                  )}
+                                  {(
+                                    Number(item?.variant?.compare_at_price) *
+                                    item.quantity
+                                  ).toFixed(2)}
                                 </span>
                               )}
                               <span className="text-xl font-black text-gray-900">
-                                ${(item.price * item.quantity).toFixed(2)}
+                                $
+                                {(
+                                  Number(item?.variant?.price) * item.quantity
+                                ).toFixed(2)}
                               </span>
                             </div>
                           </div>

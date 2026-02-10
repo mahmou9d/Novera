@@ -40,7 +40,14 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
     e.stopPropagation(); // Prevent navigation when clicking wishlist
     toggleWishlistMutation(product.id, {
       onSuccess: () => {
-        showNotification(`${product.name} added to wishlist!`);
+        const isWishlisted = wishlistItems?.some(
+          (item) => item.id === product.id,
+        );
+        {
+          isWishlisted
+            ? showNotification(`${product.name} removed from wishlist!`)
+            : showNotification(`${product.name} added to wishlist!`);
+        }
       },
       onError: (error) => {
         console.error("Wishlist error:", error);

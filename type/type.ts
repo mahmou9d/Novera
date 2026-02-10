@@ -36,6 +36,8 @@ export interface Variant {
   images: string[];
   is_on_sale: boolean;
   stock: number;
+  // category_name?:string;
+  product_name?:string;
 }
 
 export interface CartItem {
@@ -275,7 +277,7 @@ export interface UpdateQuantityRequest {
 // Type واحد للـ Variant
 export interface Variant {
   id: number;
-  product_name: string;
+  product_name?: string;
   category_name: string;
   color_name: string;
   color_hex: string | null;
@@ -295,7 +297,8 @@ export interface Product {
   category?: string;
   description?: string;
   material_composition?: string;
-  variants: Variant[];
+  variants?: Variant[];
+  variant?: Variant;
 }
 // Type للـ Cart Item
 export interface CartItem {

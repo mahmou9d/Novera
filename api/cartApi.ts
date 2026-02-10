@@ -2,28 +2,28 @@ import { apiClient } from "@/lib/apiClient";
 import {
   AddToCartRequest,
   CartItem,
-  CartResponse, // أضفنا هذا
+  CartResponse, Product, // أضفنا هذا
   UpdateQuantityRequest,
 } from "../type/type";
 
 export const cartAPI = {
   // التعديل هنا ليرجع مصفوفة الـ items من داخل كائن الـ response
-  getCartItems: async (): Promise<CartItem[]> => {
+  getCartItems: async (): Promise<Product[]> => {
     const { data } = await apiClient.get<CartResponse>("/cart/");
     return data.items.map((item) => ({
       ...item,
       price: parseFloat(item.price),
       subtotal: parseFloat(item.subtotal),
-    })) as unknown as CartItem[];
+    })) as unknown as Product[];
   },
 
-  addToCart: async (payload: AddToCartRequest): Promise<CartItem> => {
-    const { data } = await apiClient.post<CartItem>("/cart/add/", payload);
+  addToCart: async (payload: AddToCartRequest): Promise<Product> => {
+    const { data } = await apiClient.post<Product>("/cart/add/", payload);
     return data;
   },
 
-  updateQuantity: async (payload: UpdateQuantityRequest): Promise<CartItem> => {
-    const { data } = await apiClient.patch<CartItem>(
+  updateQuantity: async (payload: UpdateQuantityRequest): Promise<Product> => {
+    const { data } = await apiClient.patch<Product>(
       `/cart/update/${payload.itemId}/`,
       { quantity: payload.quantity },
     );
