@@ -3,66 +3,66 @@
 
 import { CheckCircle, ArrowRight, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { useCapturePayPalOrder } from "@/hooks/usePayment"; // adjust path
-import { PayPalCaptureResponse } from "@/api/paymentApi";
+// import { motion } from "framer-motion";
+// import { useEffect, useState } from "react";
+// import { useCapturePayPalOrder } from "@/hooks/usePayment"; // adjust path
+// import { PayPalCaptureResponse } from "@/api/paymentApi";
 
 const PaymentSuccess = () => {
   const router = useRouter();
-  const [isProcessing, setIsProcessing] = useState(true);
-  const [paymentData, setPaymentData] = useState<PayPalCaptureResponse>({
-    message: "",
-    data: { id: "", status: "" },});
+  // const [isProcessing, setIsProcessing] = useState(true);
+  // const [paymentData, setPaymentData] = useState<PayPalCaptureResponse>({
+  //   message: "",
+  //   data: { id: "", status: "" },});
 
-  const { mutate: captureOrder, isPending } = useCapturePayPalOrder();
+  // const { mutate: captureOrder, isPending } = useCapturePayPalOrder();
 
-  useEffect(() => {
-    // Get token and order_id from localStorage
-    const orderID = localStorage.getItem("token");
-    const django_order_id = localStorage.getItem("order_id");
+  // useEffect(() => {
+  //   // Get token and order_id from localStorage
+  //   const orderID = localStorage.getItem("token");
+  //   const django_order_id = localStorage.getItem("order_id");
 
-    // If token exists, execute capture
-    if (orderID && django_order_id) {
-      captureOrder(
-        {
-          orderID,
-          django_order_id, // django_order_id
-        },
-        {
-          onSuccess: (data) => {
-            setPaymentData(data);
-            setIsProcessing(false);
-            // Clean up localStorage after successful payment
-            localStorage.removeItem("token");
-            localStorage.removeItem("order_id");
-          },
-          onError: () => {
-            setIsProcessing(false);
-            // Redirect to payment page on failure
-            router.push("/payment");
-          },
-        },
-      );
-    } else {
-      // If no token, show page normally
-      setIsProcessing(false);
-    }
-  }, [captureOrder, router]);
+  //   // If token exists, execute capture
+  //   if (orderID && django_order_id) {
+  //     captureOrder(
+  //       {
+  //         orderID,
+  //         django_order_id, // django_order_id
+  //       },
+  //       {
+  //         onSuccess: (data) => {
+  //           setPaymentData(data);
+  //           setIsProcessing(false);
+  //           // Clean up localStorage after successful payment
+  //           localStorage.removeItem("token");
+  //           localStorage.removeItem("order_id");
+  //         },
+  //         onError: () => {
+  //           setIsProcessing(false);
+  //           // Redirect to payment page on failure
+  //           router.push("/payment");
+  //         },
+  //       },
+  //     );
+  //   } else {
+  //     // If no token, show page normally
+  //     setIsProcessing(false);
+  //   }
+  // }, [captureOrder, router]);
 
-  // Loading screen while processing payment
-  if (isProcessing || isPending) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FDA481]/10 via-white to-[#B4182D]/10 flex items-center justify-center">
-        <div className="text-center flex gap-2">
-          <RefreshCw className="animate-spin text-[#fca481]" size={30} />
-          <p className="text-2xl font-bold text-[#181A2F]">
-            Processing payment...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // // Loading screen while processing payment
+  // if (isProcessing || isPending) {
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-[#FDA481]/10 via-white to-[#B4182D]/10 flex items-center justify-center">
+  //       <div className="text-center flex gap-2">
+  //         <RefreshCw className="animate-spin text-[#fca481]" size={30} />
+  //         <p className="text-2xl font-bold text-[#181A2F]">
+  //           Processing payment...
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FDA481]/10 via-white to-[#B4182D]/10 relative overflow-hidden flex items-center justify-center py-12 px-4">
@@ -101,7 +101,7 @@ const PaymentSuccess = () => {
           </div>
 
           {/* Payment Details */}
-          <div
+          {/* <div
             className="bg-white/30 rounded-2xl p-6 mb-6 space-y-4"
           >
             {paymentData?.data.id&&<div className="flex justify-between items-center">
@@ -120,7 +120,7 @@ const PaymentSuccess = () => {
                 {new Date().toLocaleDateString()}
               </span>
             </div>
-          </div>
+          </div> */}
 
           {/* Action Buttons */}
           <div
@@ -130,7 +130,7 @@ const PaymentSuccess = () => {
               onClick={() => router.push("/")}
               className="w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-3 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] hover:shadow-[#B4182D]/50 group"
             >
-              Go to Dashboard
+              Go to Home
               <ArrowRight
                 size={20}
                 className="group-hover:translate-x-1 "
