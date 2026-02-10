@@ -30,8 +30,8 @@ export default function PaymentProcessor() {
       setIsProcessing(true);
 
       const django_order_id = localStorage.getItem("order_id");
-    const orderID = localStorage.getItem("token");
-    // const django_order_id = localStorage.getItem("order_id");
+      const orderID = localStorage.getItem("token");
+      // const django_order_id = localStorage.getItem("order_id");
       if (!orderID) {
         setStatus("error");
         setErrorMessage("Order information not found");
@@ -85,7 +85,7 @@ export default function PaymentProcessor() {
           animate={{ scale: 1, opacity: 1 }}
           className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl"
         >
-          {status === "processing" && (
+          {(status === "processing" || status === "success") && (
             <>
               <Loader2 className="w-16 h-16 text-[#fca481] mx-auto mb-4 animate-spin" />
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
