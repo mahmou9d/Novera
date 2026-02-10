@@ -15,9 +15,7 @@ export default function Home() {
   return (
     <div className="">
       <Suspense
-        fallback={
-          <RefreshCw className="animate-spin text-[#fca481]" size={30} />
-        }
+        fallback={null}
       >
         <PaymentProcessor />
       </Suspense>
