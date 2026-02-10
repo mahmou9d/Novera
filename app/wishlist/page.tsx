@@ -12,8 +12,10 @@ import { useAddToCart } from "@/hooks/useCart";
 import { TProduct } from "@/type/type";
 import Notification from "@/components/Notification";
 import IsLoading from "@/components/IsLoading";
+import { useRouter } from "next/navigation";
 
 const WishlistPage = () => {
+  const router = useRouter();
   const [notification, setNotification] = useState<{
     message: string;
     type: "success" | "error";
@@ -150,7 +152,8 @@ const WishlistPage = () => {
               {wishlistItems.map((item, index) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] "
+                  onClick={() => router.push(`/products/${item.id}`)}
+                  className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] cursor-pointer transition-all"
                 >
                   <div className="flex gap-5">
                     {/* Image */}
@@ -203,14 +206,20 @@ const WishlistPage = () => {
                       {/* Actions */}
                       <div className="flex gap-2">
                         <button
-                          onClick={() => addToCart(item)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addToCart(item);
+                          }}
                           className="flex-1 bg-[#fca481] hover:bg-[#fb8c5f] text-white py-2.5 rounded-xl font-bold text-sm  flex items-center justify-center gap-2"
                         >
                           <ShoppingCart size={16} />
                           Add to Cart
                         </button>
                         <button
-                          onClick={() => removeItem(Number(item.id))}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeItem(Number(item.id));
+                          }}
                           className="px-4 py-2.5 rounded-xl border-2 border-gray-200 hover:border-red-400 hover:bg-red-50 text-gray-600 hover:text-red-500 "
                         >
                           <Trash2 size={18} />
@@ -234,7 +243,10 @@ const WishlistPage = () => {
                 Start adding items you love and we&apos;ll keep them safe here
                 for you!
               </p>
-              <button className="bg-[#fca481] hover:bg-[#fb8c5f] text-white px-10 py-4 rounded-xl font-bold  inline-flex items-center gap-2">
+              <button
+                onClick={() => router.push("/products")}
+                className="bg-[#fca481] hover:bg-[#fb8c5f] text-white px-10 py-4 rounded-xl font-bold  inline-flex items-center gap-2"
+              >
                 <ShoppingCart size={20} />
                 Start Shopping
               </button>

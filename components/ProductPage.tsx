@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   ShoppingCart,
   Heart,
@@ -22,16 +22,19 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useGetSingleProduct } from "@/hooks/useProducts";
-import {
-  useAddToCart,
-} from "@/hooks/useCart";
+import { useAddToCart } from "@/hooks/useCart";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useGetWishlist, useToggleWishlist } from "@/hooks/useWishlist";
 import IsLoading from "./IsLoading";
+import Notification from "./Notification";
 
 interface ProductPageProps {
   productId: string;
+}
+interface Notification {
+  message: string;
+  type: "success" | "error";
 }
 
 const ProductPage = ({ productId }: ProductPageProps) => {
@@ -43,7 +46,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
   );
   const [addedToCart, setAddedToCart] = useState(false);
   const [showImageZoom, setShowImageZoom] = useState(false);
-
+  const [notification, setNotification] = useState<Notification | null>(null);
   // Fetch data
   const {
     data: product,
@@ -61,13 +64,17 @@ const ProductPage = ({ productId }: ProductPageProps) => {
 
   // Get selected variant
   const selectedVariant =
-    product?.variants.find((v) => v.id === selectedVariantId) ||
-    product?.variants[0];
+    product?.variants?.find((v) => v.id === selectedVariantId) ||
+    (product?.variants ?? [])[0];
 
   // Auto-select first variant
   useEffect(() => {
-    if (product && !selectedVariantId && product.variants.length > 0) {
-      setSelectedVariantId(product.variants[0].id);
+    if (
+      product &&
+      !selectedVariantId &&
+      (product?.variants?.length as number) > 0
+    ) {
+      setSelectedVariantId((product?.variants ?? [])[0]?.id as number);
     }
   }, [product, selectedVariantId]);
 
@@ -76,7 +83,14 @@ const ProductPage = ({ productId }: ProductPageProps) => {
     setQuantity(1);
     setSelectedImage(0);
   };
-
+  const showNotification = useCallback(
+    (message: string, type: "success" | "error" = "success") => {
+      console.log("Showing notification:", message, type);
+      setNotification({ message, type });
+      setTimeout(() => setNotification(null), 5000);
+    },
+    [],
+  );
   const addToCart = () => {
     if (!selectedVariant) return;
     addToCartMutation(
@@ -86,8 +100,13 @@ const ProductPage = ({ productId }: ProductPageProps) => {
       },
       {
         onSuccess: () => {
+          showNotification(`${product?.name} added to cart!`);
           setAddedToCart(true);
           setTimeout(() => setAddedToCart(false), 3000);
+        },
+        onError: (error: any) => {
+          console.error("Cart error:", error?.response?.data.error);
+          showNotification(error?.response?.data?.error, "error");
         },
       },
     );
@@ -95,19 +114,34 @@ const ProductPage = ({ productId }: ProductPageProps) => {
 
   const addToWishlist = () => {
     if (!product) return;
-    toggleWishlistMutation(product.id);
+    toggleWishlistMutation(product.id, {
+      onSuccess: () => {
+        const isWishlisted = wishlistItems?.some(
+          (item) => item.id === product.id,
+        );
+        {
+          isWishlisted
+            ? showNotification(`${product.name} removed from wishlist!`)
+            : showNotification(`${product.name} added to wishlist!`);
+        }
+      },
+      onError: (error: any) => {
+        console.error("Wishlist error:", error?.response?.data.error);
+        showNotification(error?.response?.data?.error, "error");
+      },
+    });
   };
 
   // Get unique colors and sizes
   const availableColors = product
     ? Array.from(
-        new Map(product.variants.map((v) => [v.color_name, v])).values(),
+        new Map(product.variants?.map((v) => [v.color_name, v])).values(),
       )
     : [];
 
   const availableSizes =
     product && selectedVariant
-      ? product.variants.filter(
+      ? product?.variants?.filter(
           (v) => v.color_name === selectedVariant.color_name,
         )
       : [];
@@ -140,10 +174,9 @@ const ProductPage = ({ productId }: ProductPageProps) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#fef9f6] via-white to-[#fef5f1]">
         <Header />
+
         <div className="flex items-center justify-center min-h-[600px]">
-          <div
-            className="text-center max-w-md px-4"
-          >
+          <div className="text-center max-w-md px-4">
             <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
               <Package size={40} className="text-gray-400" />
             </div>
@@ -170,7 +203,10 @@ const ProductPage = ({ productId }: ProductPageProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fef9f6] via-white to-[#fef5f1]">
       <Header />
-
+      {/* Notification Toast */}
+      {notification && (
+        <Notification message={notification.message} type={notification.type} />
+      )}
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -194,13 +230,9 @@ const ProductPage = ({ productId }: ProductPageProps) => {
           {/* Product Images - Enhanced */}
           <div className="space-y-4">
             {/* Main Image with Zoom */}
-            <div
-              className="bg-white rounded-2xl overflow-hidden aspect-square relative shadow-xl border border-gray-100"
-            >
+            <div className="bg-white rounded-2xl overflow-hidden aspect-square relative shadow-xl border border-gray-100">
               {selectedVariant.is_on_sale && (
-                <div
-                  className="absolute top-6 left-6 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold z-10 shadow-lg"
-                >
+                <div className="absolute top-6 left-6 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold z-10 shadow-lg">
                   <div className="flex items-center gap-1">
                     <Sparkles size={14} />
                     {discount}% OFF
@@ -208,23 +240,18 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                 </div>
               )}
 
-              
-                <div
-                  key={selectedImage}
-                  className="relative w-full h-full"
-                >
-                  <Image
-                    src={productImages[selectedImage]}
-                    alt={product.name as string}
-                    fill
-                    className={`object-cover   ${
-                      showImageZoom ? "scale-110" : "scale-100"
-                    }`}
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    priority
-                  />
-                </div>
-              
+              <div key={selectedImage} className="relative w-full h-full">
+                <Image
+                  src={productImages[selectedImage]}
+                  alt={product.name as string}
+                  fill
+                  className={`object-cover   ${
+                    showImageZoom ? "scale-110" : "scale-100"
+                  }`}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
             </div>
 
             {/* Thumbnails - Enhanced */}
@@ -256,24 +283,18 @@ const ProductPage = ({ productId }: ProductPageProps) => {
           {/* Product Details - Enhanced */}
           <div className="space-y-6">
             {/* Category Badge */}
-            <div
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white px-4 py-1.5 rounded-full text-xs font-medium tracking-wider shadow-md"
-            >
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white px-4 py-1.5 rounded-full text-xs font-medium tracking-wider shadow-md">
               <Award size={14} />
               {product.category}
             </div>
 
             {/* Product Name */}
-            <h1
-              className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight"
-            >
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
               {product.name}
             </h1>
 
             {/* Rating - Enhanced */}
-            <div
-              className="flex items-center gap-4"
-            >
+            <div className="flex items-center gap-4">
               <div className="flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-lg">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
@@ -296,9 +317,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             </div>
 
             {/* Price - Enhanced */}
-            <div
-              className="flex items-baseline gap-4 pb-6 border-b-2 border-gray-100"
-            >
+            <div className="flex items-baseline gap-4 pb-6 border-b-2 border-gray-100">
               <span className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                 ${selectedVariant.price}
               </span>
@@ -319,9 +338,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             </div>
 
             {/* Color Selection - Enhanced */}
-            <div
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-gray-900">
                   Color
@@ -351,9 +368,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             </div>
 
             {/* Size Selection - Enhanced */}
-            <div
-              className="space-y-4"
-            >
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-gray-900">
                   Size
@@ -363,7 +378,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                 </span>
               </div>
               <div className="flex flex-wrap gap-3">
-                {availableSizes.map((option) => (
+                {availableSizes?.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleVariantChange(option.id)}
@@ -408,16 +423,14 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             </div>
 
             {/* Quantity Selector - Enhanced */}
-            <div
-              className="flex items-center gap-3"
-            >
+            <div className="flex items-center gap-3">
               <label className="text-sm font-semibold text-gray-900">
                 Quantity:
               </label>
               <div className="flex items-center gap-0 bg-white border-2 border-[#fca481] border-opacity-30 rounded-xl shadow-sm hover:border-opacity-60 ">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-3 hover:bg-[#fef5f1]  rounded-l-xl text-[#fca481]"
+                  className="p-3   rounded-l-xl text-[#fca481]"
                 >
                   <Minus size={16} />
                 </button>
@@ -428,7 +441,11 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                   onClick={() =>
                     setQuantity(Math.min(selectedVariant.stock, quantity + 1))
                   }
-                  className="p-3 hover:bg-[#fef5f1]  rounded-r-xl text-[#fca481]"
+                  className={`p-3   rounded-r-xl text-[#fca481] ${
+                    quantity >= Number(selectedVariant.stock)
+                      ? ""
+                      : "hover:bg-[#fca481] hover:text-white"
+                  }`}
                   disabled={quantity >= selectedVariant.stock}
                 >
                   <Plus size={16} />
@@ -437,9 +454,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             </div>
 
             {/* Action Buttons - Enhanced */}
-            <div
-              className="flex gap-4 pt-4"
-            >
+            <div className="flex gap-4 pt-4">
               <button
                 onClick={addToCart}
                 disabled={selectedVariant.stock === 0 || isAddingToCart}
@@ -479,9 +494,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             </div>
 
             {/* Features - Enhanced */}
-            <div
-              className="grid grid-cols-3 gap-4 pt-8 border-t-2 border-gray-100"
-            >
+            <div className="grid grid-cols-3 gap-4 pt-8 border-t-2 border-gray-100">
               <div className="text-center p-4 bg-gradient-to-br from-[#fef5f1] to-white rounded-xl border border-[#fca481] border-opacity-20 shadow-sm hover:shadow-md">
                 <Truck className="mx-auto mb-3 text-[#fca481]" size={28} />
                 <p className="text-sm font-bold text-gray-900 mb-1">
@@ -506,9 +519,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
             </div>
 
             {/* Description - Enhanced */}
-            <div
-              className="space-y-4 pt-8 border-t-2 border-gray-100"
-            >
+            <div className="space-y-4 pt-8 border-t-2 border-gray-100">
               <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <Package size={20} className="text-[#fca481]" />
                 Product Details

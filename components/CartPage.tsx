@@ -34,7 +34,7 @@ import {
 } from "@/hooks/usePayment";
 import CheckoutForm, { CheckoutFormData } from "./Checkoutform";
 import PaymentMethodModal from "./PaymentMethodModal";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 // UI Types
 interface CartItemUI {
@@ -52,7 +52,7 @@ interface CartItemUI {
   originalPrice?: number;
 }
 
-interface Notification {
+export interface Notification {
   message: string;
   type: "success" | "error";
 }
@@ -85,6 +85,7 @@ const convertCartItemToUI = (item: APICartItem): CartItemUI => {
 
 // Main Cart Page
 const CartPage = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [notification, setNotification] = useState<Notification | null>(null);
   const [imageIndexes, setImageIndexes] = useState<{ [key: number]: number }>(
@@ -103,7 +104,7 @@ const CartPage = () => {
   const createPayPalOrderMutation = useCreatePayPalOrder();
   const createStripeSessionMutation = useCreateStripeSession();
 
-console.log(apiCartItems, "mmmmmmmmmmmmm");
+  console.log(apiCartItems, "mmmmmmmmmmmmm");
   const { subtotal, shipping, total } = useMemo(() => {
     const sub = apiCartItems.reduce(
       (acc, item) => acc + Number(item.price) * item.quantity,
@@ -121,35 +122,35 @@ console.log(apiCartItems, "mmmmmmmmmmmmm");
     [],
   );
 
-const handleUpdateQuantity = (id: number, delta: number) => {
-  const item = apiCartItems.find((i) => i.id === id);
-  if (!item) return;
-  const newQty = item.quantity + delta;
+  const handleUpdateQuantity = (id: number, delta: number) => {
+    const item = apiCartItems.find((i) => i.id === id);
+    if (!item) return;
+    const newQty = item.quantity + delta;
 
-  // لو بيحاول يزود فوق الـ stock المتاح
-  if (delta > 0 && newQty >Number(item.variant?.stock)) {
-    showNotification(
-      `Maximum available quantity is ${item.variant?.stock}`,
-      "error",
-    );
-    return;
-  }
+    // لو بيحاول يزود فوق الـ stock المتاح
+    // if (delta > 0 && newQty >Number(item.variant?.stock)) {
+    //   showNotification(
+    //     `Maximum available quantity is ${item.variant?.stock}`,
+    //     "error",
+    //   );
+    //   return;
+    // }
 
-  if (newQty > 0) {
-    updateQuantityMutation.mutate(
-      { itemId: id, quantity: newQty },
-      {
-        onSuccess: () => showNotification("Quantity updated successfully"),
-        onError: (error: any) => {
-          // عرض رسالة الـ API لو في error
-          const message =
-            error?.response?.data?.message || "Failed to update quantity";
-          showNotification(message, "error");
+    if (newQty > 0) {
+      updateQuantityMutation.mutate(
+        { itemId: id, quantity: newQty },
+        {
+          onSuccess: () => showNotification("Quantity updated successfully"),
+          onError: (error: any) => {
+            // عرض رسالة الـ API لو في error
+            const message =
+              error?.response?.data?.error || "Failed to update quantity";
+            showNotification(message, "error");
+          },
         },
-      },
-    );
-  }
-};
+      );
+    }
+  };
 
   const handleRemove = (id: number) => {
     removeItemMutation.mutate(id, {
@@ -338,11 +339,14 @@ const handleUpdateQuantity = (id: number, delta: number) => {
               <AnimatePresence mode="popLayout">
                 {apiCartItems.map((item, idx) => {
                   const currentImageIndex = imageIndexes[item.id] || 0;
-console.log(item)
+                  console.log(item);
                   return (
                     <div
                       key={item.id}
-                      className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] mb-4"
+                      onClick={() =>
+                        router.push(`/products/${item.variant?.id}`)
+                      }
+                      className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] mb-4 cursor-pointer transition-all"
                     >
                       <div className="flex flex-col sm:flex-row gap-5">
                         {/* Image Gallery */}
@@ -363,57 +367,6 @@ console.log(item)
                               unoptimized
                             />
                           </div>
-
-                          {/* Navigation Buttons */}
-                          {String(item?.variant?.images[0]).length > 1 && (
-                            <>
-                              {/* <button
-                                onClick={() =>
-                                  prevImage(
-                                    item.id,
-                                    String(item?.variant?.images[0]).length,
-                                  )
-                                }
-                                className="absolute left-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1 rounded-full opacity-0 group-hover:opacity-100  shadow-md"
-                              >
-                                <ChevronLeft
-                                  size={16}
-                                  className="text-gray-700"
-                                />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  nextImage(
-                                    item.id,
-                                    String(item?.variant?.images[0]).length,
-                                  )
-                                }
-                                className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1 rounded-full opacity-0 group-hover:opacity-100  shadow-md"
-                              >
-                                <ChevronRight
-                                  size={16}
-                                  className="text-gray-700"
-                                />
-                              </button> */}
-
-                              {/* Image Indicators */}
-                              {/* <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                                {item?.variant?.images.map((_, index) => (
-                                  <button
-                                    key={index}
-                                    onClick={() =>
-                                      setImageIndex(item.id, index)
-                                    }
-                                    className={`w-1.5 h-1.5 rounded-full ${
-                                      index === currentImageIndex
-                                        ? "bg-[#fca481] w-3"
-                                        : "bg-white/60 hover:bg-white"
-                                    }`}
-                                  />
-                                ))}
-                              </div> */}
-                            </>
-                          )}
                         </div>
 
                         {/* Info Section */}
@@ -447,7 +400,10 @@ console.log(item)
                               )}
                             </div>
                             <button
-                              onClick={() => handleRemove(item.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemove(item.id);
+                              }}
                               className="text-gray-400 hover:text-red-500 p-1"
                             >
                               <Trash2 size={20} />
@@ -457,9 +413,10 @@ console.log(item)
                           <div className="flex items-center justify-between mt-4">
                             <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl border border-gray-200">
                               <button
-                                onClick={() =>
-                                  handleUpdateQuantity(item.id, -1)
-                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUpdateQuantity(item.id, -1);
+                                }}
                                 disabled={item.quantity <= 1}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600 hover:bg-[#fca481] hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600"
                               >
@@ -469,7 +426,10 @@ console.log(item)
                                 {item.quantity}
                               </span>
                               <button
-                                onClick={() => handleUpdateQuantity(item.id, 1)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUpdateQuantity(item.id, 1);
+                                }}
                                 className={`w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600   ${
                                   item.quantity >= Number(item.variant?.stock)
                                     ? ""
