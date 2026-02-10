@@ -7,12 +7,20 @@ import Newsletter from "@/components/Newsletter";
 import PaymentProcessor from "@/components/PaymentProcessor";
 import SpecialDeals from "@/components/SpecialDeals";
 import Testimonials from "@/components/Testimonials";
+import { RefreshCw } from "lucide-react";
+import { Suspense } from "react";
 
 
 export default function Home() {
   return (
     <div className="">
-      <PaymentProcessor />
+      <Suspense
+        fallback={
+          <RefreshCw className="animate-spin text-[#fca481]" size={30} />
+        }
+      >
+        <PaymentProcessor />
+      </Suspense>
       <Header />
       <Hero />
       <MainSeaction />

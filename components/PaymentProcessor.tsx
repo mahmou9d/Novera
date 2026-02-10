@@ -29,10 +29,10 @@ export default function PaymentProcessor() {
     if (token && payerId) {
       setIsProcessing(true);
 
-      const orderId = localStorage.getItem("order_id");
-    // const orderID = localStorage.getItem("token");
+      const django_order_id = localStorage.getItem("order_id");
+    const orderID = localStorage.getItem("token");
     // const django_order_id = localStorage.getItem("order_id");
-      if (!orderId) {
+      if (!orderID) {
         setStatus("error");
         setErrorMessage("Order information not found");
         return;
@@ -41,8 +41,8 @@ export default function PaymentProcessor() {
       // عمل Capture
       capturePayPalOrderMutation.mutate(
         {
-          orderID: token,
-          django_order_id: orderId,
+          orderID: orderID,
+          django_order_id: django_order_id as string,
         },
         {
           onSuccess: (data) => {
