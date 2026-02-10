@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useCallback, useState } from "react";
@@ -59,9 +60,9 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
         onSuccess: () => {
           showNotification(`${product.name} added to cart!`);
         },
-        onError: (error) => {
-          console.error("Cart error:", error);
-          showNotification(`Failed to add ${product.name} to cart!`, "error");
+        onError: (error: any) => {
+          console.error("Cart error:", error?.response?.data.error);
+          showNotification(error?.response?.data?.error, "error");
         },
       },
     );
