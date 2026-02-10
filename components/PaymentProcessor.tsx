@@ -109,7 +109,7 @@ export default function PaymentProcessor() {
             </>
           )}
 
-          {status === "success" && (
+          {/* {status === "success" && (
             <motion.div
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
@@ -135,7 +135,7 @@ export default function PaymentProcessor() {
                 <span>Redirecting to your order...</span>
               </div>
             </motion.div>
-          )}
+          )} */}
 
           {status === "error" && (
             <>

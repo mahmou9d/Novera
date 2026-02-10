@@ -1,68 +1,19 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { CheckCircle, ArrowRight, RefreshCw } from "lucide-react";
+import { useEffect } from "react";
+import { CheckCircle, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-// import { motion } from "framer-motion";
-// import { useEffect, useState } from "react";
-// import { useCapturePayPalOrder } from "@/hooks/usePayment"; // adjust path
-// import { PayPalCaptureResponse } from "@/api/paymentApi";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PaymentSuccess = () => {
   const router = useRouter();
-  // const [isProcessing, setIsProcessing] = useState(true);
-  // const [paymentData, setPaymentData] = useState<PayPalCaptureResponse>({
-  //   message: "",
-  //   data: { id: "", status: "" },});
+  const queryClient = useQueryClient();
 
-  // const { mutate: captureOrder, isPending } = useCapturePayPalOrder();
-
-  // useEffect(() => {
-  //   // Get token and order_id from localStorage
-  //   const orderID = localStorage.getItem("token");
-  //   const django_order_id = localStorage.getItem("order_id");
-
-  //   // If token exists, execute capture
-  //   if (orderID && django_order_id) {
-  //     captureOrder(
-  //       {
-  //         orderID,
-  //         django_order_id, // django_order_id
-  //       },
-  //       {
-  //         onSuccess: (data) => {
-  //           setPaymentData(data);
-  //           setIsProcessing(false);
-  //           // Clean up localStorage after successful payment
-  //           localStorage.removeItem("token");
-  //           localStorage.removeItem("order_id");
-  //         },
-  //         onError: () => {
-  //           setIsProcessing(false);
-  //           // Redirect to payment page on failure
-  //           router.push("/payment");
-  //         },
-  //       },
-  //     );
-  //   } else {
-  //     // If no token, show page normally
-  //     setIsProcessing(false);
-  //   }
-  // }, [captureOrder, router]);
-
-  // // Loading screen while processing payment
-  // if (isProcessing || isPending) {
-  //   return (
-  //     <div className="min-h-screen bg-gradient-to-br from-[#FDA481]/10 via-white to-[#B4182D]/10 flex items-center justify-center">
-  //       <div className="text-center flex gap-2">
-  //         <RefreshCw className="animate-spin text-[#fca481]" size={30} />
-  //         <p className="text-2xl font-bold text-[#181A2F]">
-  //           Processing payment...
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  useEffect(() => {
+    // Refetch cart to update it (will be empty after successful payment)
+    queryClient.invalidateQueries({ queryKey: ["cart"] });
+  }, [queryClient]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FDA481]/10 via-white to-[#B4182D]/10 relative overflow-hidden flex items-center justify-center py-12 px-4">
@@ -71,15 +22,11 @@ const PaymentSuccess = () => {
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#FDA481] rounded-full  opacity-20" />
 
       {/* Success Card */}
-      <div
-        className="w-full max-w-md relative"
-      >
+      <div className="w-full max-w-md relative">
         <div className="glass-dark rounded-3xl p-8 shadow-2xl">
           {/* Success Icon */}
           <div className="text-center">
-            <div
-              className="relative inline-block mb-6"
-            >
+            <div className="relative inline-block mb-6">
               <div className="absolute inset-0 rounded-full bg-[#B4182D] opacity-20 animate-pulse" />
               <div className="relative w-24 h-24 mx-auto rounded-full flex items-center justify-center bg-gradient-to-br from-[#B4182D] to-[#54162B]">
                 <CheckCircle className="w-14 h-14 text-white" />
@@ -87,10 +34,7 @@ const PaymentSuccess = () => {
             </div>
 
             {/* Header */}
-            <div
-
-              className="mb-8"
-            >
+            <div className="mb-8">
               <h1 className="text-4xl font-black mb-3 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] bg-clip-text text-transparent">
                 Payment Successful!
               </h1>
@@ -123,18 +67,13 @@ const PaymentSuccess = () => {
           </div> */}
 
           {/* Action Buttons */}
-          <div
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             <button
               onClick={() => router.push("/")}
               className="w-full py-4 rounded-xl text-white font-bold text-lg shadow-2xl flex items-center justify-center gap-3 bg-gradient-to-r from-[#B4182D] via-[#54162B] to-[#181A2F] hover:shadow-[#B4182D]/50 group"
             >
               Go to Home
-              <ArrowRight
-                size={20}
-                className="group-hover:translate-x-1 "
-              />
+              <ArrowRight size={20} className="group-hover:translate-x-1 " />
             </button>
           </div>
         </div>
