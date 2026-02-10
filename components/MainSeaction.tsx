@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import Productgrid from "./Productgrid";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetProducts } from "@/hooks/useProducts";
@@ -59,18 +59,13 @@ const MainSection = () => {
   }, [activeCategory, categories]);
 
   // Handle loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div
-            className="w-16 h-16 border-4 border-[#FDA481] border-t-transparent rounded-full mx-auto mb-4"
-          />
-          <p className="text-gray-600 text-lg">Loading products...</p>
-        </div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <RefreshCw className="animate-spin text-[#fca481]" size={50} />
+  //     </div>
+  //   );
+  // }
 
   // Handle error state
   if (isError) {
@@ -92,7 +87,7 @@ const MainSection = () => {
   }
 
   return (
-    <div  className="min-h-screen">
+    <div className="min-h-screen">
       {/* Hero Section with Categories */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#181A2F] via-[#242E49] to-[#1a1a2e] text-white pb-20 lg:pb-28 pt-20 lg:pt-28">
         {/* Top Wave Divider */}
@@ -215,7 +210,11 @@ const MainSection = () => {
         </div>
 
         {/* Products Grid */}
-        <AnimatePresence mode="wait">
+        {isLoading ? (
+          <div className="min-h-screen flex items-center justify-center">
+            <RefreshCw className="animate-spin text-[#fca481]" size={50} />
+          </div>
+        ) : (
           <div key={activeCategory}>
             {filteredProducts.length > 0 ? (
               <Productgrid products={filteredProducts} />
@@ -227,12 +226,15 @@ const MainSection = () => {
               </div>
             )}
           </div>
-        </AnimatePresence>
+        )}
 
         {/* Load More */}
         {filteredProducts.length > 0 && (
           <div className="text-center mt-16">
-            <Link href="/shop" className="group inline-flex items-center gap-3 bg-[#181A2F] text-white px-12 py-5 rounded-full font-semibold uppercase tracking-wider shadow-xl">
+            <Link
+              href="/shop"
+              className="group inline-flex items-center gap-3 bg-[#181A2F] text-white px-12 py-5 rounded-full font-semibold uppercase tracking-wider shadow-xl"
+            >
               Discover More
               <div>
                 <TrendingUp size={20} />
