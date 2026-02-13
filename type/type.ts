@@ -37,7 +37,7 @@ export interface Variant {
   is_on_sale: boolean;
   stock: number;
   // category_name?:string;
-  product_name?:string;
+  product_name?: string;
 }
 
 export interface CartItem {
@@ -101,8 +101,6 @@ export interface SalesOrder {
   orders: number;
   sales: number;
 }
-
-
 
 // Response Types
 
@@ -345,7 +343,7 @@ export interface RecentOrdersData {
 }
 export interface Order {
   message: string;
-  status:OrderStatus
+  status: OrderStatus;
 }
 export type OrderStatus =
   | "pending"
@@ -385,7 +383,6 @@ export interface Review {
 
 export type ReviewsResponse = Review[];
 
-
 export interface SalesOrder {
   name: string;
   orders: number;
@@ -414,3 +411,42 @@ export interface TopSellingResponse {
   topSelling: TopSellingProduct[];
 }
 
+export interface CreateProduct {
+  name: string;
+  description: string;
+  material_composition: string;
+  category: number;
+}
+interface SubVariant {
+  color_name: string;
+  color_hex: string | null;
+  size: string;
+  price: string;
+  compare_at_price: string;
+  stock: number;
+}
+export interface CreateProductResponse {
+  message: string;
+  product_id: number;
+  data: {
+    id: string;
+    name: string;
+    category: string;
+    description: string;
+    material_composition: string;
+    variants: SubVariant[];
+  };
+}
+export interface AddVariants {
+  id: number;
+  color_name: string;
+  color_hex: string | null;
+  size: string;
+  price: string;
+  compare_at_price: string;
+  stock: number;
+}
+export interface AddImageVariants {
+  message: string;
+  url: string;
+}

@@ -34,7 +34,6 @@ export interface PlaceOrderResponse {
   message?: string;
 }
 export const paymentAPI = {
-  // Stripe - إنشاء جلسة دفع
   createCheckoutSession: async (
     order_id: number,
   ): Promise<CheckoutSessionResponse> => {
@@ -45,17 +44,6 @@ export const paymentAPI = {
     return data;
   },
 
-  // Stripe - webhook (عادة لا يتم استدعاؤه من الفرونت إند مباشرة)
-  // لكن إذا احتجته للتحقق من حالة الدفع
-  // stripeWebhook: async (payload: any): Promise<any> => {
-  //   const { data } = await apiClient.post<any>(
-  //     "/payment/webhook/stripe/",
-  //     payload,
-  //   );
-  //   return data;
-  // },
-
-  // PayPal - إنشاء طلب
   createPayPalOrder: async (order_id: number): Promise<PayPalOrderResponse> => {
     const { data } = await apiClient.post<PayPalOrderResponse>(
       "/paypal/create-order/",
@@ -64,7 +52,6 @@ export const paymentAPI = {
     return data;
   },
 
-  // PayPal - تأكيد الدفع
   capturePayPalOrder: async (
     payload: PayPalCapture,
   ): Promise<PayPalCaptureResponse> => {
@@ -75,7 +62,6 @@ export const paymentAPI = {
     return data;
   },
 
-  // Orders - تقديم الطلب
   placeOrder: async (
     orderData: CheckoutFormData,
   ): Promise<PlaceOrderResponse> => {

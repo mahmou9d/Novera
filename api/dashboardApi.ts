@@ -3,12 +3,7 @@
 
 import { apiClient } from "@/lib/apiClient";
 import {
-  OrdersCountResponse,
-  UsersCountResponse,
-  TotalSalesResponse,
-  TopSellingProduct,
   LowStockResponse,
-  Counted,
   OrderStatus,
   RecentOrdersData,
   RecentOrdersDatares,
@@ -17,6 +12,10 @@ import {
   SalesOrdersResponse,
   Order,
   TopSellingResponse,
+  CreateProduct,
+  CreateProductResponse,
+  AddVariants,
+  AddImageVariants,
 } from "../type/type";
 
 export const dashboardAPI = {
@@ -36,7 +35,6 @@ export const dashboardAPI = {
     const { data } = await apiClient.get<DashboardStats>("/dashboard/stats/");
     return data;
   },
-
 
   getSalesOrders: async (): Promise<SalesOrdersResponse> => {
     const { data } = await apiClient.get<SalesOrdersResponse>(
@@ -61,7 +59,7 @@ export const dashboardAPI = {
     );
     return data;
   },
-  makeAdmin: async (email: string): Promise<{message: string}> => {
+  makeAdmin: async (email: string): Promise<{ message: string }> => {
     const { data } = await apiClient.post<{ message: string }>(
       `/dashboard/make-admin/`,
       { email: email },
@@ -69,33 +67,50 @@ export const dashboardAPI = {
     return data;
   },
   ///
-    getReviewsCount: async (): Promise<ReviewsResponse> => {
+  getReviewsCount: async (): Promise<ReviewsResponse> => {
     const { data } = await apiClient.get<ReviewsResponse>(
       "/dashboard/reviews/",
     );
     return data;
   },
-    getProductLow: async (): Promise<LowStockResponse> => {
+  getProductLow: async (): Promise<LowStockResponse> => {
     const { data } = await apiClient.get<LowStockResponse>(
       "/charts/products/low/",
     );
     return data || [];
   },
-  //wait
-  getOrdersCount: async (): Promise<Counted> => {
-    const { data } =
-      await apiClient.get<OrdersCountResponse>("/dashboard/orders/");
+  createProduct: async (
+    payload: CreateProduct,
+  ): Promise<CreateProductResponse> => {
+    const { data } = await apiClient.post<CreateProductResponse>(
+      "/dashboard/products/create/",
+      payload,
+    );
     return data;
   },
-  getUsersCount: async (): Promise<number> => {
-    const { data } =
-      await apiClient.get<UsersCountResponse>("/dashboard/users/");
-    return data.users || 0;
-  },
-  getTotalSales: async (): Promise<number> => {
-    const { data } = await apiClient.get<TotalSalesResponse>(
-      "/dashboard/totalsales/",
+  addVariantsProduct: async (
+    payload: AddVariants[],
+    product_id: number,
+  ): Promise<AddVariants[]> => {
+    const { data } = await apiClient.post<AddVariants[]>(
+      `/dashboard/products/${product_id}/variants/add/`,
+      payload,
     );
-    return data.total_sales || 0;
+    return data;
+  },
+  addImageVariantsProduct: async (
+    payload: FormData,
+    variant_id: number,
+  ): Promise<AddImageVariants> => {
+    const { data } = await apiClient.post<AddImageVariants>(
+      `/dashboard/variants/${variant_id}/upload-image/`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+    return data;
   },
 };
