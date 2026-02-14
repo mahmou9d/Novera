@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/QueryProvider";
-
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const RobotoSans = Roboto({
   variable: "--font-roboto",
@@ -24,7 +24,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${RobotoSans.variable} antialiased`}>
         <QueryProvider>
-          {children}
+          <GoogleOAuthProvider
+            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}
+          >
+            {children}
+          </GoogleOAuthProvider>
         </QueryProvider>
       </body>
     </html>

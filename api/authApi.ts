@@ -83,4 +83,12 @@ export const authAPI = {
     console.log(data);
     return data;
   },
+
+  google: async (payload: {credential: string}): Promise<string> => {
+    const { data } = await apiClient.post<string>(
+      "/auth/google/",
+      payload,
+    );
+    return data;
+  },
 };

@@ -88,6 +88,15 @@ export const useLogout = () => {
   });
 };
 
+export const useLoginGoogle = () => {
+
+  return useMutation({
+    mutationFn: (payload: { credential: string }) => authAPI.google(payload),
+    onError: (error) => {
+      console.error("Login failed:", error);
+    },
+  });
+};
 export const useAuth = () => {
   const { data: user, isLoading } = useGetRole();
   const loginMutation = useLogin();
