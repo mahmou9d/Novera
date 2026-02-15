@@ -15,7 +15,16 @@ interface Role {
   email: string;
   is_admin: boolean;
 }
-
+interface google {
+  access: string;
+  refresh: string;
+  is_new_user:boolean
+  user:{
+    id: number;
+    email: string;
+    first_name: string;
+  }
+}
 export const authAPI = {
   login: async (payload: LoginRequest): Promise<LoginResponse> => {
     const { data } = await apiClient.post<LoginResponse>(
@@ -84,11 +93,14 @@ export const authAPI = {
     return data;
   },
 
-  google: async (payload: {credential: string}): Promise<string> => {
-    const { data } = await apiClient.post<string>(
+  google: async (payload: {credential: string}): Promise<google> => {
+    const { data } = await apiClient.post<google>(
       "/auth/google/",
       payload,
     );
+     console.log("🔍 Backend response:", data);
+         storage.setToken("access", data.access);
+         storage.setToken("refresh", data.refresh);
     return data;
   },
 };

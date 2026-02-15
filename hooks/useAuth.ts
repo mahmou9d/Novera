@@ -92,6 +92,15 @@ export const useLoginGoogle = () => {
 
   return useMutation({
     mutationFn: (payload: { credential: string }) => authAPI.google(payload),
+    onSuccess: (data) => {
+      console.log("✅ Google login response:", data);
+      if (data.access) {
+        localStorage.setItem("access", data.access);
+      }
+      if (data.refresh) {
+        localStorage.setItem("refresh", data.refresh);
+      }
+    },
     onError: (error) => {
       console.error("Login failed:", error);
     },

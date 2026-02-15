@@ -247,19 +247,68 @@ const SocialLogin = ({
         <GoogleLogin
           onSuccess={(credentialResponse) => {
             if (credentialResponse.credential) {
+              console.log("📤 Sending credential to backend...");
+
               loginWithGoogle(
                 { credential: credentialResponse.credential },
                 {
-                  onSuccess: (data: string) => {
-                    showNotification("Login successful!", "success");
-                    // حفظ الـ token
-                    localStorage.setItem("authToken", data);
-                    setTimeout(() => {
-                      router.push("/");
-                    }, 1000);
+                  onSuccess: (data) => {
+                    console.log("✅ Backend Response:", data);
+                    console.log("💾 Attempting to save tokens...");
+
+                    // احفظ الـ tokens يدوياً
+                    try {
+                      // جرب كل الاحتمالات اللي ممكن الـ Backend يرجعها
+                      if (data.access) {
+                        localStorage.setItem("access", data.access);
+                        console.log("✅ Access token saved:", data.access);
+                      } else if (data.token) {
+                        localStorage.setItem("access", data.token);
+                        console.log("✅ Token saved:", data.token);
+                      } else if (typeof data === "string") {
+                        localStorage.setItem("access", data);
+                        console.log("✅ String token saved:", data);
+                      }
+
+                      if (data.refresh) {
+                        localStorage.setItem("refresh", data.refresh);
+                        console.log("✅ Refresh token saved:", data.refresh);
+                      }
+
+                      // تحقق من الحفظ
+                      const savedToken = localStorage.getItem("access");
+                      console.log(
+                        "🔍 Verification - Token in localStorage:",
+                        savedToken,
+                      );
+
+                      if (savedToken) {
+                        showNotification("Login successful!", "success");
+
+                        // استنى شوية قبل الـ redirect
+                        setTimeout(() => {
+                          console.log("🚀 Redirecting to home...");
+                          router.push("/");
+                          router.refresh(); // Force refresh
+                        }, 1500);
+                      } else {
+                        console.error("❌ Token was not saved!");
+                        showNotification(
+                          "Failed to save login session",
+                          "error",
+                        );
+                      }
+                    } catch (err) {
+                      console.error("❌ Error saving to localStorage:", err);
+                      showNotification("Failed to save login session", "error");
+                    }
                   },
                   onError: (error: any) => {
+                    console.error("❌ Login Error:", error);
+                    console.error("❌ Error Response:", error?.response?.data);
+
                     const errorMessage =
+                      error?.response?.data?.error ||
                       error?.response?.data?.message ||
                       error?.message ||
                       "Google login failed. Please try again.";
@@ -270,6 +319,7 @@ const SocialLogin = ({
             }
           }}
           onError={() => {
+            console.error("❌ Google OAuth failed");
             showNotification("Google login failed. Please try again.", "error");
           }}
           text="continue_with"
