@@ -262,14 +262,7 @@ const SocialLogin = ({
                       if (data.access) {
                         localStorage.setItem("access", data.access);
                         console.log("✅ Access token saved:", data.access);
-                      } else if (data.token) {
-                        localStorage.setItem("access", data.token);
-                        console.log("✅ Token saved:", data.token);
-                      } else if (typeof data === "string") {
-                        localStorage.setItem("access", data);
-                        console.log("✅ String token saved:", data);
                       }
-
                       if (data.refresh) {
                         localStorage.setItem("refresh", data.refresh);
                         console.log("✅ Refresh token saved:", data.refresh);
