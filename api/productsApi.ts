@@ -46,13 +46,18 @@ export const productsAPI = {
     };
   },
 
-  getSingleProducts: async (id: number): Promise<Product> => {
+  getSingleProducts: async (
+    id: number,
+    all: boolean = false,
+  ): Promise<Product> => {
     try {
       if (!id || id <= 0) {
         throw new Error("Invalid product ID");
       }
 
-      const { data } = await apiClient.get<Product>(`/products/${id}/`);
+      const { data } = await apiClient.get<Product>(`/products/${id}/`, {
+        params: { ...(all && { all: true }) },
+      });
 
       console.log("Single Product Response:", data);
 
@@ -99,10 +104,11 @@ export const productsAPI = {
   updateProduct: async (
     id: number,
     payload: {
-      name: string;
-      category: number;
-      material_composition: string;
-      description: string;
+      name?: string;
+      category?: number;
+      material_composition?: string;
+      description?: string;
+      is_active?: boolean;
     },
   ): Promise<any> => {
     const { data } = await apiClient.patch<any>(
@@ -113,7 +119,7 @@ export const productsAPI = {
   },
   updateProductVariants: async (
     id: number,
-    payload: SubVariant,
+    payload: Partial<SubVariant>,
   ): Promise<any> => {
     const { data } = await apiClient.patch<any>(
       `/dashboard/variants/${id}/manage/`,

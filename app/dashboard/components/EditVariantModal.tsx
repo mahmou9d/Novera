@@ -9,18 +9,19 @@ import {
   Save,
   Edit2,
   Layers,
-  Ban,
-  Trash2,
   Image as ImageIcon,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
-import { TProduct, Variant } from "@/type/type";
+import { Variant } from "@/type/type";
 import {
   useUpdateProductVariant,
-  useDeleteProductVariant,
   useAddImageVariantsProduct,
+  useGetSingleProduct,
 } from "@/hooks/useProducts";
 import Image from "next/image";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface FormErrors {
   price?: string;
   stockSingle?: string;
@@ -29,10 +30,16 @@ interface FormErrors {
 
 interface Props {
   open: boolean;
-  product: TProduct | null;
+  productId: number | null; // بس الـ ID من الـ parent
   onClose: () => void;
   onNotify: (message: string, type: "success" | "error") => void;
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const base64ToFile = async (b64: string, name: string): Promise<File> => {
+  const blob = await (await fetch(b64)).blob();
+  return new File([blob], name, { type: blob.type });
+};
 
 const FieldError = ({ msg }: { msg: string }) => (
   <div className="flex items-center gap-2 mt-2 text-red-500 text-sm">
@@ -41,29 +48,34 @@ const FieldError = ({ msg }: { msg: string }) => (
   </div>
 );
 
-const base64ToFile = async (b64: string, name: string): Promise<File> => {
-  const blob = await (await fetch(b64)).blob();
-  return new File([blob], name, { type: blob.type });
-};
-
+// ─── Component ────────────────────────────────────────────────────────────────
 export const EditVariantModal: React.FC<Props> = ({
   open,
-  product,
+  productId,
   onClose,
   onNotify,
 }) => {
   const updateVariantMutation = useUpdateProductVariant();
-  const deleteVariantMutation = useDeleteProductVariant();
   const addImageMutation = useAddImageVariantsProduct();
 
-  // Which sub-view to show
-  const [view, setView] = useState<"list" | "edit">("list");
+  // ── Fetch single product مع الـ variants ──────────────────────────────────
+  const {
+    data: product,
+    isLoading: isFetching,
+    isError,
+    error,
+  } = useGetSingleProduct(Number(productId), true);
+  // مش هتشتغل لو productId = null لأن Number(null) = 0
+  // تأكد إن الـ hook عنده enabled: !!id && id > 0
 
+  const [view, setView] = useState<"list" | "edit">("list");
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [togglingId, setTogglingId] = useState<number | null>(null); // كل variant loading لوحده
+  const [isUpdating, setIsUpdating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
+  // Form fields
   const [variantPrice, setVariantPrice] = useState("");
   const [variantComparePrice, setVariantComparePrice] = useState("");
   const [variantStock, setVariantStock] = useState(1);
@@ -71,30 +83,39 @@ export const EditVariantModal: React.FC<Props> = ({
   const [variantColorName, setVariantColorName] = useState("");
   const [variantColorHex, setVariantColorHex] = useState("");
   const [variantSize, setVariantSize] = useState("");
+  const [variantIsActive, setVariantIsActive] = useState(false);
 
-  // Reset to list view when modal opens
+  // Reset لما الـ modal يتفتح
   useEffect(() => {
     if (open) {
       setView("list");
       setSaveSuccess(false);
       setFormErrors({});
+      setSelectedVariant(null);
     }
   }, [open]);
 
+  // ── فتح Edit view وتعبية الـ form من بيانات الـ variant ──────────────────
   const openEdit = (variant: Variant) => {
     setSelectedVariant(variant);
     setVariantPrice(variant.price);
     setVariantComparePrice(variant.compare_at_price || "");
     setVariantStock(variant.stock);
-    setVariantImage(variant.images?.[0] || "");
+    setVariantImage(
+      variant.images?.[0]
+        ? variant.images[0].replace("http://", "https://")
+        : "",
+    );
     setVariantColorName(variant.color_name);
     setVariantColorHex(variant.color_hex || "");
     setVariantSize(variant.size);
+    setVariantIsActive(variant.is_active ?? false);
     setSaveSuccess(false);
     setFormErrors({});
     setView("edit");
   };
 
+  // ── Validation ────────────────────────────────────────────────────────────
   const validate = (): boolean => {
     const e: FormErrors = {};
     if (!variantPrice || parseFloat(variantPrice) <= 0)
@@ -105,6 +126,7 @@ export const EditVariantModal: React.FC<Props> = ({
     return !Object.keys(e).length;
   };
 
+  // ── Image upload ──────────────────────────────────────────────────────────
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file?.type.startsWith("image/")) return;
@@ -116,9 +138,36 @@ export const EditVariantModal: React.FC<Props> = ({
     r.readAsDataURL(file);
   };
 
+  // ── Toggle active من الـ list view — كل variant بـ loading مستقل ─────────
+  const handleToggleActive = async (variant: Variant) => {
+    setTogglingId(variant.id);
+    try {
+      await updateVariantMutation.mutateAsync({
+        variant_id: variant.id,
+        payload: { is_active: !variant.is_active },
+      });
+      onNotify(
+        `Variant ${!variant.is_active ? "activated" : "deactivated"} successfully`,
+        "success",
+      );
+    } catch (err: unknown) {
+      const e = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      onNotify(
+        e?.response?.data?.message || "Failed to update variant",
+        "error",
+      );
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  // ── Update variant من الـ edit view ──────────────────────────────────────
   const handleUpdate = async () => {
     if (!validate() || !selectedVariant) return;
-    setIsLoading(true);
+    setIsUpdating(true);
     try {
       await updateVariantMutation.mutateAsync({
         variant_id: selectedVariant.id,
@@ -129,9 +178,11 @@ export const EditVariantModal: React.FC<Props> = ({
           price: variantPrice,
           compare_at_price: variantComparePrice || "0.00",
           stock: variantStock,
+          is_active: variantIsActive,
         },
       });
-      // Upload image only if it's a new base64 (not an existing URL)
+
+      // Upload image لو اتغيرت بس (base64 مش URL)
       if (variantImage && !variantImage.startsWith("http")) {
         try {
           const f = await base64ToFile(
@@ -148,6 +199,7 @@ export const EditVariantModal: React.FC<Props> = ({
           /* non-fatal */
         }
       }
+
       setSaveSuccess(true);
       onNotify("Variant updated successfully", "success");
       setTimeout(() => setView("list"), 1500);
@@ -161,39 +213,14 @@ export const EditVariantModal: React.FC<Props> = ({
         "error",
       );
     } finally {
-      setIsLoading(false);
+      setIsUpdating(false);
     }
   };
 
-  const handleDelete = async (variant_id: number, hard: boolean) => {
-    const msg = hard
-      ? "Permanently delete this variant? This cannot be undone."
-      : "Deactivate this variant?";
-    if (!confirm(msg)) return;
-    setIsLoading(true);
-    try {
-      await deleteVariantMutation.mutateAsync({ variant_id, hard });
-      onNotify(
-        `Variant ${hard ? "deleted" : "deactivated"} successfully`,
-        "success",
-      );
-    } catch (err: unknown) {
-      const e = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      onNotify(
-        e?.response?.data?.message || "Failed to delete variant",
-        "error",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <AnimatePresence>
-      {open && product && (
+      {open && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -225,9 +252,11 @@ export const EditVariantModal: React.FC<Props> = ({
                   )}
                 </h2>
                 <p className="text-sm text-gray-400 mt-1">
-                  {view === "list"
-                    ? `${product.name} — Manage variants`
-                    : `${variantColorName} / ${variantSize}`}
+                  {isFetching
+                    ? "Loading..."
+                    : view === "list"
+                      ? `${product?.name ?? ""} — Manage variants`
+                      : `${variantColorName} / ${variantSize}`}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -248,6 +277,7 @@ export const EditVariantModal: React.FC<Props> = ({
               </div>
             </div>
 
+            {/* Success banner */}
             {saveSuccess && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -261,293 +291,365 @@ export const EditVariantModal: React.FC<Props> = ({
               </motion.div>
             )}
 
+            {/* Body */}
             <div className="flex-1 overflow-y-auto p-6">
-              <AnimatePresence mode="wait">
-                {/* ── List View ─────────────────────────────────────── */}
-                {view === "list" && (
-                  <motion.div
-                    key="list"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                  >
-                    {product.variants?.map((variant: Variant) => {
-                      const imgSrc = variant.images?.[0]
-                        ? variant.images[0].replace("http://", "https://")
-                        : "/placeholder.jpg";
-                      const isDeactivated = variant?.is_active === false;
+              {/* ── Loading ──────────────────────────────────────────────── */}
+              {isFetching && (
+                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                  <Loader2 className="w-10 h-10 text-purple-500 animate-spin" />
+                  <p className="text-gray-400">Loading variants...</p>
+                </div>
+              )}
 
-                      return (
-                        <motion.div
-                          key={variant.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className={`bg-[#1a1d29] rounded-xl p-5 border hover:border-purple-500/50 relative ${
-                            isDeactivated
-                              ? "border-red-500/50 opacity-60"
-                              : "border-white/10"
-                          }`}
-                        >
-                          {isDeactivated && (
-                            <div className="absolute top-3 right-3 bg-red-500/20 border border-red-500 rounded px-2 py-1 flex items-center gap-1">
-                              <Ban className="w-3 h-3 text-red-500" />
-                              <span className="text-xs font-bold text-red-500">
-                                DEACTIVATED
-                              </span>
-                            </div>
-                          )}
-                          <div className="flex gap-4">
-                            <div
-                              className={`w-20 h-20 rounded-lg bg-[#0f1117] border border-white/10 overflow-hidden flex-shrink-0 ${isDeactivated ? "grayscale" : ""}`}
-                            >
-                              <Image
-                                src={imgSrc}
-                                alt={`${variant.color_name} ${variant.size}`}
-                                width={80}
-                                height={80}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <div
-                                  className="w-4 h-4 rounded-full border border-white/20"
-                                  style={{
-                                    backgroundColor:
-                                      variant.color_hex as string,
-                                  }}
-                                />
-                                <span className="font-bold text-white">
-                                  {variant.color_name} / {variant.size}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3 mb-3">
-                                <span className="text-lg font-bold text-[#fda481]">
-                                  ${variant.price}
-                                </span>
-                                {variant.compare_at_price && (
-                                  <span className="text-sm text-gray-400 line-through">
-                                    ${variant.compare_at_price}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-sm text-gray-400 mb-3">
-                                Stock:{" "}
-                                <span className="text-white font-semibold">
-                                  {variant.stock}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => openEdit(variant)}
-                                  disabled={isLoading}
-                                  className="flex-1 py-2 bg-purple-500/10 border border-purple-500/30 text-purple-500 rounded-lg hover:bg-purple-500/20 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-semibold"
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleDelete(variant.id, false)
-                                  }
-                                  disabled={isLoading || isDeactivated}
-                                  className="p-2 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 rounded-lg hover:bg-yellow-500/20 disabled:opacity-50"
-                                >
-                                  <Ban className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(variant.id, true)}
-                                  disabled={isLoading}
-                                  className="p-2 bg-red-500/10 border border-red-500/30 text-red-500 rounded-lg hover:bg-red-500/20 disabled:opacity-50"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                )}
+              {/* ── Error ────────────────────────────────────────────────── */}
+              {isError && !isFetching && (
+                <div className="flex flex-col items-center justify-center h-64 gap-3">
+                  <AlertCircle className="w-10 h-10 text-red-500" />
+                  <p className="text-red-400 font-semibold">
+                    Failed to load variants
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    {(error as { message?: string })?.message ??
+                      "Please try again"}
+                  </p>
+                </div>
+              )}
 
-                {/* ── Edit View ─────────────────────────────────────── */}
-                {view === "edit" && selectedVariant && (
-                  <motion.div
-                    key="edit"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                  >
-                    <div className="bg-[#1a1d29] border border-white/10 rounded-xl p-6 space-y-4">
-                      <h3 className="text-lg font-bold text-white">
-                        Variant Details
-                      </h3>
+              {/* ── Content ──────────────────────────────────────────────── */}
+              {!isFetching && !isError && product && (
+                <AnimatePresence mode="wait">
+                  {/* List View */}
+                  {view === "list" && (
+                    <motion.div
+                      key="list"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    >
+                      {product.variants?.length === 0 && (
+                        <div className="col-span-2 flex flex-col items-center justify-center h-48 gap-3 text-gray-500">
+                          <Layers className="w-10 h-10" />
+                          <p>No variants found for this product</p>
+                        </div>
+                      )}
 
-                      {/* Image */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">
-                          Variant Image *
-                        </label>
-                        <div className="flex items-center gap-4">
-                          <label className="cursor-pointer">
-                            <div
-                              className={`w-32 h-32 bg-[#0f1117] border rounded-lg flex items-center justify-center overflow-hidden ${
-                                formErrors.image
-                                  ? "border-red-500"
-                                  : "border-white/10"
-                              }`}
-                            >
-                              {variantImage ? (
-                                <img
-                                  src={variantImage}
-                                  alt="Variant"
+                      {product.variants?.map((variant: Variant) => {
+                        const imgSrc = variant.images?.[0]
+                          ? variant.images[0].replace("http://", "https://")
+                          : "/placeholder.jpg";
+                        const isActive = variant.is_active ?? false;
+                        const isToggling = togglingId === variant.id;
+
+                        return (
+                          <motion.div
+                            key={variant.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`bg-[#1a1d29] rounded-xl p-5 border transition-colors ${
+                              isActive
+                                ? "border-white/10 hover:border-purple-500/50"
+                                : "border-red-500/30 opacity-70"
+                            }`}
+                          >
+                            <div className="flex gap-4">
+                              {/* Thumbnail */}
+                              <div
+                                className={`w-20 h-20 rounded-lg bg-[#0f1117] border border-white/10 overflow-hidden flex-shrink-0 ${!isActive ? "grayscale" : ""}`}
+                              >
+                                <Image
+                                  src={imgSrc}
+                                  alt={`${variant.color_name} ${variant.size}`}
+                                  width={80}
+                                  height={80}
                                   className="w-full h-full object-cover"
                                 />
-                              ) : (
-                                <ImageIcon className="w-12 h-12 text-gray-400" />
-                              )}
-                            </div>
-                            <input
-                              type="file"
-                              className="hidden"
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                            />
-                          </label>
-                          <p className="text-sm text-gray-400">
-                            Click to upload a new image
-                          </p>
-                        </div>
-                        {formErrors.image && (
-                          <FieldError msg={formErrors.image} />
-                        )}
-                      </div>
+                              </div>
 
-                      {/* Price + Compare */}
-                      <div className="grid grid-cols-2 gap-4">
+                              <div className="flex-1 min-w-0">
+                                {/* Color + Size */}
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div
+                                    className="w-4 h-4 rounded-full border border-white/20 flex-shrink-0"
+                                    style={{
+                                      backgroundColor:
+                                        variant.color_hex as string,
+                                    }}
+                                  />
+                                  <span className="font-bold text-white truncate">
+                                    {variant.color_name} / {variant.size}
+                                  </span>
+                                </div>
+
+                                {/* Price */}
+                                <div className="flex items-center gap-3 mb-1">
+                                  <span className="text-base font-bold text-[#fda481]">
+                                    ${variant.price}
+                                  </span>
+                                  {variant.compare_at_price && (
+                                    <span className="text-sm text-gray-400 line-through">
+                                      ${variant.compare_at_price}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Stock */}
+                                <p className="text-sm text-gray-400 mb-3">
+                                  Stock:{" "}
+                                  <span className="text-white font-semibold">
+                                    {variant.stock}
+                                  </span>
+                                </p>
+
+                                {/* Actions */}
+                                <div className="flex items-center gap-2">
+                                  {/* Edit */}
+                                  <button
+                                    onClick={() => openEdit(variant)}
+                                    disabled={isToggling}
+                                    className="flex-1 py-2 bg-purple-500/10 border border-purple-500/30 text-purple-400 rounded-lg hover:bg-purple-500/20 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-semibold transition-colors"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                    Edit
+                                  </button>
+
+                                  {/* Toggle Active */}
+                                  <button
+                                    onClick={() => handleToggleActive(variant)}
+                                    disabled={isToggling}
+                                    title={isActive ? "Deactivate" : "Activate"}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold transition-colors disabled:opacity-50 ${
+                                      isActive
+                                        ? "bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20"
+                                        : "bg-gray-500/10 border-gray-500/30 text-gray-400 hover:bg-gray-500/20"
+                                    }`}
+                                  >
+                                    {isToggling ? (
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : isActive ? (
+                                      <ToggleRight className="w-4 h-4" />
+                                    ) : (
+                                      <ToggleLeft className="w-4 h-4" />
+                                    )}
+                                    {isActive ? "Active" : "Inactive"}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+
+                  {/* Edit View */}
+                  {view === "edit" && selectedVariant && (
+                    <motion.div
+                      key="edit"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                    >
+                      <div className="bg-[#1a1d29] border border-white/10 rounded-xl p-6 space-y-4">
+                        <h3 className="text-lg font-bold text-white">
+                          Variant Details
+                        </h3>
+
+                        {/* Image */}
                         <div>
                           <label className="block text-sm font-medium text-gray-400 mb-2">
-                            Price *
+                            Variant Image *
+                          </label>
+                          <div className="flex items-center gap-4">
+                            <label className="cursor-pointer">
+                              <div
+                                className={`w-32 h-32 bg-[#0f1117] border rounded-xl flex items-center justify-center overflow-hidden transition-colors hover:border-purple-500/50 ${
+                                  formErrors.image
+                                    ? "border-red-500"
+                                    : "border-white/10"
+                                }`}
+                              >
+                                {variantImage ? (
+                                  <img
+                                    src={variantImage}
+                                    alt="Variant"
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <ImageIcon className="w-12 h-12 text-gray-400" />
+                                )}
+                              </div>
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                              />
+                            </label>
+                            <p className="text-sm text-gray-400">
+                              Click to upload a new image
+                            </p>
+                          </div>
+                          {formErrors.image && (
+                            <FieldError msg={formErrors.image} />
+                          )}
+                        </div>
+
+                        {/* Price + Compare */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">
+                              Price *
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={variantPrice}
+                              onChange={(e) => {
+                                setVariantPrice(e.target.value);
+                                setFormErrors((p) => ({
+                                  ...p,
+                                  price: undefined,
+                                }));
+                              }}
+                              placeholder="0.00"
+                              className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none ${
+                                formErrors.price
+                                  ? "border-red-500"
+                                  : "border-white/10 focus:border-purple-500/50"
+                              }`}
+                            />
+                            {formErrors.price && (
+                              <FieldError msg={formErrors.price} />
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">
+                              Compare Price
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={variantComparePrice}
+                              onChange={(e) =>
+                                setVariantComparePrice(e.target.value)
+                              }
+                              placeholder="0.00"
+                              className="w-full bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Stock */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-400 mb-2">
+                            Stock *
                           </label>
                           <input
                             type="number"
-                            step="0.01"
-                            min="0"
-                            value={variantPrice}
+                            min="1"
+                            value={variantStock}
                             onChange={(e) => {
-                              setVariantPrice(e.target.value);
+                              setVariantStock(parseInt(e.target.value) || 1);
                               setFormErrors((p) => ({
                                 ...p,
-                                price: undefined,
+                                stockSingle: undefined,
                               }));
                             }}
-                            placeholder="0.00"
-                            className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none ${
-                              formErrors.price
+                            className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white focus:outline-none ${
+                              formErrors.stockSingle
                                 ? "border-red-500"
                                 : "border-white/10 focus:border-purple-500/50"
                             }`}
                           />
-                          {formErrors.price && (
-                            <FieldError msg={formErrors.price} />
+                          {formErrors.stockSingle && (
+                            <FieldError msg={formErrors.stockSingle} />
                           )}
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-400 mb-2">
-                            Compare Price
-                          </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={variantComparePrice}
-                            onChange={(e) =>
-                              setVariantComparePrice(e.target.value)
-                            }
-                            placeholder="0.00"
-                            className="w-full bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-                          />
-                        </div>
-                      </div>
 
-                      {/* Stock */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">
-                          Stock *
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={variantStock}
-                          onChange={(e) => {
-                            setVariantStock(parseInt(e.target.value) || 1);
-                            setFormErrors((p) => ({
-                              ...p,
-                              stockSingle: undefined,
-                            }));
-                          }}
-                          className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white focus:outline-none ${
-                            formErrors.stockSingle
-                              ? "border-red-500"
-                              : "border-white/10 focus:border-purple-500/50"
-                          }`}
-                        />
-                        {formErrors.stockSingle && (
-                          <FieldError msg={formErrors.stockSingle} />
-                        )}
-                      </div>
-
-                      {/* Color + Size (read-only) */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-400 mb-2">
-                            Color
-                          </label>
-                          <div className="flex items-center gap-3 bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3">
-                            <div
-                              className="w-6 h-6 rounded-full border border-white/20"
-                              style={{ backgroundColor: variantColorHex }}
-                            />
-                            <span className="text-white font-medium">
-                              {variantColorName}
-                            </span>
+                        {/* Color + Size (read-only) */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">
+                              Color
+                            </label>
+                            <div className="flex items-center gap-3 bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3">
+                              <div
+                                className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0"
+                                style={{ backgroundColor: variantColorHex }}
+                              />
+                              <span className="text-white font-medium">
+                                {variantColorName}
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-400 mb-2">
+                              Size
+                            </label>
+                            <div className="bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3">
+                              <span className="text-white font-medium">
+                                {variantSize}
+                              </span>
+                            </div>
                           </div>
                         </div>
+
+                        {/* Status Toggle */}
                         <div>
                           <label className="block text-sm font-medium text-gray-400 mb-2">
-                            Size
+                            Status
                           </label>
-                          <div className="bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3">
-                            <span className="text-white font-medium">
-                              {variantSize}
+                          <button
+                            type="button"
+                            onClick={() => setVariantIsActive((p) => !p)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors w-full ${
+                              variantIsActive
+                                ? "bg-green-500/10 border-green-500/30 text-green-400"
+                                : "bg-gray-500/10 border-gray-500/30 text-gray-400"
+                            }`}
+                          >
+                            {variantIsActive ? (
+                              <ToggleRight className="w-5 h-5" />
+                            ) : (
+                              <ToggleLeft className="w-5 h-5" />
+                            )}
+                            <span className="font-semibold">
+                              {variantIsActive ? "Active" : "Inactive"}
                             </span>
-                          </div>
+                            <span className="text-xs ml-auto opacity-60">
+                              {variantIsActive
+                                ? "Variant is visible to customers"
+                                : "Variant is hidden from customers"}
+                            </span>
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
             </div>
 
             {/* Footer */}
             <div className="border-t border-white/10 p-6 flex items-center justify-between">
               <button
                 onClick={view === "edit" ? () => setView("list") : onClose}
-                disabled={isLoading}
+                disabled={isUpdating}
                 className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-lg font-semibold hover:bg-white/10 disabled:opacity-50"
               >
                 {view === "edit" ? "← Back" : "Close"}
               </button>
+
               {view === "edit" && (
                 <button
                   onClick={handleUpdate}
-                  disabled={isLoading}
+                  disabled={isUpdating}
                   className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-bold flex items-center gap-2 hover:shadow-xl hover:shadow-purple-500/30 disabled:opacity-50"
                 >
-                  {isLoading ? (
+                  {isUpdating ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
                       Updating...

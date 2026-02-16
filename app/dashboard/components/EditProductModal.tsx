@@ -8,10 +8,12 @@ import {
   Loader2,
   Save,
   Package,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
-import { TProduct } from "@/type/type";
-import { useUpdateProduct } from "@/hooks/useProducts";
+import { useUpdateProduct, useGetSingleProduct } from "@/hooks/useProducts";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface FormErrors {
   productName?: string;
   category?: string;
@@ -21,7 +23,7 @@ interface FormErrors {
 
 interface Props {
   open: boolean;
-  product: TProduct | null;
+  productId: number | null; // فقط الـ ID بييجي من الـ parent
   onClose: () => void;
   onNotify: (message: string, type: "success" | "error") => void;
 }
@@ -33,41 +35,55 @@ const FieldError = ({ msg }: { msg: string }) => (
   </div>
 );
 
+// ─── Component ────────────────────────────────────────────────────────────────
 export const EditProductModal: React.FC<Props> = ({
   open,
-  product,
+  productId,
   onClose,
   onNotify,
 }) => {
   const updateProductMutation = useUpdateProduct();
 
-  const [isLoading, setIsLoading] = useState(false);
+  // ── Fetch single product بياناته الكاملة مع الـ variants ─────────────────
+  const {
+    data: product,
+    isLoading: isFetching,
+    isError,
+    error,
+  } = useGetSingleProduct(Number(productId), true);
+
+  const [isUpdating, setIsUpdating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
+  // Form fields
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
   const [material, setMaterial] = useState("");
   const [description, setDescription] = useState("");
+  const [isActive, setIsActive] = useState(true);
 
-  // Sync form when product changes
+  // ── لما البيانات تيجي من الـ API، عبي الفورم ────────────────────────────
   useEffect(() => {
     if (product) {
-      setProductName(product.name as string);
-      setCategory(product.category_name?.toString() || "");
-      setMaterial(product.material_composition || "");
-      setDescription(product.description || "");
+      setProductName(product.name ?? "");
+      setCategory(product.category?.toString() ?? "");
+      setMaterial(product.material_composition ?? "");
+      setDescription(product.description ?? "");
+      setIsActive(product.is_active ?? true);
       setSaveSuccess(false);
       setFormErrors({});
     }
   }, [product]);
-
+console.log(category)
+  // ── Reset لما الـ modal يتقفل ─────────────────────────────────────────────
   const handleClose = () => {
     setSaveSuccess(false);
     setFormErrors({});
     onClose();
   };
 
+  // ── Validation ────────────────────────────────────────────────────────────
   const validate = (): boolean => {
     const e: FormErrors = {};
     if (!productName.trim()) e.productName = "Product name is required";
@@ -82,17 +98,19 @@ export const EditProductModal: React.FC<Props> = ({
     return !Object.keys(e).length;
   };
 
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleUpdate = async () => {
-    if (!validate() || !product) return;
-    setIsLoading(true);
+    if (!validate() || !productId) return;
+    setIsUpdating(true);
     try {
       await updateProductMutation.mutateAsync({
-        product_id: product.id,
+        product_id: productId,
         payload: {
           name: productName,
           description,
           material_composition: material,
           category: parseInt(category),
+          is_active: isActive,
         },
       });
       setSaveSuccess(true);
@@ -108,13 +126,14 @@ export const EditProductModal: React.FC<Props> = ({
         "error",
       );
     } finally {
-      setIsLoading(false);
+      setIsUpdating(false);
     }
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <AnimatePresence>
-      {open && product && (
+      {open && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -137,7 +156,7 @@ export const EditProductModal: React.FC<Props> = ({
                   Edit Product
                 </h2>
                 <p className="text-sm text-gray-400 mt-1">
-                  Update product information
+                  {isFetching ? "Loading..." : (product?.name ?? "")}
                 </p>
               </div>
               <button
@@ -148,6 +167,7 @@ export const EditProductModal: React.FC<Props> = ({
               </button>
             </div>
 
+            {/* Success */}
             {saveSuccess && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -163,125 +183,198 @@ export const EditProductModal: React.FC<Props> = ({
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="bg-[#1a1d29] border border-white/10 rounded-xl p-6 space-y-4">
-                <h3 className="text-lg font-bold text-white">
-                  Product Details
-                </h3>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Product Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={productName}
-                    onChange={(e) => {
-                      setProductName(e.target.value);
-                      setFormErrors((p) => ({ ...p, productName: undefined }));
-                    }}
-                    placeholder="e.g. Classic Cotton T-Shirt"
-                    className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none ${
-                      formErrors.productName
-                        ? "border-red-500"
-                        : "border-white/10 focus:border-blue-500/50"
-                    }`}
-                  />
-                  {formErrors.productName && (
-                    <FieldError msg={formErrors.productName} />
-                  )}
+              {/* ── Loading state ──────────────────────────────────────────── */}
+              {isFetching && (
+                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                  <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
+                  <p className="text-gray-400">Loading product data...</p>
                 </div>
+              )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
-                      Category *
-                    </label>
-                    <select
-                      value={category}
-                      onChange={(e) => {
-                        setCategory(e.target.value);
-                        setFormErrors((p) => ({ ...p, category: undefined }));
-                      }}
-                      className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white focus:outline-none ${
-                        formErrors.category
-                          ? "border-red-500"
-                          : "border-white/10 focus:border-blue-500/50"
-                      }`}
-                    >
-                      <option value="">Select...</option>
-                      <option value="1">T-Shirts</option>
-                      <option value="2">Hoodies</option>
-                      <option value="3">Pants</option>
-                      <option value="4">Accessories</option>
-                    </select>
-                    {formErrors.category && (
-                      <FieldError msg={formErrors.category} />
-                    )}
+              {/* ── Error state ────────────────────────────────────────────── */}
+              {isError && !isFetching && (
+                <div className="flex flex-col items-center justify-center h-64 gap-3">
+                  <AlertCircle className="w-10 h-10 text-red-500" />
+                  <p className="text-red-400 font-semibold">
+                    Failed to load product
+                  </p>
+                  <p className="text-gray-500 text-sm text-center">
+                    {(error as { message?: string })?.message ??
+                      "Please try again"}
+                  </p>
+                </div>
+              )}
+
+              {/* ── Form ───────────────────────────────────────────────────── */}
+              {!isFetching && !isError && product && (
+                <div className="space-y-6">
+                  <div className="bg-[#1a1d29] border border-white/10 rounded-xl p-6 space-y-4">
+                    <h3 className="text-lg font-bold text-white">
+                      Product Details
+                    </h3>
+
+                    {/* Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">
+                        Product Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={productName}
+                        onChange={(e) => {
+                          setProductName(e.target.value);
+                          setFormErrors((p) => ({
+                            ...p,
+                            productName: undefined,
+                          }));
+                        }}
+                        placeholder="e.g. Classic Cotton T-Shirt"
+                        className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none ${
+                          formErrors.productName
+                            ? "border-red-500"
+                            : "border-white/10 focus:border-blue-500/50"
+                        }`}
+                      />
+                      {formErrors.productName && (
+                        <FieldError msg={formErrors.productName} />
+                      )}
+                    </div>
+
+                    {/* Category + Material */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-2">
+                          Category *
+                        </label>
+                        <select
+                          value={category}
+                          onChange={(e) => {
+                            setCategory(e.target.value);
+                            setFormErrors((p) => ({
+                              ...p,
+                              category: undefined,
+                            }));
+                          }}
+                          className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white focus:outline-none ${
+                            formErrors.category
+                              ? "border-red-500"
+                              : "border-white/10 focus:border-blue-500/50"
+                          }`}
+                        >
+                          <option value="">Select...</option>
+                          <option value="1">T-Shirts</option>
+                          <option value="2">Hoodies</option>
+                          <option value="3">Pants</option>
+                          <option value="4">Accessories</option>
+                        </select>
+                        {formErrors.category && (
+                          <FieldError msg={formErrors.category} />
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-2">
+                          Material *
+                        </label>
+                        <input
+                          type="text"
+                          value={material}
+                          onChange={(e) => {
+                            setMaterial(e.target.value);
+                            setFormErrors((p) => ({
+                              ...p,
+                              material: undefined,
+                            }));
+                          }}
+                          placeholder="e.g. 100% Cotton"
+                          className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none ${
+                            formErrors.material
+                              ? "border-red-500"
+                              : "border-white/10 focus:border-blue-500/50"
+                          }`}
+                        />
+                        {formErrors.material && (
+                          <FieldError msg={formErrors.material} />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">
+                        Description *
+                      </label>
+                      <textarea
+                        value={description}
+                        rows={5}
+                        onChange={(e) => {
+                          setDescription(e.target.value);
+                          setFormErrors((p) => ({
+                            ...p,
+                            description: undefined,
+                          }));
+                        }}
+                        placeholder="Write your product description here..."
+                        className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none resize-none ${
+                          formErrors.description
+                            ? "border-red-500"
+                            : "border-white/10 focus:border-blue-500/50"
+                        }`}
+                      />
+                      {formErrors.description && (
+                        <FieldError msg={formErrors.description} />
+                      )}
+                    </div>
+
+                    {/* Active Toggle */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-2">
+                        Status
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsActive((p) => !p)}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors w-full ${
+                          isActive
+                            ? "bg-green-500/10 border-green-500/30 text-green-400"
+                            : "bg-gray-500/10 border-gray-500/30 text-gray-400"
+                        }`}
+                      >
+                        {isActive ? (
+                          <ToggleRight className="w-5 h-5" />
+                        ) : (
+                          <ToggleLeft className="w-5 h-5" />
+                        )}
+                        <span className="font-semibold">
+                          {isActive ? "Active" : "Inactive"}
+                        </span>
+                        <span className="text-xs ml-auto opacity-60">
+                          {isActive
+                            ? "Product is visible to customers"
+                            : "Product is hidden from customers"}
+                        </span>
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
-                      Material *
-                    </label>
-                    <input
-                      type="text"
-                      value={material}
-                      onChange={(e) => {
-                        setMaterial(e.target.value);
-                        setFormErrors((p) => ({ ...p, material: undefined }));
-                      }}
-                      placeholder="e.g. 100% Cotton"
-                      className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none ${
-                        formErrors.material
-                          ? "border-red-500"
-                          : "border-white/10 focus:border-blue-500/50"
-                      }`}
-                    />
-                    {formErrors.material && (
-                      <FieldError msg={formErrors.material} />
-                    )}
-                  </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
-                    Description *
-                  </label>
-                  <textarea
-                    value={description}
-                    rows={6}
-                    onChange={(e) => {
-                      setDescription(e.target.value);
-                      setFormErrors((p) => ({ ...p, description: undefined }));
-                    }}
-                    placeholder="Write your product description here..."
-                    className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none resize-none ${
-                      formErrors.description
-                        ? "border-red-500"
-                        : "border-white/10 focus:border-blue-500/50"
-                    }`}
-                  />
-                  {formErrors.description && (
-                    <FieldError msg={formErrors.description} />
-                  )}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Footer */}
             <div className="border-t border-white/10 p-6 flex items-center justify-between">
               <button
                 onClick={handleClose}
-                disabled={isLoading}
+                disabled={isUpdating}
                 className="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-lg font-semibold hover:bg-white/10 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdate}
-                disabled={isLoading}
+                disabled={isUpdating || isFetching || !product}
                 className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-bold flex items-center gap-2 hover:shadow-xl hover:shadow-blue-500/30 disabled:opacity-50"
               >
-                {isLoading ? (
+                {isUpdating ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     Updating...

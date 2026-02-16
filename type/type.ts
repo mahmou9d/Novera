@@ -307,6 +307,7 @@ export interface Product {
   material_composition?: string;
   variants?: Variant[];
   variant?: Variant;
+  is_active?: boolean;
 }
 // Type للـ Cart Item
 export interface CartItem {
@@ -434,6 +435,7 @@ export interface SubVariant {
   price: string;
   compare_at_price: string;
   stock: number;
+  is_active?: boolean;
 }
 export interface CreateProductResponse {
   message: string;

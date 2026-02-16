@@ -19,7 +19,8 @@ export const productKeys = {
     [...productKeys.lists(), { page, all }] as const,
 
   details: () => [...productKeys.all, "detail"] as const,
-  detail: (id: number) => [...productKeys.details(), id] as const,
+  detail: (id: number, all?: boolean) =>
+    [...productKeys.details(), id, ...(all ? [{ all: true }] : [])] as const,
 
   variant: (id: number) => [...productKeys.all, "variant", id] as const,
 
@@ -41,10 +42,11 @@ export const useGetProducts = (params?: {
 
 export const useGetSingleProduct = (
   productId: number,
+  all: boolean = false,
 ): UseQueryResult<Product, Error> => {
   return useQuery<Product, Error>({
-    queryKey: productKeys.detail(productId),
-    queryFn: () => productsAPI.getSingleProducts(productId),
+    queryKey: productKeys.detail(productId, all),
+    queryFn: () => productsAPI.getSingleProducts(productId, all),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     enabled: !!productId && productId > 0,
@@ -132,10 +134,11 @@ export const useUpdateProduct = () => {
     }: {
       product_id: number;
       payload: {
-        name: string;
-        category: number;
-        material_composition: string;
-        description: string;
+        name?: string;
+        category?: number;
+        material_composition?: string;
+        description?: string;
+        is_active?: boolean;
       };
     }) => productsAPI.updateProduct(product_id, payload),
     onSuccess: (_, variables) => {
@@ -162,7 +165,7 @@ export const useUpdateProductVariant = () => {
       payload,
     }: {
       variant_id: number;
-      payload: SubVariant;
+      payload: Partial<SubVariant>;
     }) => productsAPI.updateProductVariants(variant_id, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
