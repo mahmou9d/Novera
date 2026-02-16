@@ -9,7 +9,7 @@ import Link from "next/link";
 
 const MainSection = () => {
   const [activeCategory, setActiveCategory] = useState("all");
-  const { data, isLoading, isError, error } = useGetProducts({ all: true });
+  const { data, isLoading, isError, error } = useGetProducts();
 
   const products = useMemo(() => data?.products || [], [data?.products]);
 
