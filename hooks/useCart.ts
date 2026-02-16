@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,8 +30,8 @@ export const useAddToCart = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: cartKeys.items() });
         },
-        onError: (error) => {
-            console.error("Add to cart failed:", error);
+        onError: (error: any) => {
+            console.error("Add to cart failed:", error?.response?.data?.detail);
         },
     });
 };

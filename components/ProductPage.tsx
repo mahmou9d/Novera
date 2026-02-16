@@ -105,8 +105,14 @@ const ProductPage = ({ productId }: ProductPageProps) => {
           setTimeout(() => setAddedToCart(false), 3000);
         },
         onError: (error: any) => {
-          console.error("Cart error:", error?.response?.data.error);
-          showNotification(error?.response?.data?.error, "error");
+          console.error("Cart error:", error?.response?.data?.detail);
+          showNotification(
+            error?.response?.data?.error ||
+              error?.response?.data?.detail ||
+              error?.message ||
+              "Something went wrong",
+            "error",
+          );
         },
       },
     );

@@ -68,8 +68,8 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
           showNotification(`${product.name} added to cart!`);
         },
         onError: (error: any) => {
-          console.error("Cart error:", error?.response?.data.error);
-          showNotification(error?.response?.data?.error, "error");
+          console.error("Cart error:", error?.response?.data?.detail);
+          showNotification(error?.response?.data?.detail, "error");
         },
       },
     );
