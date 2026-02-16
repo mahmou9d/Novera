@@ -9,7 +9,7 @@ const Notification = ({
 }) => {
   return (
     <div>
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 z-[100] w-max">
+      <div className="fixed mt-3 top-0 left-1/2 -translate-x-1/2 z-[100] w-max">
         <div
           className={`px-6 py-3 rounded-full shadow-lg flex items-center gap-2 ${
             type === "success" ? "bg-[#fca481]" : "bg-red-500"

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // api/dashboardApi.ts
 "use client";
 
@@ -16,6 +17,8 @@ import {
   CreateProductResponse,
   AddVariants,
   AddImageVariants,
+  Product,
+  Variant,
 } from "../type/type";
 
 export const dashboardAPI = {
@@ -79,39 +82,4 @@ export const dashboardAPI = {
     );
     return data || [];
   },
-  createProduct: async (
-    payload: CreateProduct,
-  ): Promise<CreateProductResponse> => {
-    const { data } = await apiClient.post<CreateProductResponse>(
-      "/dashboard/products/create/",
-      payload,
-    );
-    return data;
-  },
-  addVariantsProduct: async (
-    payload: AddVariants[],
-    product_id: number,
-  ): Promise<AddVariants[]> => {
-    const { data } = await apiClient.post<AddVariants[]>(
-      `/dashboard/products/${product_id}/variants/add/`,
-      payload,
-    );
-    return data;
-  },
-  addImageVariantsProduct: async (
-    payload: FormData,
-    variant_id: number,
-  ): Promise<AddImageVariants> => {
-    const { data } = await apiClient.post<AddImageVariants>(
-      `/dashboard/variants/${variant_id}/upload-image/`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
-    );
-    return data;
-  },
-  
 };

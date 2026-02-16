@@ -9,7 +9,7 @@ import Link from "next/link";
 
 const MainSection = () => {
   const [activeCategory, setActiveCategory] = useState("all");
-  const { data, isLoading, isError, error } = useGetProducts();
+  const { data, isLoading, isError, error } = useGetProducts({ all: true });
 
   const products = useMemo(() => data?.products || [], [data?.products]);
 
@@ -51,6 +51,7 @@ const MainSection = () => {
     });
   }, [activeCategory, products]);
 
+  const someProducts =filteredProducts.slice(0, 8);
   // Current category name
   const currentCategoryName = useMemo(() => {
     if (activeCategory === "all") return "The Collection";
@@ -198,11 +199,11 @@ const MainSection = () => {
               {currentCategoryName}
             </h2>
             <p
-              key={filteredProducts.length}
+              key={someProducts.length}
               className="text-gray-600 font-medium text-lg"
             >
-              <span key={filteredProducts.length}>
-                {filteredProducts.length}
+              <span key={someProducts.length}>
+                {someProducts.length}
               </span>{" "}
               pieces for your wardrobe
             </p>
@@ -216,8 +217,8 @@ const MainSection = () => {
           </div>
         ) : (
           <div key={activeCategory}>
-            {filteredProducts.length > 0 ? (
-              <Productgrid products={filteredProducts} />
+            {someProducts.length > 0 ? (
+              <Productgrid products={someProducts} />
             ) : (
               <div className="text-center py-20">
                 <p className="text-gray-500 text-lg">
@@ -229,7 +230,7 @@ const MainSection = () => {
         )}
 
         {/* Load More */}
-        {filteredProducts.length > 0 && (
+        {someProducts.length > 0 && (
           <div className="text-center mt-16">
             <Link
               href="/shop"

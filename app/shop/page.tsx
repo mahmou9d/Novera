@@ -27,7 +27,9 @@ const Shop = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Server-side pagination
-  const { data, isLoading, isError, error } = useGetProducts(currentPage);
+  const { data, isLoading, isError, error } = useGetProducts({
+    page: currentPage,
+  });
 
   // Memoize products to prevent unnecessary re-renders
   const products = useMemo(() => data?.products || [], [data?.products]);

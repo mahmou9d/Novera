@@ -26,19 +26,19 @@ export interface SignupRequest {
 export interface SignupResponse {
   message: string;
 }
-export interface Variant {
-  id: number;
-  color_name: string;
-  color_hex: string | null;
-  size: string;
-  price: string; // تأتي من الـ API كـ string "30.00"
-  compare_at_price: string;
-  images: string[];
-  is_on_sale: boolean;
-  stock: number;
-  // category_name?:string;
-  product_name?: string;
-}
+// export interface Variant {
+//   id: number;
+//   color_name: string;
+//   color_hex: string | null;
+//   size: string;
+//   price: string; // تأتي من الـ API كـ string "30.00"
+//   compare_at_price: string;
+//   images: string[];
+//   is_on_sale: boolean;
+//   stock: number;
+//   // category_name?:string;
+//   product_name?: string;
+// }
 
 export interface CartItem {
   id: number; // معرف الـ item في السلة
@@ -127,7 +127,16 @@ export interface TProduct {
   thumbnail: string | null;
   average_rating: number | null;
   review_count: number;
+  is_active?: boolean;
   created_at: string;
+  material_composition?: string;
+  description?: string;
+  price: string;
+  quantity: number;
+  subtotal: string;
+  category?: string | number;
+  variants?: Variant[];
+  variant?: Variant;
 }
 
 export interface TProductsResponse {
@@ -283,6 +292,7 @@ export interface Variant {
   price: string;
   compare_at_price: string;
   is_on_sale: boolean;
+  is_active: boolean;
   stock: number;
   images: string[];
 }
@@ -292,7 +302,7 @@ export interface Product {
   quantity: number;
   subtotal: string;
   name?: string;
-  category?: string;
+  category?: string | number;
   description?: string;
   material_composition?: string;
   variants?: Variant[];
@@ -417,7 +427,7 @@ export interface CreateProduct {
   material_composition: string;
   category: number;
 }
-interface SubVariant {
+export interface SubVariant {
   color_name: string;
   color_hex: string | null;
   size: string;

@@ -1,7 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { apiClient } from "@/lib/apiClient";
-import { Product, TProduct } from "@/type/type";
+import {
+  AddImageVariants,
+  AddVariants,
+  CreateProduct,
+  CreateProductResponse,
+  Product,
+  SubVariant,
+  TProduct,
+  Variant,
+} from "@/type/type";
 export interface ProductsData {
   products: TProduct[];
   count: number;
@@ -17,12 +27,17 @@ interface ProductsDataRes {
 }
 export const productsAPI = {
   // api/productsApi.ts
-  getProducts: async (page: number = 1): Promise<ProductsData> => {
-    const { data } = await apiClient.get<ProductsDataRes>(
-      `/products/`,
-      { params: { page } },
-    );
-    console.log("Products Response:", data);
+  getProducts: async (params?: {
+    page?: number;
+    all?: boolean;
+  }): Promise<ProductsData> => {
+    const { data } = await apiClient.get<ProductsDataRes>(`/products/`, {
+      params: {
+        page: params?.page,
+        all: params?.all,
+      },
+    });
+
     return {
       products: data.results || [],
       count: data.count,
@@ -30,6 +45,7 @@ export const productsAPI = {
       previous: data.previous,
     };
   },
+
   getSingleProducts: async (id: number): Promise<Product> => {
     try {
       if (!id || id <= 0) {
@@ -45,5 +61,82 @@ export const productsAPI = {
       console.error(`Error fetching product ${id}:`, error);
       throw error;
     }
+  },
+  createProduct: async (
+    payload: CreateProduct,
+  ): Promise<CreateProductResponse> => {
+    const { data } = await apiClient.post<CreateProductResponse>(
+      "/dashboard/products/create/",
+      payload,
+    );
+    return data;
+  },
+  addVariantsProduct: async (
+    payload: AddVariants[],
+    product_id: number,
+  ): Promise<AddVariants[]> => {
+    const { data } = await apiClient.post<AddVariants[]>(
+      `/dashboard/products/${product_id}/variants/add/`,
+      payload,
+    );
+    return data;
+  },
+  addImageVariantsProduct: async (
+    payload: FormData,
+    variant_id: number,
+  ): Promise<AddImageVariants> => {
+    const { data } = await apiClient.post<AddImageVariants>(
+      `/dashboard/variants/${variant_id}/upload-image/`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+    return data;
+  },
+  updateProduct: async (
+    id: number,
+    payload: {
+      name: string;
+      category: number;
+      material_composition: string;
+      description: string;
+    },
+  ): Promise<any> => {
+    const { data } = await apiClient.patch<any>(
+      `/dashboard/products/${id}/manage/`,
+      payload,
+    );
+    return data;
+  },
+  updateProductVariants: async (
+    id: number,
+    payload: SubVariant,
+  ): Promise<any> => {
+    const { data } = await apiClient.patch<any>(
+      `/dashboard/variants/${id}/manage/`,
+      payload,
+    );
+    return data;
+  },
+  deleteProduct: async (id: number, hard: boolean = false): Promise<any> => {
+    const url = hard
+      ? `/dashboard/products/${id}/manage/?hard=true`
+      : `/dashboard/products/${id}/manage/`;
+    const { data } = await apiClient.delete<any>(url);
+    return data;
+  },
+
+  deleteProductVariants: async (
+    id: number,
+    hard: boolean = false,
+  ): Promise<any> => {
+    const url = hard
+      ? `/dashboard/variants/${id}/manage/?hard=true`
+      : `/dashboard/variants/${id}/manage/`;
+    const { data } = await apiClient.delete<any>(url);
+    return data;
   },
 };

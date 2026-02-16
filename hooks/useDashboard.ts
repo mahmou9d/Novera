@@ -1,9 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  UseMutationResult,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { dashboardAPI } from "../api/dashboardApi";
-import { AddVariants, CreateProduct, OrderStatus } from "../type/type";
+import {
+  AddVariants,
+  CreateProduct,
+  OrderStatus,
+  Product,
+  Variant,
+} from "../type/type";
 
 export const dashboardKeys = {
   all: ["dashboard"] as const,
@@ -115,77 +126,6 @@ export const useMakeAdmin = () => {
     },
     onError: (error: any) => {
       console.error("Make admin failed:", error);
-    },
-  });
-};
-export const useCreateProduct = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (payload: CreateProduct) => dashboardAPI.createProduct(payload),
-
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: dashboardKeys.products(),
-      });
-
-      console.log("Product created:", data);
-    },
-
-    onError: (error: any) => {
-      console.error("Create product failed:", error);
-    },
-  });
-};
-
-export const useAddVariantsProduct = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      payload,
-      product_id,
-    }: {
-      payload: AddVariants[];
-      product_id: number;
-    }) => dashboardAPI.addVariantsProduct(payload, product_id),
-
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: dashboardKeys.product(variables.product_id),
-      });
-
-      console.log("Variants added successfully");
-    },
-
-    onError: (error: any) => {
-      console.error("Add variants failed:", error);
-    },
-  });
-};
-
-export const useAddImageVariantsProduct = () => {
-  const queryClient = useQueryClient(); 
-
-  return useMutation({
-    mutationFn: ({
-      payload,
-      variant_id,
-    }: {
-      payload: FormData;
-      variant_id: number;
-    }) => dashboardAPI.addImageVariantsProduct(payload, variant_id),
-
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: dashboardKeys.productVariant(variables.variant_id),
-      });
-
-      console.log("Variant image uploaded successfully");
-    },
-
-    onError: (error: any) => {
-      console.error("Upload image failed:", error);
     },
   });
 };
