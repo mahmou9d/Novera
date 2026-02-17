@@ -1,17 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { X, Search, Star, DollarSign } from "lucide-react";
-import { TProduct } from "@/type/type";
+import { SearchSectionProps, TProduct } from "@/type/type";
 import { useGetProducts } from "@/hooks/useProducts";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-
-interface SearchSectionProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
 
 const SearchSection = ({ isOpen, onClose }: SearchSectionProps) => {
   const [searchQuery, setSearchQuery] = useState<string>("");

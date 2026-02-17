@@ -1,20 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
   useMutation,
-  UseMutationResult,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { dashboardAPI } from "../api/dashboardApi";
 import {
-  AddVariants,
-  CreateProduct,
+  ErrorResponse,
   OrderStatus,
-  Product,
-  Variant,
 } from "../type/type";
+import { AxiosError } from "axios";
 
 export const dashboardKeys = {
   all: ["dashboard"] as const,
@@ -108,7 +104,7 @@ export const usePatchOrders = () => {
       queryClient.invalidateQueries({ queryKey: dashboardKeys.ordersCount() });
       queryClient.invalidateQueries({ queryKey: dashboardKeys.statusCount() });
     },
-    onError: (error: any) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Patch order failed:", error);
     },
   });
@@ -124,7 +120,7 @@ export const useMakeAdmin = () => {
       queryClient.invalidateQueries({ queryKey: dashboardKeys.users() });
       console.log("Success:", data.message);
     },
-    onError: (error: any) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Make admin failed:", error);
     },
   });

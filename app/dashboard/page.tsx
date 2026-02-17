@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { DashboardPage } from "./components/DashboardPage";
@@ -71,7 +70,7 @@ const CompleteDashboard = () => {
       case "products":
         return (
           <EditProduct
-            products={productsData}
+            // products={productsData}
             getStatusColor={getStatusColor}
             getStatusIcon={getStatusIcon}
           />
@@ -79,9 +78,9 @@ const CompleteDashboard = () => {
       case "customers":
         return (
           <CustomersPage
-            customers={customersData}
-            getStatusColor={getStatusColor}
-            getStatusIcon={getStatusIcon}
+            // customers={customersData}
+            // getStatusColor={getStatusColor}
+            // getStatusIcon={getStatusIcon}
           />
         );
       case "analytics":

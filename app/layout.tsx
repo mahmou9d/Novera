@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
-import QueryProvider from "@/components/QueryProvider";
+import QueryProvider from "@/utils/QueryProvider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const RobotoSans = Roboto({

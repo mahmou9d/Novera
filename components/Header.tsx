@@ -25,7 +25,7 @@ const Header = () => {
   const { isAuthenticated, isLoading, logout,isAdmin } = useAuth();
   const { data: cartItems = [] } = useGetCartItems();
 
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartCount = cartItems.reduce((acc, item) => acc + Number(item.quantity), 0);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);

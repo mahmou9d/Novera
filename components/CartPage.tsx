@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   ShoppingCart,
   Trash2,
@@ -10,9 +9,6 @@ import {
   Lock,
   Truck,
   Shield,
-  ChevronLeft,
-  ChevronRight,
-  Package,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -24,7 +20,6 @@ import {
   useRemoveFromCart,
   useClearCart,
 } from "@/hooks/useCart";
-import { CartItem as APICartItem } from "@/type/type";
 import IsLoading from "@/components/IsLoading";
 import Notification from "@/components/Notification";
 import {
@@ -32,62 +27,19 @@ import {
   useCreatePayPalOrder,
   useCreateStripeSession,
 } from "@/hooks/usePayment";
-import CheckoutForm, { CheckoutFormData } from "./Checkoutform";
+import CheckoutForm from "./Checkoutform";
 import PaymentMethodModal from "./PaymentMethodModal";
-import { useSearchParams, useRouter } from "next/navigation";
+import {  useRouter } from "next/navigation";
+import { AxiosError } from "axios";
+import { CheckoutFormData, ErrorResponse, LinksPayPal, NotificationState } from "@/type/type";
+import { useShowNotification } from "@/utils/showNotification";
+import { useAuth } from "@/hooks/useAuth";
 
-// UI Types
-interface CartItemUI {
-  id: number;
-  name: string;
-  brand: string;
-  price: number;
-  quantity: number;
-  images: string[];
-  colorName: string;
-  colorHex: string | null;
-  size: string;
-  inStock: boolean;
-  maxQuantity: number;
-  originalPrice?: number;
-}
-
-export interface Notification {
-  message: string;
-  type: "success" | "error";
-}
-
-// Helper function
-const convertCartItemToUI = (item: APICartItem): CartItemUI => {
-  const variant = item.variant || {};
-  // const product = item.product || {};
-
-  return {
-    id: item.id,
-    name: item?.name || "Product Name",
-    brand: item?.category_name || "Brand",
-    price: parseFloat(variant.price || "0"),
-    quantity: item.quantity,
-    images:
-      variant.images && variant.images.length > 0
-        ? variant.images
-        : ["/placeholder-product.jpg"],
-    colorName: variant.color_name || "N/A",
-    colorHex: variant.color_hex || null,
-    size: variant.size || "N/A",
-    inStock: (variant.stock || 0) > 0,
-    maxQuantity: variant.stock || 10,
-    originalPrice: variant.compare_at_price
-      ? parseFloat(variant.compare_at_price)
-      : undefined,
-  };
-};
 
 // Main Cart Page
 const CartPage = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [notification, setNotification] = useState<Notification | null>(null);
+  const [notification, setNotification] = useState<NotificationState | null>(null);
   const [imageIndexes, setImageIndexes] = useState<{ [key: number]: number }>(
     {},
   );
@@ -97,6 +49,8 @@ const CartPage = () => {
 
   // API Hooks
   const { data: apiCartItems = [], isLoading } = useGetCartItems();
+    const { isAuthenticated } = useAuth();
+  
   const updateQuantityMutation = useUpdateCartQuantity();
   const removeItemMutation = useRemoveFromCart();
   const clearCartMutation = useClearCart();
@@ -107,42 +61,26 @@ const CartPage = () => {
   console.log(apiCartItems, "mmmmmmmmmmmmm");
   const { subtotal, shipping, total } = useMemo(() => {
     const sub = apiCartItems.reduce(
-      (acc, item) => acc + Number(item.price) * item.quantity,
+      (acc, item) => acc + Number(item.price) * Number(item.quantity),
       0,
     );
     const ship = sub > 500 || sub === 0 ? 0 : 20.0;
     return { subtotal: sub, shipping: ship, total: sub + ship };
   }, [apiCartItems]);
 
-  const showNotification = useCallback(
-    (message: string, type: "success" | "error" = "success") => {
-      setNotification({ message, type });
-      setTimeout(() => setNotification(null), 3000);
-    },
-    [],
-  );
+const showNotification = useShowNotification(setNotification);
 
   const handleUpdateQuantity = (id: number, delta: number) => {
     const item = apiCartItems.find((i) => i.id === id);
     if (!item) return;
-    const newQty = item.quantity + delta;
-
-    // لو بيحاول يزود فوق الـ stock المتاح
-    // if (delta > 0 && newQty >Number(item.variant?.stock)) {
-    //   showNotification(
-    //     `Maximum available quantity is ${item.variant?.stock}`,
-    //     "error",
-    //   );
-    //   return;
-    // }
+    const newQty = Number(item.quantity) + delta;
 
     if (newQty > 0) {
       updateQuantityMutation.mutate(
         { itemId: id, quantity: newQty },
         {
-          onSuccess: () => showNotification("Quantity updated successfully"),
-          onError: (error: any) => {
-            // عرض رسالة الـ API لو في error
+          onSuccess: () => showNotification("Quantity updated successfully", "success"),
+          onError: (error: AxiosError<ErrorResponse>) => {
             const message =
               error?.response?.data?.error || "Failed to update quantity";
             showNotification(message, "error");
@@ -154,7 +92,7 @@ const CartPage = () => {
 
   const handleRemove = (id: number) => {
     removeItemMutation.mutate(id, {
-      onSuccess: () => showNotification("Item removed from cart"),
+      onSuccess: () => showNotification("Item removed from cart", "success"),
       onError: () => showNotification("Error removing item", "error"),
     });
   };
@@ -162,7 +100,7 @@ const CartPage = () => {
   const handleClearCart = () => {
     if (window.confirm("Are you sure you want to clear your entire cart?")) {
       clearCartMutation.mutate(undefined, {
-        onSuccess: () => showNotification("Cart cleared successfully"),
+        onSuccess: () => showNotification("Cart cleared successfully", "success"),
         onError: () => showNotification("Failed to clear cart", "error"),
       });
     }
@@ -184,7 +122,7 @@ const CartPage = () => {
           setShowPaymentMethodModal(true);
         }
       },
-      onError: (error: any) => {
+      onError: (error: AxiosError<ErrorResponse>) => {
         console.error("Place order failed:", error);
         const message =
           error?.response?.data?.message || "Failed to place order";
@@ -202,29 +140,22 @@ const CartPage = () => {
         showNotification("Redirecting to PayPal...", "success");
 
         const approveLink = data?.links?.find(
-          (link: any) => link.rel === "approve",
+          (link: LinksPayPal) => link.rel === "approve",
         );
 
         if (approveLink?.href) {
-          // ✅ تحويل href إلى URL
           const url = new URL(approveLink.href);
-
-          // ✅ استخراج token
           const token = url.searchParams.get("token");
-
           if (token) {
             localStorage.setItem("token", token);
           }
-
-          // ✅ التحويل إلى PayPal
           window.location.href = approveLink.href;
         } else if (data?.links?.length > 0) {
-          // fallback
           window.location.href = data.links[0].href;
         }
       },
 
-      onError: (error: any) => {
+      onError: (error: AxiosError<ErrorResponse>) => {
         console.error("PayPal payment failed:", error);
 
         const message =
@@ -248,7 +179,7 @@ const CartPage = () => {
           window.location.href = data.url;
         }
       },
-      onError: (error: any) => {
+      onError: (error: AxiosError<ErrorResponse>) => {
         console.error("Stripe payment failed:", error);
         const message =
           error?.response?.data?.message || "Failed to create Stripe payment";
@@ -257,27 +188,6 @@ const CartPage = () => {
       },
     });
   };
-
-  // const nextImage = (itemId: number, totalImages: number) => {
-  //   setImageIndexes((prev) => ({
-  //     ...prev,
-  //     [itemId]: ((prev[itemId] || 0) + 1) % totalImages,
-  //   }));
-  // };
-
-  // const prevImage = (itemId: number, totalImages: number) => {
-  //   setImageIndexes((prev) => ({
-  //     ...prev,
-  //     [itemId]: ((prev[itemId] || 0) - 1 + totalImages) % totalImages,
-  //   }));
-  // };
-
-  // const setImageIndex = (itemId: number, index: number) => {
-  //   setImageIndexes((prev) => ({
-  //     ...prev,
-  //     [itemId]: index,
-  //   }));
-  // };
 
   if (isLoading) return <IsLoading />;
 
@@ -338,7 +248,7 @@ const CartPage = () => {
             <div className="lg:col-span-2">
               <AnimatePresence mode="popLayout">
                 {apiCartItems.map((item, idx) => {
-                  const currentImageIndex = imageIndexes[item.id] || 0;
+                  const currentImageIndex = imageIndexes[Number(item.id)] || 0;
                   console.log(item);
                   return (
                     <div
@@ -402,7 +312,7 @@ const CartPage = () => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleRemove(item.id);
+                                handleRemove(Number(item.id));
                               }}
                               className="text-gray-400 hover:text-red-500 p-1"
                             >
@@ -415,23 +325,23 @@ const CartPage = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleUpdateQuantity(item.id, -1);
+                                  handleUpdateQuantity(Number(item.id), -1);
                                 }}
-                                disabled={item.quantity <= 1}
+                                disabled={Number(item.quantity) <= 1}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600 hover:bg-[#fca481] hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600"
                               >
                                 <Minus size={16} />
                               </button>
                               <span className="w-8 text-center font-bold text-gray-900">
-                                {item.quantity}
+                                {Number(item.quantity)}
                               </span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleUpdateQuantity(item.id, 1);
+                                  handleUpdateQuantity(Number(item.id), 1);
                                 }}
                                 className={`w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600   ${
-                                  item.quantity >= Number(item.variant?.stock)
+                                  Number(item.quantity) >= Number(item.variant?.stock)
                                     ? ""
                                     : "hover:bg-[#fca481] hover:text-white"
                                 }`}
@@ -446,14 +356,14 @@ const CartPage = () => {
                                   $
                                   {(
                                     Number(item?.variant?.compare_at_price) *
-                                    item.quantity
+                                    Number(item.quantity)
                                   ).toFixed(2)}
                                 </span>
                               )}
                               <span className="text-xl font-black text-gray-900">
                                 $
                                 {(
-                                  Number(item?.variant?.price) * item.quantity
+                                  Number(item?.variant?.price) * Number(item.quantity)
                                 ).toFixed(2)}
                               </span>
                             </div>
@@ -503,7 +413,13 @@ const CartPage = () => {
                 </div>
 
                 <button
-                  onClick={() => setShowCheckoutForm(true)}
+                  onClick={() => {
+                    if (isAuthenticated){
+                      setShowCheckoutForm(true);
+                    }else{
+                      window.location.href = "/login";
+                    }
+                  }}
                   className="w-full bg-[#fca481] hover:bg-[#fb8c5f] text-white py-4 rounded-xl font-bold text-base shadow-lg flex items-center justify-center gap-2 mb-6"
                 >
                   <Lock size={20} />

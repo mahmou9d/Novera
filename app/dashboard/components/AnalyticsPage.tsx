@@ -28,7 +28,6 @@ export const AnalyticsPage = () => {
 
   console.log({ statusCount, reviewsData, lowStockData, salesData });
 
-  // Calculate analytics data from API
   const totalOrders = statusCount?.orders?.total || 0;
   const totalSales = statusCount?.sales || 0;
   const avgOrder = totalOrders > 0 ? totalSales / totalOrders : 0;

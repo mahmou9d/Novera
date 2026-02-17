@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect } from "react";
@@ -11,7 +10,6 @@ const PaymentSuccess = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Refetch cart to update it (will be empty after successful payment)
     queryClient.invalidateQueries({ queryKey: ["cart"] });
   }, [queryClient]);
 

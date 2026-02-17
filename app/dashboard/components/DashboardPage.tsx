@@ -19,7 +19,6 @@ import {
   useGetRecentOrders,
   useGetSalesOrders,
   useGetTopSelling,
-
 } from "@/hooks/useDashboard";
 
 interface DashboardPageProps {
@@ -35,8 +34,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ stats }) => {
   const [chartView, setChartView] = useState<"sales" | "orders">("sales");
 
   console.log(salesData, topSellingData, recentOrdersData);
-
-  // حساب القيم للمحور Y
   const getChartData = () => {
     if (!salesData || salesData.length === 0) return { maxValue: 0, steps: [] };
 
@@ -45,7 +42,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ stats }) => {
       1,
     );
 
-    // تقريب القيمة العليا لرقم مناسب
     const roundedMax = Math.ceil(maxValue / 10) * 10;
     const step = roundedMax / 4;
 

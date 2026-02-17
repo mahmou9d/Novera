@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { useForm } from "react-hook-form";
+import  { useState } from "react";
+import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -16,54 +15,17 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { usePasswordReset } from "@/hooks/useAuth";
+import { forgotPasswordSchema } from "@/utils/validation";
+import { ErrorResponse, NotificationState } from "@/type/type";
+import { useShowNotification } from "@/utils/showNotification";
+import Notification from "@/components/Notification";
+import { AxiosError } from "axios";
 
-// ========================================
-// TYPES & SCHEMA
-// ========================================
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Invalid email address").min(1, "Email is required"),
-});
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
-interface Notification {
-  message: string;
-  type: "success" | "error";
-}
 
-// ========================================
-// SUB-COMPONENTS
-// ========================================
 
-// Notification Component
-const NotificationToast = ({
-  notification,
-}: {
-  notification: Notification;
-}) => (
-  <div
-    className="fixed top-8 left-1/2 -translate-x-1/2 z-50"
-  >
-    <div
-      className={`glass px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 ${
-        notification.type === "error"
-          ? "border-[#B4182D]/30"
-          : "border-green-500/30"
-      }`}
-    >
-      <div
-      >
-        {notification.type === "error" ? (
-          <AlertCircle className="text-[#B4182D]" size={24} />
-        ) : (
-          <Check className="text-green-600" size={24} />
-        )}
-      </div>
-      <p className="font-semibold text-[#181A2F]">{notification.message}</p>
-    </div>
-  </div>
-);
 
 // Background Blobs Component
 const BackgroundBlobs = () => (
@@ -109,18 +71,19 @@ const FormHeader = () => (
 );
 
 // Email Input Component
-const EmailInput = ({ register, error }: { register: any; error?: string }) => (
-  <div
-    className="input-group"
-  >
+const EmailInput = ({
+  register,
+  error,
+}: {
+  register: UseFormRegisterReturn;
+  error?: string;
+}) => (
+  <div className="input-group">
     <label className="block text-sm font-semibold mb-2 text-[#242E49]">
       Email Address
     </label>
     <div className="relative">
-      <div
-        
-        className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C]"
-      >
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C]">
         <Mail size={20} />
       </div>
       <input
@@ -134,17 +97,13 @@ const EmailInput = ({ register, error }: { register: any; error?: string }) => (
         }`}
       />
     </div>
-    
-      {error && (
-        <p
-          
-          className="text-[#B4182D] text-sm mt-2 flex items-center gap-1"
-        >
-          <AlertCircle size={16} />
-          {error}
-        </p>
-      )}
-    
+
+    {error && (
+      <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1">
+        <AlertCircle size={16} />
+        {error}
+      </p>
+    )}
   </div>
 );
 
@@ -244,7 +203,7 @@ const BackToLoginLink = () => (
 // ========================================
 
 const ForgotPassword = () => {
-  const [notification, setNotification] = useState<Notification | null>(null);
+  const [notification, setNotification] = useState<NotificationState | null>(null);
   const [emailSent, setEmailSent] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
 
@@ -261,13 +220,7 @@ const ForgotPassword = () => {
     },
   });
 
-  const showNotification = useCallback(
-    (message: string, type: "success" | "error" = "success"): void => {
-      setNotification({ message, type });
-      setTimeout(() => setNotification(null), 3000);
-    },
-    [],
-  );
+const showNotification = useShowNotification(setNotification);
 
   const onSubmit = async (data: ForgotPasswordFormData): Promise<void> => {
     resetPasswordMutation.mutate(data.email, {
@@ -275,11 +228,11 @@ const ForgotPassword = () => {
         setEmailSent(true);
         setSubmittedEmail(data.email);
         showNotification(
-          response.message || "Reset link sent successfully!",
+          response.status || "Reset link sent successfully!",
           "success",
         );
       },
-      onError: (error: any) => {
+      onError: (error: AxiosError<ErrorResponse>) => {
         const errorMessage =
           error?.response?.data?.message ||
           error?.message ||
@@ -295,14 +248,13 @@ const ForgotPassword = () => {
       <BackgroundBlobs />
 
       {/* Notification */}
-      
-        {notification && <NotificationToast notification={notification} />}
-      
+
+      {notification && (
+        <Notification type={notification.type} message={notification.message} />
+      )}
 
       {/* Forgot Password Card */}
-      <div
-        className="w-full max-w-md relative"
-      >
+      <div className="w-full max-w-md relative">
         <div className="glass-dark rounded-3xl p-8 shadow-2xl">
           <FormHeader />
 

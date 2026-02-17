@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -13,14 +13,8 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
-import { MenuItemType } from "@/type/type";
+import { MenuItemType, SidebarProps } from "@/type/type";
 
-interface SidebarProps {
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-  activeMenu: string;
-  setActiveMenu: (menu: string) => void;
-}
 
 const menuItems: MenuItemType[] = [
   { id: "dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -77,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Menu Items */}
       <nav className="flex-1 p-4 space-y-1.5">
-        {menuItems.map((item, index) => (
+        {menuItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveMenu(item.id)}

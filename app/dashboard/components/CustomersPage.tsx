@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Send, UserPlus, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 import { useMakeAdmin } from "@/hooks/useDashboard";
-import IsLoading from "@/components/IsLoading";
 
 export const CustomersPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -36,11 +34,9 @@ export const CustomersPage: React.FC = () => {
     makeAdminMutation.mutate(email, {
       onSuccess: (data) => {
         setEmail("");
-        // يمكنك إضافة toast notification هنا
         console.log(data.message);
       },
       onError: (err) => {
-        // Extract error message from API response
         const errorMessage =
           err?.response?.data?.message ||
           err?.response?.data?.error ||

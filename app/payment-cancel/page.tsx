@@ -2,7 +2,6 @@
 
 import { XCircle, ArrowRight, RefreshCw, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 
 const PaymentCancel = () => {
   const router = useRouter();

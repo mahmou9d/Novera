@@ -1,23 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
-import { X, Lock, MapPin, User, Phone, Globe, FileText, RefreshCw } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  X,
+  Lock,
+  MapPin,
+  User,
+  Phone,
+  Globe,
+  FileText,
+  RefreshCw,
+} from "lucide-react";
+import { CheckoutFormProps } from "@/type/type";
+import { checkoutSchema } from "@/utils/validation";
 
-interface CheckoutFormProps {
-  onClose: () => void;
-  onSubmit: (formData: CheckoutFormData) => void;
-  isSubmitting?: boolean;
-  totalAmount: number;
-}
-
-export interface CheckoutFormData {
-  full_name: string;
-  full_address: string;
-  order_notes: string;
-  phone_number: string;
-  country: string;
-}
+export type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 const CheckoutForm = ({
   onClose,
@@ -25,58 +24,27 @@ const CheckoutForm = ({
   isSubmitting = false,
   totalAmount,
 }: CheckoutFormProps) => {
-  const [formData, setFormData] = useState<CheckoutFormData>({
-    full_name: "",
-    full_address: "",
-    order_notes: "",
-    phone_number: "",
-    country: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CheckoutFormData>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      full_name: "",
+      phone_number: "",
+      country: "",
+      full_address: "",
+      order_notes: "",
+    },
   });
 
-  const [errors, setErrors] = useState<Partial<CheckoutFormData>>({});
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<CheckoutFormData> = {};
-
-    if (!formData.full_name.trim()) {
-      newErrors.full_name = "Full name is required";
-    }
-
-    if (!formData.full_address.trim()) {
-      newErrors.full_address = "Full address is required";
-    }
-
-    if (!formData.phone_number.trim()) {
-      newErrors.phone_number = "Phone number is required";
-    } else if (!/^[+\d][\d\s-()]+$/.test(formData.phone_number)) {
-      newErrors.phone_number = "Invalid phone number";
-    }
-
-    if (!formData.country.trim()) {
-      newErrors.country = "Country is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      onSubmit(formData);
-    }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name as keyof CheckoutFormData]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
+  const inputClass = (hasError: boolean) =>
+    `w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors ${
+      hasError
+        ? "border-red-300 focus:border-red-500"
+        : "border-gray-200 focus:border-[#fca481]"
+    }`;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -101,7 +69,7 @@ const CheckoutForm = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           {/* Full Name */}
           <div>
             <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
@@ -110,19 +78,15 @@ const CheckoutForm = ({
             </label>
             <input
               type="text"
-              name="full_name"
-              value={formData.full_name}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-xl border-2 ${
-                errors.full_name
-                  ? "border-red-300 focus:border-red-500"
-                  : "border-gray-200 focus:border-[#fca481]"
-              } outline-none transition-colors`}
+              {...register("full_name")}
+              className={inputClass(!!errors.full_name)}
               placeholder="Enter your full name"
               disabled={isSubmitting}
             />
             {errors.full_name && (
-              <p className="text-red-500 text-xs mt-1">{errors.full_name}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.full_name.message}
+              </p>
             )}
           </div>
 
@@ -134,19 +98,15 @@ const CheckoutForm = ({
             </label>
             <input
               type="tel"
-              name="phone_number"
-              value={formData.phone_number}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-xl border-2 ${
-                errors.phone_number
-                  ? "border-red-300 focus:border-red-500"
-                  : "border-gray-200 focus:border-[#fca481]"
-              } outline-none transition-colors`}
+              {...register("phone_number")}
+              className={inputClass(!!errors.phone_number)}
               placeholder="+1 234 567 8900"
               disabled={isSubmitting}
             />
             {errors.phone_number && (
-              <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.phone_number.message}
+              </p>
             )}
           </div>
 
@@ -158,19 +118,15 @@ const CheckoutForm = ({
             </label>
             <input
               type="text"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-xl border-2 ${
-                errors.country
-                  ? "border-red-300 focus:border-red-500"
-                  : "border-gray-200 focus:border-[#fca481]"
-              } outline-none transition-colors`}
+              {...register("country")}
+              className={inputClass(!!errors.country)}
               placeholder="United States, Canada, UK..."
               disabled={isSubmitting}
             />
             {errors.country && (
-              <p className="text-red-500 text-xs mt-1">{errors.country}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.country.message}
+              </p>
             )}
           </div>
 
@@ -181,20 +137,16 @@ const CheckoutForm = ({
               Full Address <span className="text-red-500">*</span>
             </label>
             <textarea
-              name="full_address"
-              value={formData.full_address}
-              onChange={handleChange}
+              {...register("full_address")}
               rows={3}
-              className={`w-full px-4 py-3 rounded-xl border-2 ${
-                errors.full_address
-                  ? "border-red-300 focus:border-red-500"
-                  : "border-gray-200 focus:border-[#fca481]"
-              } outline-none transition-colors resize-none`}
+              className={`${inputClass(!!errors.full_address)} resize-none`}
               placeholder="Street, City, Postal Code..."
               disabled={isSubmitting}
             />
             {errors.full_address && (
-              <p className="text-red-500 text-xs mt-1">{errors.full_address}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.full_address.message}
+              </p>
             )}
           </div>
 
@@ -205,9 +157,7 @@ const CheckoutForm = ({
               Order Notes (Optional)
             </label>
             <textarea
-              name="order_notes"
-              value={formData.order_notes}
-              onChange={handleChange}
+              {...register("order_notes")}
               rows={3}
               className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#fca481] outline-none transition-colors resize-none"
               placeholder="Any special delivery instructions..."
@@ -215,7 +165,7 @@ const CheckoutForm = ({
             />
           </div>
 
-          {/* Submit Button */}
+          {/* Buttons */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"
@@ -232,10 +182,7 @@ const CheckoutForm = ({
             >
               {isSubmitting ? (
                 <>
-                  <RefreshCw
-                    className="animate-spin text-[#fca481]"
-                    size={25}
-                  />
+                  <RefreshCw className="animate-spin" size={20} />
                   Processing...
                 </>
               ) : (

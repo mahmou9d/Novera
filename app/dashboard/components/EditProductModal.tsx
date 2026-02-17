@@ -12,21 +12,8 @@ import {
   ToggleRight,
 } from "lucide-react";
 import { useUpdateProduct, useGetSingleProduct } from "@/hooks/useProducts";
+import { EditProductModalFormErrors, EditProductModalProps } from "@/type/type";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface FormErrors {
-  productName?: string;
-  category?: string;
-  material?: string;
-  description?: string;
-}
-
-interface Props {
-  open: boolean;
-  productId: number | null; // فقط الـ ID بييجي من الـ parent
-  onClose: () => void;
-  onNotify: (message: string, type: "success" | "error") => void;
-}
 
 const FieldError = ({ msg }: { msg: string }) => (
   <div className="flex items-center gap-2 mt-2 text-red-500 text-sm">
@@ -36,7 +23,7 @@ const FieldError = ({ msg }: { msg: string }) => (
 );
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export const EditProductModal: React.FC<Props> = ({
+export const EditProductModal: React.FC<EditProductModalProps> = ({
   open,
   productId,
   onClose,
@@ -44,7 +31,6 @@ export const EditProductModal: React.FC<Props> = ({
 }) => {
   const updateProductMutation = useUpdateProduct();
 
-  // ── Fetch single product بياناته الكاملة مع الـ variants ─────────────────
   const {
     data: product,
     isLoading: isFetching,
@@ -54,7 +40,7 @@ export const EditProductModal: React.FC<Props> = ({
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [formErrors, setFormErrors] = useState<EditProductModalFormErrors>({});
 
   // Form fields
   const [productName, setProductName] = useState("");
@@ -62,8 +48,6 @@ export const EditProductModal: React.FC<Props> = ({
   const [material, setMaterial] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
-
-  // ── لما البيانات تيجي من الـ API، عبي الفورم ────────────────────────────
   useEffect(() => {
     if (product) {
       setProductName(product.name ?? "");
@@ -75,7 +59,7 @@ export const EditProductModal: React.FC<Props> = ({
       setFormErrors({});
     }
   }, [product]);
-console.log(category)
+  console.log(category);
   // ── Reset لما الـ modal يتقفل ─────────────────────────────────────────────
   const handleClose = () => {
     setSaveSuccess(false);
@@ -85,7 +69,7 @@ console.log(category)
 
   // ── Validation ────────────────────────────────────────────────────────────
   const validate = (): boolean => {
-    const e: FormErrors = {};
+    const e: EditProductModalFormErrors = {};
     if (!productName.trim()) e.productName = "Product name is required";
     else if (productName.trim().length < 3)
       e.productName = "At least 3 characters";
@@ -355,7 +339,6 @@ console.log(category)
                       </button>
                     </div>
                   </div>
-
                 </div>
               )}
             </div>

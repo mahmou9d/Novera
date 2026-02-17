@@ -1,38 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { CheckoutFormData } from "@/components/Checkoutform";
 import { apiClient } from "@/lib/apiClient";
-export interface CheckoutSessionResponse {
-  url: string;
-}
-export interface LinksPayPal {
-  href: string;
-  rel: string;
-  method: string;
-}
+import { CheckoutFormData, CheckoutSessionResponse, PayPalCapture, PayPalCaptureResponse, PayPalOrderResponse, PlaceOrderResponse } from "@/type/type";
 
-export interface PayPalOrderResponse {
-  id: string;
-  status: string;
-  links: LinksPayPal[];
-}
-
-export interface PayPalCapture {
-  orderID: string;
-  django_order_id: string;
-}
-export interface PayPalCaptureResponse {
-  message: string;
-  data: {
-    id: string;
-    status: string;
-  };
-}
-export interface PlaceOrderResponse {
-  order_id: number;
-  message?: string;
-}
 export const paymentAPI = {
   createCheckoutSession: async (
     order_id: number,

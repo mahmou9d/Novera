@@ -26,20 +26,17 @@ const Shop = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Server-side pagination
   const { data, isLoading, isError, error } = useGetProducts({
     page: currentPage,
   });
 
-  // Memoize products to prevent unnecessary re-renders
   const products = useMemo(() => data?.products || [], [data?.products]);
   const totalCount = useMemo(() => data?.count || 0, [data?.count]);
   const hasNext = useMemo(() => data?.next !== null, [data?.next]);
   const hasPrevious = useMemo(() => data?.previous !== null, [data?.previous]);
-
-  // استخراج الفئات
   const categories = useMemo(() => {
     if (!products || products.length === 0) return [{ id: "all", name: "All" }];
+
 
     const allCategories = products.map((p: TProduct) => p.category_name);
     const uniqueCategories = Array.from(new Set(allCategories));
@@ -53,7 +50,6 @@ const Shop = () => {
     ];
   }, [products]);
 
-  // حساب أقصى سعر
   const maxPrice = useMemo(() => {
     if (!products || products.length === 0) return 1000;
 

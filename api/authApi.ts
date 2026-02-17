@@ -1,30 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { apiClient } from "@/lib/apiClient";
 import { storage } from "@/lib/storage";
 import {
+  google,
   LoginRequest,
   LoginResponse,
   RefreshResponse,
+  Role,
   SignupRequest,
   SignupResponse,
 } from "../type/type";
 
-interface Role {
-  email: string;
-  is_admin: boolean;
-}
-interface google {
-  access: string;
-  refresh: string;
-  is_new_user:boolean
-  user:{
-    id: number;
-    email: string;
-    first_name: string;
-  }
-}
+
 export const authAPI = {
   login: async (payload: LoginRequest): Promise<LoginResponse> => {
     const { data } = await apiClient.post<LoginResponse>(
@@ -75,8 +63,11 @@ export const authAPI = {
     const { data } = await apiClient.get<Role>("/auth/me/");
     return data;
   },
-  passwordReset: async (email: string): Promise<any> => {
-    const { data } = await apiClient.post<any>("/password_reset/", { email });
+  passwordReset: async (email: string): Promise<{ status :string}> => {
+    const { data } = await apiClient.post<{ status: string }>(
+      "/password_reset/",
+      { email },
+    );
     console.log(data);
     return data;
   },
@@ -84,8 +75,8 @@ export const authAPI = {
   passwordResetConfirm: async (payload: {
     token: string;
     password: string;
-  }): Promise<any> => {
-    const { data } = await apiClient.post<any>(
+  }): Promise<{ message :string}> => {
+    const { data } = await apiClient.post<{ message: string }>(
       "/password_reset/confirm/",
       payload,
     );
@@ -93,14 +84,11 @@ export const authAPI = {
     return data;
   },
 
-  google: async (payload: {credential: string}): Promise<google> => {
-    const { data } = await apiClient.post<google>(
-      "/auth/google/",
-      payload,
-    );
-     console.log("🔍 Backend response:", data);
-         storage.setToken("access", data.access);
-         storage.setToken("refresh", data.refresh);
+  google: async (payload: { credential: string }): Promise<google> => {
+    const { data } = await apiClient.post<google>("/auth/google/", payload);
+    console.log("🔍 Backend response:", data);
+    storage.setToken("access", data.access);
+    storage.setToken("refresh", data.refresh);
     return data;
   },
 };

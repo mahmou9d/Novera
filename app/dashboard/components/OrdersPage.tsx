@@ -1,7 +1,7 @@
 "use client";
 
 import React, { JSX, useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
   Filter,
   Eye,
@@ -24,8 +24,9 @@ import {
   ChevronDown,
   AlertCircle,
 } from "lucide-react";
-import { CustomerStatus, Order, OrderItem, OrderStatus, ProductStatus } from "@/type/type";
+import { CustomerStatus, ErrorResponse, Order, OrderItem, OrderStatus, ProductStatus } from "@/type/type";
 import { useGetRecentOrders, usePatchOrders } from "@/hooks/useDashboard";
+import { AxiosError } from "axios";
 
 interface OrdersPageProps {
   getStatusColor: (
@@ -177,14 +178,14 @@ console.log(selectedOrder.id);
             });
           }
         },
-        onError: (err) => {
+        onError: (err:AxiosError<ErrorResponse>) => {
           // Extract error message from API response
           const errorMessage =
             err?.response?.data?.status ||
             err?.response?.data?.error ||
             err?.status ||
             "Failed to add admin. Please try again.";
-            setErrorMessage(errorMessage);
+            setErrorMessage(errorMessage as string);
         },
       },
     );

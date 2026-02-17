@@ -2,10 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authAPI } from "../api/authApi";
-import { LoginRequest, SignupRequest } from "../type/type";
+import { ErrorResponse, LoginRequest, SignupRequest } from "../type/type";
 import { storage } from "@/lib/storage";
+import { AxiosError } from "axios";
 
-// Query Keys
 export const authKeys = {
   all: ["auth"] as const,
   role: () => [...authKeys.all, "role"] as const,
@@ -29,7 +29,7 @@ export const useLogin = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: authKeys.role() });
     },
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Login failed:", error);
     },
   });
@@ -38,7 +38,7 @@ export const useLogin = () => {
 export const useSignup = () => {
   return useMutation({
     mutationFn: (payload: SignupRequest) => authAPI.signup(payload),
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Signup failed:", error);
     },
   });
@@ -47,7 +47,7 @@ export const useSignup = () => {
 export const useRefreshToken = () => {
   return useMutation({
     mutationFn: authAPI.refreshToken,
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Refresh failed:", error);
     },
   });
@@ -56,7 +56,7 @@ export const useRefreshToken = () => {
 export const usePasswordReset = () => {
   return useMutation({
     mutationFn: (email: string) => authAPI.passwordReset(email),
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Password reset failed:", error);
     },
   });
@@ -66,7 +66,7 @@ export const usePasswordResetConfirm = () => {
   return useMutation({
     mutationFn: (payload: { token: string; password: string }) =>
       authAPI.passwordResetConfirm(payload),
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Password reset confirmation failed:", error);
     },
   });
@@ -74,13 +74,12 @@ export const usePasswordResetConfirm = () => {
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: authAPI.logout,
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: authKeys.all });
     },
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       storage.clearAll();
       queryClient.removeQueries({ queryKey: authKeys.all });
       console.error("Logout failed:", error);
@@ -89,6 +88,7 @@ export const useLogout = () => {
 };
 
 export const useLoginGoogle = () => {
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (payload: { credential: string }) => authAPI.google(payload),
@@ -100,9 +100,10 @@ export const useLoginGoogle = () => {
       if (data.refresh) {
         localStorage.setItem("refresh", data.refresh);
       }
+      queryClient.invalidateQueries({ queryKey: authKeys.role() });
     },
-    onError: (error) => {
-      console.error("Login failed:", error);
+    onError: (error:AxiosError<ErrorResponse>) => {
+      console.error("Google login failed:", error);
     },
   });
 };

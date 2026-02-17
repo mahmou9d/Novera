@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
-import { useForm } from "react-hook-form";
+import { useState, Suspense } from "react";
+import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -10,7 +9,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Check,
   AlertCircle,
   KeyRound,
   RefreshCw,
@@ -18,44 +16,17 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { usePasswordResetConfirm } from "@/hooks/useAuth";
 import Notification from "@/components/Notification";
+import { resetPasswordSchema } from "@/utils/validation";
+import { ErrorResponse, NotificationState } from "@/type/type";
+import { useShowNotification } from "@/utils/showNotification";
+import { AxiosError } from "axios";
 
 // ========================================
 // TYPES & SCHEMA
 // ========================================
 
-const resetPasswordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain uppercase, lowercase, and number",
-      ),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
-
-interface Notification {
-  message: string;
-  type: "success" | "error";
-}
-
-// ========================================
-// SUB-COMPONENTS
-// ========================================
-
-// Notification Component
-const NotificationToast = ({
-  notification,
-}: {
-  notification: Notification;
-}) => <Notification type={notification.type} message={notification.message} />;
 
 // Background Blobs Component
 const BackgroundBlobs = () => (
@@ -109,28 +80,21 @@ const PasswordInput = ({
   placeholder,
   register,
   error,
-  delay = 0,
 }: {
   label: string;
   placeholder: string;
-  register: any;
+  register: UseFormRegisterReturn;
   error?: string;
-  delay?: number;
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div
-      className="input-group"
-    >
+    <div className="input-group">
       <label className="block text-sm font-semibold mb-2 text-[#242E49]">
         {label}
       </label>
       <div className="relative">
-        <div
-          
-          className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C]"
-        >
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#37415C]">
           <Lock size={20} />
         </div>
         <input
@@ -147,21 +111,17 @@ const PasswordInput = ({
           type="button"
           onClick={() => setShowPassword(!showPassword)}
           className="absolute right-4 top-1/2 -translate-y-1/2 text-[#37415C] hover:text-[#B4182D]"
-          
         >
           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
         </button>
       </div>
-      
-        {error && (
-          <p
-            className="text-[#B4182D] text-sm mt-2 flex items-center gap-1"
-          >
-            <AlertCircle size={16} />
-            {error}
-          </p>
-        )}
-      
+
+      {error && (
+        <p className="text-[#B4182D] text-sm mt-2 flex items-center gap-1">
+          <AlertCircle size={16} />
+          {error}
+        </p>
+      )}
     </div>
   );
 };
@@ -274,7 +234,7 @@ const LoadingFallback = () => (
 const ResetPasswordContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [notification, setNotification] = useState<Notification | null>(null);
+  const [notification, setNotification] = useState<NotificationState | null>(null);
   const token = searchParams.get("token");
   const resetConfirmMutation = usePasswordResetConfirm();
 
@@ -290,13 +250,7 @@ const ResetPasswordContent = () => {
     },
   });
 
-  const showNotification = useCallback(
-    (message: string, type: "success" | "error" = "success"): void => {
-      setNotification({ message, type });
-      setTimeout(() => setNotification(null), 3000);
-    },
-    [],
-  );
+const showNotification = useShowNotification(setNotification);
 
   const onSubmit = async (data: ResetPasswordFormData): Promise<void> => {
     if (!token) {
@@ -310,7 +264,7 @@ const ResetPasswordContent = () => {
         password: data.password,
       },
       {
-        onSuccess: (response) => {
+        onSuccess: (response:{message: string}) => {
           showNotification(
             response.message || "Password reset successfully!",
             "success",
@@ -319,7 +273,7 @@ const ResetPasswordContent = () => {
             router.push("/login");
           }, 2000);
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<ErrorResponse>) => {
           const errorMessage =
             error?.response?.data?.message ||
             error?.message ||
@@ -336,14 +290,13 @@ const ResetPasswordContent = () => {
       <BackgroundBlobs />
 
       {/* Notification */}
-      
-        {notification && <NotificationToast notification={notification} />}
-      
+
+      {notification && (
+        <Notification type={notification.type} message={notification.message} />
+      )}
 
       {/* Reset Password Card */}
-      <div
-        className="w-full max-w-md relative"
-      >
+      <div className="w-full max-w-md relative">
         <div className="glass-dark rounded-3xl p-8 shadow-2xl">
           <FormHeader />
 
@@ -361,7 +314,7 @@ const ResetPasswordContent = () => {
                   placeholder="Enter new password"
                   register={register("password")}
                   error={errors.password?.message}
-                  delay={0.5}
+                  
                 />
 
                 <PasswordInput
@@ -369,7 +322,7 @@ const ResetPasswordContent = () => {
                   placeholder="Confirm new password"
                   register={register("confirmPassword")}
                   error={errors.confirmPassword?.message}
-                  delay={0.6}
+                  
                 />
 
                 <SubmitButton isLoading={resetConfirmMutation.isPending} />

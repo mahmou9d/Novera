@@ -1,5 +1,5 @@
 "use client";
-// app/products/[id]/page.tsx
+
 import ProductPage from "@/components/ProductPage";
 import { useParams } from "next/navigation";
 

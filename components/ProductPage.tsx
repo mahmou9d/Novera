@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -28,14 +26,10 @@ import Footer from "@/components/Footer";
 import { useGetWishlist, useToggleWishlist } from "@/hooks/useWishlist";
 import IsLoading from "./IsLoading";
 import Notification from "./Notification";
+import { ErrorResponse, NotificationState, ProductPageProps, TProduct } from "@/type/type";
+import { AxiosError } from "axios";
 
-interface ProductPageProps {
-  productId: string;
-}
-interface Notification {
-  message: string;
-  type: "success" | "error";
-}
+
 
 const ProductPage = ({ productId }: ProductPageProps) => {
   const router = useRouter();
@@ -46,7 +40,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
   );
   const [addedToCart, setAddedToCart] = useState(false);
   const [showImageZoom, setShowImageZoom] = useState(false);
-  const [notification, setNotification] = useState<Notification | null>(null);
+  const [notification, setNotification] = useState<NotificationState | null>(null);
   // Fetch data
   const {
     data: product,
@@ -74,6 +68,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
       !selectedVariantId &&
       (product?.variants?.length as number) > 0
     ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedVariantId((product?.variants ?? [])[0]?.id as number);
     }
   }, [product, selectedVariantId]);
@@ -104,7 +99,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
           setAddedToCart(true);
           setTimeout(() => setAddedToCart(false), 3000);
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<ErrorResponse>) => {
           console.error("Cart error:", error?.response?.data?.detail);
           showNotification(
             error?.response?.data?.error ||
@@ -120,20 +115,21 @@ const ProductPage = ({ productId }: ProductPageProps) => {
 
   const addToWishlist = () => {
     if (!product) return;
-    toggleWishlistMutation(product.id, {
+    toggleWishlistMutation(Number(product.id), {
       onSuccess: () => {
         const isWishlisted = wishlistItems?.some(
           (item) => item.id === product.id,
         );
         {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           isWishlisted
             ? showNotification(`${product.name} removed from wishlist!`)
             : showNotification(`${product.name} added to wishlist!`);
         }
       },
-      onError: (error: any) => {
+      onError: (error: AxiosError<ErrorResponse>) => {
         console.error("Wishlist error:", error?.response?.data.error);
-        showNotification(error?.response?.data?.error, "error");
+        showNotification(error?.response?.data?.error as string, "error");
       },
     });
   };
@@ -167,7 +163,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
       : ["/placeholder.jpg"];
 
   const isInWishlist = wishlistItems?.some(
-    (item: any) => item.id === product?.id,
+    (item: TProduct) => item.id === product?.id,
   );
 
   // Loading State

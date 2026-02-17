@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -7,9 +6,11 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "@tanstack/react-query";
-import { productsAPI, ProductsData } from "../api/productsApi";
-import { AddVariants, CreateProduct, Product, SubVariant, Variant } from "../type/type";
-// import { toast } from "react-hot-toast";
+import { productsAPI } from "../api/productsApi";
+import { AddVariants, CreateProduct, ErrorResponse, Product, ProductsData, SubVariant, updateProduct } from "../type/type";
+import { AxiosError } from "axios";
+
+
 
 export const productKeys = {
   all: ["products"] as const,
@@ -58,16 +59,13 @@ export const useCreateProduct = () => {
 
   return useMutation({
     mutationFn: (payload: CreateProduct) => productsAPI.createProduct(payload),
-
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: productKeys.all,
       });
-
       console.log("Product created:", data);
     },
-
-    onError: (error: any) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Create product failed:", error);
     },
   });
@@ -93,7 +91,7 @@ export const useAddVariantsProduct = () => {
       console.log("Variants added successfully");
     },
 
-    onError: (error: any) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Add variants failed:", error);
     },
   });
@@ -119,7 +117,7 @@ export const useAddImageVariantsProduct = () => {
       console.log("Variant image uploaded successfully");
     },
 
-    onError: (error: any) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Upload image failed:", error);
     },
   });
@@ -133,13 +131,7 @@ export const useUpdateProduct = () => {
       payload,
     }: {
       product_id: number;
-      payload: {
-        name?: string;
-        category?: number;
-        material_composition?: string;
-        description?: string;
-        is_active?: boolean;
-      };
+      payload: updateProduct;
     }) => productsAPI.updateProduct(product_id, payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -150,7 +142,7 @@ export const useUpdateProduct = () => {
         queryKey: productKeys.all,
       });
     },
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Update product failed:", error);
     },
   });
@@ -176,30 +168,24 @@ export const useUpdateProductVariant = () => {
         queryKey: productKeys.all,
       });
     },
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Update variant failed:", error);
     },
   });
 };
 
-// في ملف hooks
 export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      product_id,
-      hard = false,
-    }: {
-      product_id: number;
-      hard?: boolean;
-    }) => productsAPI.deleteProduct(product_id, hard),
+    mutationFn: ({ product_id }: { product_id: number }) =>
+      productsAPI.deleteProduct(product_id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: productKeys.all,
       });
     },
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Delete product failed:", error);
     },
   });
@@ -209,19 +195,14 @@ export const useDeleteProductVariant = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      variant_id,
-      hard = false,
-    }: {
-      variant_id: number;
-      hard?: boolean;
-    }) => productsAPI.deleteProductVariants(variant_id, hard),
+    mutationFn: ({ variant_id }: { variant_id: number }) =>
+      productsAPI.deleteProductVariants(variant_id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: productKeys.all,
       });
     },
-    onError: (error) => {
+    onError: (error:AxiosError<ErrorResponse>) => {
       console.error("Delete variant failed:", error);
     },
   });

@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useCallback, useState } from "react";
 import { Heart, ShoppingBag, Star } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { TProduct } from "@/type/type";
+import { ErrorResponse, TProduct } from "@/type/type";
 import { useAddToCart } from "@/hooks/useCart";
 import { useGetWishlist, useToggleWishlist } from "@/hooks/useWishlist";
 import Notification from "./Notification";
+import { AxiosError } from "axios";
 
 interface ProductGridProps {
   products?: TProduct[];
@@ -37,13 +37,14 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
   };
 
   const addToWishlist = (e: React.MouseEvent, product: TProduct): void => {
-    e.stopPropagation(); // Prevent navigation when clicking wishlist
+    e.stopPropagation(); 
     toggleWishlistMutation(product.id, {
       onSuccess: () => {
         const isWishlisted = wishlistItems?.some(
           (item) => item.id === product.id,
         );
         {
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           isWishlisted
             ? showNotification(`${product.name} removed from wishlist!`)
             : showNotification(`${product.name} added to wishlist!`);
@@ -67,9 +68,9 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
         onSuccess: () => {
           showNotification(`${product.name} added to cart!`);
         },
-        onError: (error: any) => {
+        onError: (error: AxiosError<ErrorResponse>) => {
           console.error("Cart error:", error?.response?.data?.detail);
-          showNotification(error?.response?.data?.detail, "error");
+          showNotification(error?.response?.data?.detail as string, "error");
         },
       },
     );

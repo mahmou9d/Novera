@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// api/dashboardApi.ts
 "use client";
 
 import { apiClient } from "@/lib/apiClient";
@@ -13,12 +11,6 @@ import {
   SalesOrdersResponse,
   Order,
   TopSellingResponse,
-  CreateProduct,
-  CreateProductResponse,
-  AddVariants,
-  AddImageVariants,
-  Product,
-  Variant,
 } from "../type/type";
 
 export const dashboardAPI = {
@@ -69,7 +61,6 @@ export const dashboardAPI = {
     );
     return data;
   },
-  ///
   getReviewsCount: async (): Promise<ReviewsResponse> => {
     const { data } = await apiClient.get<ReviewsResponse>(
       "/dashboard/reviews/",

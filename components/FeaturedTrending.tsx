@@ -207,7 +207,7 @@ export default function FeaturedTrending() {
 
             {/* Other Featured - Grid */}
             <div className="grid md:grid-cols-2 gap-6">
-              {otherProducts.map((product, index) => (
+              {otherProducts.map((product) => (
                 <div
                   key={product.id}
                   className="relative h-[400px] rounded-3xl overflow-hidden cursor-pointer group"

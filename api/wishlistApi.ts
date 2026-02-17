@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { apiClient } from "@/lib/apiClient";
-import { TProduct, WishlistResponse } from "../type/type";
+import { toggleWishlist, TProduct, WishlistResponse } from "../type/type";
 
 export const wishlistAPI = {
   getWishlist: async (): Promise<TProduct[]> => {
@@ -10,7 +9,7 @@ export const wishlistAPI = {
     return data.products || [];
   },
 
-  toggleWishlist: async (product_id: number): Promise<any> => {
+  toggleWishlist: async (product_id: number): Promise<toggleWishlist> => {
     const { data } = await apiClient.post("/wishlist/toggle/", { product_id });
     return data;
   },

@@ -1,4 +1,6 @@
 import { LucideIcon } from "lucide-react";
+import { JSX } from "react";
+import { FieldError, UseFormRegisterReturn } from "react-hook-form";
 
 export interface LoginRequest {
   email: string;
@@ -26,23 +28,10 @@ export interface SignupRequest {
 export interface SignupResponse {
   message: string;
 }
-// export interface Variant {
-//   id: number;
-//   color_name: string;
-//   color_hex: string | null;
-//   size: string;
-//   price: string; // تأتي من الـ API كـ string "30.00"
-//   compare_at_price: string;
-//   images: string[];
-//   is_on_sale: boolean;
-//   stock: number;
-//   // category_name?:string;
-//   product_name?: string;
-// }
 
 export interface CartItem {
-  id: number; // معرف الـ item في السلة
-  variant: Variant; // تفاصيل المنتج
+  id: number;
+  variant: Variant;
   quantity: number;
   price: string;
   subtotal: string;
@@ -54,18 +43,12 @@ export interface CartResponse {
   id: number;
   created_at: string;
   items: CartItem[];
-  total_price: string; // السعر الكلي للسلة
+  total_price: string;
 }
 
 export interface CheckoutResponse {
   order_id: number;
 }
-
-// export interface AddToCartRequest {
-//   product_id: number;
-//   quantity: number;
-// }
-
 export interface EditCartRequest {
   product_id: number;
   quantity: number;
@@ -78,12 +61,6 @@ export interface CheckoutSessionRequest {
   order_id: number;
 }
 
-export interface CheckoutSessionResponse {
-  // checkout_url: any;
-  url?: string;
-  session_id?: string;
-  // عدّل حسب الـ response الفعلي من الـ API
-}
 export interface TReview {
   product_id: number;
   comment: string;
@@ -297,10 +274,10 @@ export interface Variant {
   images: string[];
 }
 export interface Product {
-  id: number;
-  price: string;
-  quantity: number;
-  subtotal: string;
+  id?: number;
+  price?: string;
+  quantity?: number;
+  subtotal?: string;
   name?: string;
   category?: string | number;
   description?: string;
@@ -315,7 +292,7 @@ export interface CartItem {
   price: string;
   quantity: number;
   subtotal: string;
-  variant: Variant; // استخدم نفس الـ Type
+  variant: Variant;
 }
 
 // Type للمنتج
@@ -461,4 +438,198 @@ export interface AddVariants {
 export interface AddImageVariants {
   message: string;
   url: string;
+}
+
+export interface Role {
+  email: string;
+  is_admin: boolean;
+}
+export interface google {
+  access: string;
+  refresh: string;
+  is_new_user: boolean;
+  user: {
+    id: number;
+    email: string;
+    first_name: string;
+  };
+}
+
+export interface CheckoutSessionResponse {
+  url: string;
+}
+export interface LinksPayPal {
+  href: string;
+  rel: string;
+  method: string;
+}
+
+export interface PayPalOrderResponse {
+  id: string;
+  status: string;
+  links: LinksPayPal[];
+}
+
+export interface PayPalCapture {
+  orderID: string;
+  django_order_id: string;
+}
+export interface PayPalCaptureResponse {
+  message: string;
+  data: {
+    id: string;
+    status: string;
+  };
+}
+export interface PlaceOrderResponse {
+  order_id: number;
+  message?: string;
+}
+
+export interface ProductsData {
+  products: TProduct[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
+
+export interface ProductsDataRes {
+  results: TProduct[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
+export interface updateProduct {
+  name?: string;
+  category?: number;
+  material_composition?: string;
+  description?: string;
+  is_active?: boolean;
+}
+
+export interface updateProductResponse {
+  message: string;
+  data: updateProduct;
+}
+
+export interface toggleWishlist {
+  add: boolean;
+  message: string;
+}
+
+export interface ErrorResponse {
+  message?: string;
+  detail?: string;
+  error?: string;
+  status?: string;
+}
+
+export interface NotificationState {
+  message: string;
+  type: "success" | "error";
+}
+
+export interface GoogleLoginData {
+  access?: string;
+  refresh?: string;
+}
+
+export interface FieldInputProps {
+  label: string;
+  type?: string;
+  placeholder: string;
+  register: UseFormRegisterReturn;
+  error?: FieldError;
+  icon: React.ReactNode;
+  endAdornment?: React.ReactNode;
+}
+
+export interface CheckoutFormData {
+  full_name: string;
+  full_address: string;
+  order_notes?: string;
+  phone_number: string;
+  country: string;
+}
+export interface CheckoutFormProps {
+  onClose: () => void;
+  onSubmit: (formData: CheckoutFormData) => void;
+  isSubmitting?: boolean;
+  totalAmount: number;
+}
+export interface ProductPageProps {
+  productId: string;
+}
+export interface SearchSectionProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+export type TabType = "general" | "variants";
+
+export interface ColorOption {
+  name: string;
+  hex: string;
+  selected: boolean;
+}
+export interface SizeOption {
+  size: string;
+  selected: boolean;
+}
+
+export interface FormErrors {
+  productName?: string;
+  category?: string;
+  material?: string;
+  description?: string;
+  variants?: string;
+  stock?: Record<number, string>;
+  images?: Record<number, string>;
+}
+
+export interface Props {
+  open: boolean;
+  onClose: () => void;
+  onNotify: (message: string, type: "success" | "error") => void;
+}
+
+export interface EditProductProps {
+  getStatusColor: (
+    status: OrderStatus | ProductStatus | CustomerStatus,
+  ) => string;
+  getStatusIcon: (
+    status: OrderStatus | ProductStatus | CustomerStatus,
+  ) => JSX.Element;
+}
+
+export interface EditProductModalFormErrors {
+  productName?: string;
+  category?: string;
+  material?: string;
+  description?: string;
+}
+
+export interface EditProductModalProps {
+  open: boolean;
+  productId: number | null;
+  onClose: () => void;
+  onNotify: (message: string, type: "success" | "error") => void;
+}
+export interface EditVariantModalFormErrors {
+  price?: string;
+  stockSingle?: string;
+  image?: string;
+}
+
+export interface EditVariantModalProps {
+  open: boolean;
+  productId: number | null;
+  onClose: () => void;
+  onNotify: (message: string, type: "success" | "error") => void;
+}
+
+export interface SidebarProps {
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+  activeMenu: string;
+  setActiveMenu: (menu: string) => void;
 }

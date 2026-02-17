@@ -1,14 +1,11 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// components/PaymentProcessor.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCapturePayPalOrder } from "@/hooks/usePayment";
-import { Loader2, CheckCircle, XCircle, RefreshCw } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { XCircle, RefreshCw } from "lucide-react";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "@/type/type";
 
 export default function PaymentProcessor() {
   const searchParams = useSearchParams();
@@ -24,41 +21,34 @@ export default function PaymentProcessor() {
   useEffect(() => {
     const token = searchParams.get("token");
     const payerId = searchParams.get("PayerID");
-
-    // ✅ لو في بيانات PayPal في الـ URL
     if (token && payerId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsProcessing(true);
 
       const django_order_id = localStorage.getItem("order_id");
       const orderID = localStorage.getItem("token");
-      // const django_order_id = localStorage.getItem("order_id");
       if (!orderID) {
         setStatus("error");
         setErrorMessage("Order information not found");
         return;
       }
 
-      // عمل Capture
       capturePayPalOrderMutation.mutate(
         {
           orderID: orderID,
           django_order_id: django_order_id as string,
         },
         {
-          onSuccess: (data) => {
+          onSuccess: () => {
             setStatus("success");
-
-            // تنظيف
             localStorage.removeItem("paypal_order_id");
             localStorage.removeItem("order_id");
             window.history.replaceState({}, "", "/");
-
-            // Redirect
             setTimeout(() => {
               router.push(`/payment-success`);
             }, 2000);
           },
-          onError: (error: any) => {
+          onError: (error: AxiosError<ErrorResponse>) => {
             setStatus("error");
             setErrorMessage(
               error?.response?.data?.message || "Payment verification failed",
@@ -68,7 +58,7 @@ export default function PaymentProcessor() {
         },
       );
     }
-  }, [searchParams]);
+  }, [capturePayPalOrderMutation, router, searchParams]);
 
   if (!isProcessing) return null;
 

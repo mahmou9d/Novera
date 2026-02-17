@@ -1,18 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useCallback } from "react";
-import { Heart, ShoppingCart, Trash2, RefreshCw } from "lucide-react";
+import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { useGetWishlist, useToggleWishlist } from "@/hooks/useWishlist";
 import { useAddToCart } from "@/hooks/useCart";
-import { TProduct } from "@/type/type";
+import { ErrorResponse, TProduct } from "@/type/type";
 import Notification from "@/components/Notification";
 import IsLoading from "@/components/IsLoading";
 import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
 
 const WishlistPage = () => {
   const router = useRouter();
@@ -39,9 +38,10 @@ const WishlistPage = () => {
         onSuccess: () => {
           showNotification("Item removed from wishlist");
         },
-        onError: (error) => {
+        onError: (error:AxiosError<ErrorResponse>) => {
           const errorMessage =
             error?.response?.data?.message ||
+            error?.response?.data?.detail ||
             error?.message ||
             "Failed to remove item";
           showNotification(errorMessage, "error");
@@ -63,7 +63,7 @@ const WishlistPage = () => {
           onSuccess: () => {
             showNotification(`${item.name} added to cart!`);
           },
-          onError: (error: any) => {
+          onError: (error: AxiosError<ErrorResponse>) => {
             const errorMessage =
               error?.response?.data?.message ||
               error?.message ||

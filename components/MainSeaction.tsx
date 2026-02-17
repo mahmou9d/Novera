@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { ArrowRight, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
+import { useState, useMemo } from "react";
+import {  RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import Productgrid from "./Productgrid";
-import { motion, AnimatePresence } from "framer-motion";
 import { useGetProducts } from "@/hooks/useProducts";
 import Link from "next/link";
 
@@ -59,16 +58,6 @@ const MainSection = () => {
     return category?.name || "Collection";
   }, [activeCategory, categories]);
 
-  // Handle loading state
-  // if (isLoading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <RefreshCw className="animate-spin text-[#fca481]" size={50} />
-  //     </div>
-  //   );
-  // }
-
-  // Handle error state
   if (isError) {
     return (
       <div className="min-h-screen flex items-center justify-center">

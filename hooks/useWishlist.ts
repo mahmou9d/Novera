@@ -1,9 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { wishlistAPI } from "../api/wishlistApi";
 import { useAuth } from "./useAuth";
+import { AxiosError } from "axios";
+import { ErrorResponse } from "@/type/type";
 
 export const wishlistKeys = {
     all: ["wishlist"] as const,
@@ -23,12 +24,12 @@ export const useGetWishlist = () => {
 export const useToggleWishlist = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: wishlistAPI.toggleWishlist,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: wishlistKeys.items() });
-        },
-        onError: (error: any) => {
-            console.error("Toggle wishlist failed:", error);
-        },
+      mutationFn: wishlistAPI.toggleWishlist,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: wishlistKeys.items() });
+      },
+      onError: (error:AxiosError<ErrorResponse>) => {
+        console.error("Toggle wishlist failed:", error);
+      },
     });
 };

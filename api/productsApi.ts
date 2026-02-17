@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { apiClient } from "@/lib/apiClient";
@@ -8,25 +7,14 @@ import {
   CreateProduct,
   CreateProductResponse,
   Product,
+  ProductsData,
+  ProductsDataRes,
   SubVariant,
-  TProduct,
-  Variant,
+  updateProduct,
+  updateProductResponse,
 } from "@/type/type";
-export interface ProductsData {
-  products: TProduct[];
-  count: number;
-  next: string | null;
-  previous: string | null;
-}
 
-interface ProductsDataRes {
-  results: TProduct[];
-  count: number;
-  next: string | null;
-  previous: string | null;
-}
 export const productsAPI = {
-  // api/productsApi.ts
   getProducts: async (params?: {
     page?: number;
     all?: boolean;
@@ -101,17 +89,9 @@ export const productsAPI = {
     );
     return data;
   },
-  updateProduct: async (
-    id: number,
-    payload: {
-      name?: string;
-      category?: number;
-      material_composition?: string;
-      description?: string;
-      is_active?: boolean;
-    },
-  ): Promise<any> => {
-    const { data } = await apiClient.patch<any>(
+
+  updateProduct: async (id: number, payload: updateProduct): Promise<updateProductResponse> => {
+    const { data } = await apiClient.patch<updateProductResponse>(
       `/dashboard/products/${id}/manage/`,
       payload,
     );
@@ -120,29 +100,23 @@ export const productsAPI = {
   updateProductVariants: async (
     id: number,
     payload: Partial<SubVariant>,
-  ): Promise<any> => {
-    const { data } = await apiClient.patch<any>(
+  ): Promise<SubVariant> => {
+    const { data } = await apiClient.patch<SubVariant>(
       `/dashboard/variants/${id}/manage/`,
       payload,
     );
     return data;
   },
-  deleteProduct: async (id: number, hard: boolean = false): Promise<any> => {
-    const url = hard
-      ? `/dashboard/products/${id}/manage/?hard=true`
-      : `/dashboard/products/${id}/manage/`;
-    const { data } = await apiClient.delete<any>(url);
+  deleteProduct: async (id: number): Promise<{ message: string }> => {
+    const { data } = await apiClient.delete<{ message: string }>(
+      `/dashboard/products/${id}/manage/?hard=true`,
+    );
     return data;
   },
-
-  deleteProductVariants: async (
-    id: number,
-    hard: boolean = false,
-  ): Promise<any> => {
-    const url = hard
-      ? `/dashboard/variants/${id}/manage/?hard=true`
-      : `/dashboard/variants/${id}/manage/`;
-    const { data } = await apiClient.delete<any>(url);
+  deleteProductVariants: async (id: number): Promise<SubVariant> => {
+    const { data } = await apiClient.delete<SubVariant>(
+      `/dashboard/variants/${id}/manage/?hard=true`,
+    );
     return data;
   },
 };

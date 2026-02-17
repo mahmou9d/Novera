@@ -13,41 +13,13 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { Variant, CreateProduct, AddVariants } from "@/type/type";
+import { Variant, CreateProduct, AddVariants, ColorOption, FormErrors, Props, SizeOption, TabType } from "@/type/type";
 import {
   useCreateProduct,
   useAddVariantsProduct,
   useAddImageVariantsProduct,
 } from "@/hooks/useProducts";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type TabType = "general" | "variants";
-
-interface ColorOption {
-  name: string;
-  hex: string;
-  selected: boolean;
-}
-interface SizeOption {
-  size: string;
-  selected: boolean;
-}
-
-interface FormErrors {
-  productName?: string;
-  category?: string;
-  material?: string;
-  description?: string;
-  variants?: string;
-  stock?: Record<number, string>;
-  images?: Record<number, string>;
-}
-
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  onNotify: (message: string, type: "success" | "error") => void;
-}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const INITIAL_COLORS: ColorOption[] = [

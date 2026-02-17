@@ -1,13 +1,12 @@
 import { apiClient } from "@/lib/apiClient";
 import {
   AddToCartRequest,
-  CartItem,
-  CartResponse, Product, // أضفنا هذا
+  CartResponse,
+  Product,
   UpdateQuantityRequest,
 } from "../type/type";
 
 export const cartAPI = {
-  // التعديل هنا ليرجع مصفوفة الـ items من داخل كائن الـ response
   getCartItems: async (): Promise<Product[]> => {
     const { data } = await apiClient.get<CartResponse>("/cart/");
     return data.items.map((item) => ({
@@ -37,11 +36,7 @@ export const cartAPI = {
   clearCart: async (): Promise<void> => {
     await apiClient.delete("/cart/clear/");
   },
-  // checkout: async (payload: unknown): Promise<CheckoutResponse> => {
-  //     const { data } = await apiClient.post<CheckoutResponse>(
-  //         "/order/add/",
-  //         payload
-  //     );
-  //     return data;
-  // },
+  mergeCart: async (device_id: string): Promise<void> => {
+    await apiClient.post("/cart/merge/", { device_id });
+  },
 };

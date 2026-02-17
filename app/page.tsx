@@ -1,3 +1,4 @@
+import DeviceIDProvider from "@/components/DeviceIDProvider";
 import FeaturedTrending from "@/components/FeaturedTrending";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
@@ -6,24 +7,23 @@ import MainSeaction from "@/components/MainSeaction";
 import Newsletter from "@/components/Newsletter";
 import PaymentProcessor from "@/components/PaymentProcessor";
 import SpecialDeals from "@/components/SpecialDeals";
-import Testimonials from "@/components/Testimonials";
-import { RefreshCw } from "lucide-react";
+// import Testimonials from "@/components/Testimonials";
 import { Suspense } from "react";
 
 
 export default function Home() {
+
   return (
     <div className="">
-      <Suspense
-        fallback={null}
-      >
+      <DeviceIDProvider />
+      <Suspense fallback={null}>
         <PaymentProcessor />
       </Suspense>
       <Header />
       <Hero />
       <MainSeaction />
       <FeaturedTrending />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <SpecialDeals />
       <Newsletter />
       <Footer />
