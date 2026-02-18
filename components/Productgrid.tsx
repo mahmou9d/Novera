@@ -69,8 +69,12 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
           showNotification(`${product.name} added to cart!`);
         },
         onError: (error: AxiosError<ErrorResponse>) => {
-          console.error("Cart error:", error?.response?.data?.detail);
-          showNotification(error?.response?.data?.detail as string, "error");
+          console.error(
+            "Cart error:",
+            (error?.response?.data?.detail as string) ||
+              (error?.response?.data?.error as string),
+          );
+          showNotification(error?.response?.data?.detail as string ||error?.response?.data?.error as string , "error");
         },
       },
     );

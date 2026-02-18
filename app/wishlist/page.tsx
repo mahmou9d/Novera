@@ -66,6 +66,8 @@ const WishlistPage = () => {
           onError: (error: AxiosError<ErrorResponse>) => {
             const errorMessage =
               error?.response?.data?.message ||
+              error?.response?.data?.detail ||
+              error?.response?.data?.error ||
               error?.message ||
               "Failed to add to cart";
             showNotification(errorMessage, "error");
