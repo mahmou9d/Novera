@@ -256,112 +256,7 @@ const Shop = () => {
 
         {/* Layout with Sidebar */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* Main Content */}
-          <div className="flex-1">
-            {/* Results Bar */}
-            <div className="mb-6 lg:mb-8 p-5 bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#fca481] to-[#fd9166] rounded-xl flex items-center justify-center text-white font-bold shadow-lg text-lg">
-                  {filteredProducts.length}
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-gray-900">
-                    {filteredProducts.length === 1 ? "Product" : "Products"}{" "}
-                    Found
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Showing page {currentPage} of {totalPages || 1}
-                  </p>
-                </div>
-              </div>
-
-              {hasActiveFilters && (
-                <div className="flex items-center gap-2 bg-[#fef5f1] text-[#fca481] px-4 py-2 rounded-xl border border-[#fca481]/20">
-                  <Filter size={16} />
-                  <span className="text-sm font-semibold">Filters Active</span>
-                </div>
-              )}
-            </div>
-
-            {/* Products Grid */}
-            {filteredProducts.length > 0 ? (
-              <>
-                <div>
-                  <ProductGrid products={filteredProducts} />
-                </div>
-
-                {/* Enhanced Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-10 lg:mt-12 bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <button
-                      onClick={handlePreviousPage}
-                      disabled={!hasPrevious || currentPage === 1}
-                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481]  shadow-md"
-                    >
-                      <ChevronLeft size={22} />
-                    </button>
-
-                    <div className="flex items-center gap-2 flex-wrap justify-center">
-                      {[...Array(Math.min(totalPages, 5))].map((_, index) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = index + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = index + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + index;
-                        } else {
-                          pageNum = currentPage - 2 + index;
-                        }
-
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => handlePageClick(pageNum)}
-                            className={`w-12 h-12 rounded-xl font-bold  shadow-md ${
-                              currentPage === pageNum
-                                ? "bg-gradient-to-br from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30 scale-110"
-                                : "bg-white border-2 border-gray-200 hover:border-[#fca481] text-gray-700 hover:bg-[#fef5f1]"
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <button
-                      onClick={handleNextPage}
-                      disabled={!hasNext || currentPage === totalPages}
-                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481]  shadow-md"
-                    >
-                      <ChevronRight size={22} />
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mx-auto mb-6 flex items-center justify-center">
-                  <span className="text-5xl">🔍</span>
-                </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-3">
-                  No Products Match
-                </h3>
-                <p className="text-gray-600 mb-8 text-lg">
-                  Try adjusting your search or filters
-                </p>
-                <button
-                  onClick={resetFilters}
-                  className="px-8 py-4 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-bold shadow-lg hover:shadow-xl  inline-flex items-center gap-2"
-                >
-                  <X size={20} />
-                  Clear All Filters
-                </button>
-              </div>
-            )}
-          </div>{" "}
-          {/* Sidebar Filters */}
+                    {/* Sidebar Filters */}
             {(showFilters || window.innerWidth >= 1024) && (
               <div className="lg:w-80 flex-shrink-0">
                 <div className="sticky top-4 space-y-4">
@@ -482,6 +377,112 @@ const Shop = () => {
                 </div>
               </div>
             )}
+            {/* Main Content */}
+          <div className="flex-1">
+            {/* Results Bar */}
+            <div className="mb-6 lg:mb-8 p-5 bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#fca481] to-[#fd9166] rounded-xl flex items-center justify-center text-white font-bold shadow-lg text-lg">
+                  {filteredProducts.length}
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-gray-900">
+                    {filteredProducts.length === 1 ? "Product" : "Products"}{" "}
+                    Found
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Showing page {currentPage} of {totalPages || 1}
+                  </p>
+                </div>
+              </div>
+
+              {hasActiveFilters && (
+                <div className="flex items-center gap-2 bg-[#fef5f1] text-[#fca481] px-4 py-2 rounded-xl border border-[#fca481]/20">
+                  <Filter size={16} />
+                  <span className="text-sm font-semibold">Filters Active</span>
+                </div>
+              )}
+            </div>
+
+            {/* Products Grid */}
+            {filteredProducts.length > 0 ? (
+              <>
+                <div>
+                  <ProductGrid products={filteredProducts} />
+                </div>
+
+                {/* Enhanced Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-10 lg:mt-12 bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <button
+                      onClick={handlePreviousPage}
+                      disabled={!hasPrevious || currentPage === 1}
+                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481]  shadow-md"
+                    >
+                      <ChevronLeft size={22} />
+                    </button>
+
+                    <div className="flex items-center gap-2 flex-wrap justify-center">
+                      {[...Array(Math.min(totalPages, 5))].map((_, index) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = index + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = index + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + index;
+                        } else {
+                          pageNum = currentPage - 2 + index;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => handlePageClick(pageNum)}
+                            className={`w-12 h-12 rounded-xl font-bold  shadow-md ${
+                              currentPage === pageNum
+                                ? "bg-gradient-to-br from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30 scale-110"
+                                : "bg-white border-2 border-gray-200 hover:border-[#fca481] text-gray-700 hover:bg-[#fef5f1]"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={handleNextPage}
+                      disabled={!hasNext || currentPage === totalPages}
+                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481]  shadow-md"
+                    >
+                      <ChevronRight size={22} />
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mx-auto mb-6 flex items-center justify-center">
+                  <span className="text-5xl">🔍</span>
+                </div>
+                <h3 className="text-3xl font-bold text-gray-900 mb-3">
+                  No Products Match
+                </h3>
+                <p className="text-gray-600 mb-8 text-lg">
+                  Try adjusting your search or filters
+                </p>
+                <button
+                  onClick={resetFilters}
+                  className="px-8 py-4 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-bold shadow-lg hover:shadow-xl  inline-flex items-center gap-2"
+                >
+                  <X size={20} />
+                  Clear All Filters
+                </button>
+              </div>
+            )}
+          </div>{" "}
+
         </div>
       </div>
 
