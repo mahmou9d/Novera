@@ -403,7 +403,7 @@ export interface CreateProduct {
   name: string;
   description: string;
   material_composition: string;
-  category: number;
+  category: string;
 }
 export interface SubVariant {
   color_name: string;
@@ -501,7 +501,7 @@ export interface ProductsDataRes {
 }
 export interface updateProduct {
   name?: string;
-  category?: number;
+  category?: string;
   material_composition?: string;
   description?: string;
   is_active?: boolean;

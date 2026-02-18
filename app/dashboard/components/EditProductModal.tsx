@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -8,8 +8,9 @@ import {
   Loader2,
   Save,
   Package,
-  ToggleLeft,
-  ToggleRight,
+  Check,
+  ChevronDown,
+
 } from "lucide-react";
 import { useUpdateProduct, useGetSingleProduct } from "@/hooks/useProducts";
 import { EditProductModalFormErrors, EditProductModalProps } from "@/type/type";
@@ -48,6 +49,27 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
   const [material, setMaterial] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const CATEGORIES = ["Men", "Women", "Unisex", "Children", "Teens"];
+  
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        categoryRef.current &&
+        !categoryRef.current.contains(e.target as Node)
+      ) {
+        setCategoryOpen(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  
   useEffect(() => {
     if (product) {
       setProductName(product.name ?? "");
@@ -60,7 +82,6 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
     }
   }, [product]);
   console.log(category);
-  // ── Reset لما الـ modal يتقفل ─────────────────────────────────────────────
   const handleClose = () => {
     setSaveSuccess(false);
     setFormErrors({});
@@ -93,7 +114,7 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
           name: productName,
           description,
           material_composition: material,
-          category: parseInt(category),
+          category: category,
           is_active: isActive,
         },
       });
@@ -230,27 +251,86 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
                         <label className="block text-sm font-medium text-gray-400 mb-2">
                           Category *
                         </label>
-                        <select
-                          value={category}
-                          onChange={(e) => {
-                            setCategory(e.target.value);
-                            setFormErrors((p) => ({
-                              ...p,
-                              category: undefined,
-                            }));
-                          }}
-                          className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white focus:outline-none ${
-                            formErrors.category
-                              ? "border-red-500"
-                              : "border-white/10 focus:border-blue-500/50"
-                          }`}
-                        >
-                          <option value="">Select...</option>
-                          <option value="1">T-Shirts</option>
-                          <option value="2">Hoodies</option>
-                          <option value="3">Pants</option>
-                          <option value="4">Accessories</option>
-                        </select>
+                        <div className="relative" ref={categoryRef}>
+                          <input
+                            type="text"
+                            value={category}
+                            onChange={(e) => {
+                              setCategory(e.target.value);
+                              setCategoryOpen(true);
+                              setFormErrors((p) => ({
+                                ...p,
+                                category: undefined,
+                              }));
+                            }}
+                            onFocus={() => setCategoryOpen(true)}
+                            placeholder="Select or type a category..."
+                            className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none pr-10 ${
+                              formErrors.category
+                                ? "border-red-500"
+                                : "border-white/10 focus:border-[#fda481]/50"
+                            }`}
+                          />
+                          <ChevronDown
+                            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform ${categoryOpen ? "rotate-180" : ""}`}
+                          />
+
+                          <AnimatePresence>
+                            {categoryOpen && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -8 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute top-full left-0 right-0 mt-1 bg-[#0f1117] border border-white/10 rounded-lg overflow-hidden z-50 shadow-xl"
+                              >
+                                {CATEGORIES.filter((c) =>
+                                  c
+                                    .toLowerCase()
+                                    .includes(category.toLowerCase()),
+                                ).map((c) => (
+                                  <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => {
+                                      setCategory(c);
+                                      setCategoryOpen(false);
+                                      setFormErrors((p) => ({
+                                        ...p,
+                                        category: undefined,
+                                      }));
+                                    }}
+                                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 flex items-center justify-between group ${
+                                      category === c
+                                        ? "text-[#fda481]"
+                                        : "text-gray-300"
+                                    }`}
+                                  >
+                                    {c}
+                                    {category === c && (
+                                      <Check className="w-4 h-4 text-[#fda481]" />
+                                    )}
+                                  </button>
+                                ))}
+
+                                {/* لو كتب حاجة مش في الليست */}
+                                {category &&
+                                  !CATEGORIES.some(
+                                    (c) =>
+                                      c.toLowerCase() ===
+                                      category.toLowerCase(),
+                                  ) && (
+                                    <div className="px-4 py-2.5 border-t border-white/10">
+                                      <p className="text-xs text-gray-500 mb-1">
+                                        Custom
+                                      </p>
+                                      <p className="text-sm text-[#fda481] font-medium">{`"${category}"`}</p>
+                                    </div>
+                                  )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
                         {formErrors.category && (
                           <FieldError msg={formErrors.category} />
                         )}
@@ -307,36 +387,6 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
                       {formErrors.description && (
                         <FieldError msg={formErrors.description} />
                       )}
-                    </div>
-
-                    {/* Active Toggle */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">
-                        Status
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setIsActive((p) => !p)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors w-full ${
-                          isActive
-                            ? "bg-green-500/10 border-green-500/30 text-green-400"
-                            : "bg-gray-500/10 border-gray-500/30 text-gray-400"
-                        }`}
-                      >
-                        {isActive ? (
-                          <ToggleRight className="w-5 h-5" />
-                        ) : (
-                          <ToggleLeft className="w-5 h-5" />
-                        )}
-                        <span className="font-semibold">
-                          {isActive ? "Active" : "Inactive"}
-                        </span>
-                        <span className="text-xs ml-auto opacity-60">
-                          {isActive
-                            ? "Product is visible to customers"
-                            : "Product is hidden from customers"}
-                        </span>
-                      </button>
                     </div>
                   </div>
                 </div>

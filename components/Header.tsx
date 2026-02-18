@@ -13,7 +13,6 @@ const NAV_LINKS = [
   { label: "Home", sectionId: "hero" },
   { label: "Shop", sectionId: "products" },
   { label: "Featured", sectionId: "featured" },
-  { label: "Reviews", sectionId: "testimonials" },
   { label: "Hot Deals", sectionId: "deals", isSpecial: true, icon: "🔥" },
 ];
 
@@ -46,7 +45,7 @@ const Header = () => {
 console.log("🔥 BASE_URL:", process.env.NEXT_PUBLIC_BASE_URL);
   return (
     <>
-      <header className="bg-linear-to-r from-[#181A2F] via-[#242E49] to-[#181A2F] shadow-2xl sticky top-0 z-50 border-b border-white/10">
+      <header  className="bg-linear-to-r from-[#181A2F] via-[#242E49] to-[#181A2F] shadow-2xl sticky top-0 z-50 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between py-5 lg:py-6">
             {/* Logo */}

@@ -14,7 +14,7 @@ import { Suspense } from "react";
 export default function Home() {
 
   return (
-    <div className="">
+    <div id="hero" className="">
       <DeviceIDProvider />
       <Suspense fallback={null}>
         <PaymentProcessor />

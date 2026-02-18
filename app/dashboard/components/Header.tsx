@@ -1,12 +1,31 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, Menu, X } from "lucide-react";
 
-export const Header = () => {
+interface HeaderProps {
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+}
+
+export const Header = ({ sidebarOpen, setSidebarOpen }: HeaderProps) => {
   return (
     <header className="h-20 bg-[#1a1d29] border-b border-white/5 flex items-center justify-between px-8">
       <div className="flex items-center gap-4 flex-1 max-w-2xl">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="p-3 rounded-xl hover:bg-white/5 shrink-0 flex md:hidden"
+        >
+          {sidebarOpen ? (
+            <X className="w-5 h-5 text-gray-400" />
+          ) : (
+            <Menu className="w-5 h-5 text-gray-400" />
+          )}
+        </motion.button>
+
+        {/* Search */}
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -12,6 +12,8 @@ import {
   Lock,
   Save,
   Trash2,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { Variant, CreateProduct, AddVariants, ColorOption, FormErrors, Props, SizeOption, TabType } from "@/type/type";
 import {
@@ -78,6 +80,26 @@ export const CreateProductModal: React.FC<Props> = ({
   const [sizes, setSizes] = useState<SizeOption[]>(INITIAL_SIZES);
   const [generatedVariants, setGeneratedVariants] = useState<Variant[]>([]);
   const [createdProductId, setCreatedProductId] = useState<number | null>(null);
+const [categoryOpen, setCategoryOpen] = useState(false);
+const categoryRef = useRef<HTMLDivElement>(null);
+const CATEGORIES = ["Men", "Women", "Unisex", "Children", "Teens"];
+
+useEffect(() => {
+  const handleClickOutside = (e: MouseEvent) => {
+    if (
+      categoryRef.current &&
+      !categoryRef.current.contains(e.target as Node)
+    ) {
+      setCategoryOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
 
   const reset = () => {
     setActiveTab("general");
@@ -193,7 +215,7 @@ export const CreateProductModal: React.FC<Props> = ({
         name: productName,
         description,
         material_composition: material,
-        category: parseInt(category),
+        category: category,
       };
       const res = await createProductMutation.mutateAsync(payload);
       setCreatedProductId(res.product_id);
@@ -401,35 +423,76 @@ export const CreateProductModal: React.FC<Props> = ({
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-2">
-                          Category *
-                        </label>
-                        <select
-                          value={category}
-                          onChange={(e) => {
-                            setCategory(e.target.value);
-                            setFormErrors((p) => ({
-                              ...p,
-                              category: undefined,
-                            }));
-                          }}
-                          className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white focus:outline-none ${
-                            formErrors.category
-                              ? "border-red-500"
-                              : "border-white/10 focus:border-[#fda481]/50"
-                          }`}
-                        >
-                          <option value="">Select...</option>
-                          <option value="1">T-Shirts</option>
-                          <option value="2">Hoodies</option>
-                          <option value="3">Pants</option>
-                          <option value="4">Accessories</option>
-                        </select>
-                        {formErrors.category && (
-                          <FieldError msg={formErrors.category} />
-                        )}
-                      </div>
+<div>
+  <label className="block text-sm font-medium text-gray-400 mb-2">
+    Category *
+  </label>
+  <div className="relative" ref={categoryRef}>
+    <input
+      type="text"
+      value={category}
+      onChange={(e) => {
+        setCategory(e.target.value);
+        setCategoryOpen(true);
+        setFormErrors((p) => ({ ...p, category: undefined }));
+      }}
+      onFocus={() => setCategoryOpen(true)}
+      placeholder="Select or type a category..."
+      className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none pr-10 ${
+        formErrors.category
+          ? "border-red-500"
+          : "border-white/10 focus:border-[#fda481]/50"
+      }`}
+    />
+    <ChevronDown
+      className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform ${categoryOpen ? "rotate-180" : ""}`}
+    />
+
+    <AnimatePresence>
+      {categoryOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.15 }}
+          className="absolute top-full left-0 right-0 mt-1 bg-[#0f1117] border border-white/10 rounded-lg overflow-hidden z-50 shadow-xl"
+        >
+          {CATEGORIES.filter((c) =>
+            c.toLowerCase().includes(category.toLowerCase())
+          ).map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => {
+                setCategory(c);
+                setCategoryOpen(false);
+                setFormErrors((p) => ({ ...p, category: undefined }));
+              }}
+              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 flex items-center justify-between group ${
+                category === c ? "text-[#fda481]" : "text-gray-300"
+              }`}
+            >
+              {c}
+              {category === c && <Check className="w-4 h-4 text-[#fda481]" />}
+            </button>
+          ))}
+
+          {/* لو كتب حاجة مش في الليست */}
+          {category &&
+            !CATEGORIES.some(
+              (c) => c.toLowerCase() === category.toLowerCase()
+            ) && (
+              <div className="px-4 py-2.5 border-t border-white/10">
+                <p className="text-xs text-gray-500 mb-1">Custom</p>
+                <p className="text-sm text-[#fda481] font-medium">{`"${category}"`}</p>
+              </div>
+            )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+  {formErrors.category && <FieldError msg={formErrors.category} />}
+</div>
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-2">
                           Material *

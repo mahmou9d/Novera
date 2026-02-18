@@ -8,14 +8,13 @@ import { OrdersPage } from "./components/OrdersPage";
 import { EditProduct } from "./components/EditProduct";
 import { CustomersPage } from "./components/CustomersPage";
 import { AnalyticsPage } from "./components/AnalyticsPage";
-import { productsData, customersData } from "./data/mockData";
 import { getStatusColor, getStatusIcon } from "@/utils/helpers";
 import { StatType } from "@/type/type";
 import { DollarSign, Package, ShoppingCart, Users } from "lucide-react";
 import { useGetStatusCount } from "@/hooks/useDashboard";
 
 const CompleteDashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [activeMenu, setActiveMenu] = useState<string>("dashboard");
   const { data } = useGetStatusCount();
   const stats: StatType[] = [
@@ -56,6 +55,7 @@ const CompleteDashboard = () => {
       gradient: "from-[#fda481] to-[#b4182d]",
     },
   ];
+
   const renderContent = () => {
     switch (activeMenu) {
       case "dashboard":
@@ -70,19 +70,12 @@ const CompleteDashboard = () => {
       case "products":
         return (
           <EditProduct
-            // products={productsData}
             getStatusColor={getStatusColor}
             getStatusIcon={getStatusIcon}
           />
         );
       case "customers":
-        return (
-          <CustomersPage
-            // customers={customersData}
-            // getStatusColor={getStatusColor}
-            // getStatusIcon={getStatusIcon}
-          />
-        );
+        return <CustomersPage />;
       case "analytics":
         return <AnalyticsPage />;
       default:
@@ -98,11 +91,9 @@ const CompleteDashboard = () => {
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
       />
-
-      <main className="flex-1 flex flex-col relative z-10 bg-[#0f1117]">
-        <Header />
-
-        <div className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 flex flex-col relative z-10 bg-[#0f1117] w-full">
+        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <div className="flex-1 p-4 md:p-8 overflow-auto">
           <div key={activeMenu}>{renderContent()}</div>
         </div>
       </main>

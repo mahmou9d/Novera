@@ -14,7 +14,7 @@ const Hero = () => {
 
   return (
     <section
-      id="hero"
+      
       className="relative bg-gradient-to-br from-navy via-slate to-steel overflow-hidden"
     >
       <div className="container mx-auto px-4 sm:px-6 xl:px-40 relative z-10">

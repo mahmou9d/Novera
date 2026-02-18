@@ -294,7 +294,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ stats }) => {
                       Total Sales
                     </p>
                   </div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-[16px] md:text-2xl font-bold text-white">
                     $
                     {salesData
                       .reduce((sum, d) => sum + d.sales, 0)
@@ -310,7 +310,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ stats }) => {
                       Total Orders
                     </p>
                   </div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-[16px] md:text-2xl font-bold text-white">
                     {salesData.reduce((sum, d) => sum + d.orders, 0)}
                   </p>
                 </div>
@@ -323,7 +323,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ stats }) => {
                       Avg. Order
                     </p>
                   </div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-[16px] md:text-2xl font-bold text-white">
                     $
                     {(() => {
                       const totalSales = salesData.reduce(

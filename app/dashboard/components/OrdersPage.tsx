@@ -96,7 +96,8 @@ export const OrdersPage: React.FC<OrdersPageProps> = ({
   getStatusColor,
   getStatusIcon,
 }) => {
-  const { data: recentOrders } = useGetRecentOrders();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data: recentOrders } = useGetRecentOrders(currentPage);
   const patchOrderMutation = usePatchOrders();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -230,8 +231,7 @@ console.log(selectedOrder.id);
                   {selectedOption.label}
                 </p>
               </div>
-              <div
-              >
+              <div>
                 <ChevronDown className="w-5 h-5 text-gray-400" />
               </div>
             </button>
@@ -239,9 +239,7 @@ console.log(selectedOrder.id);
             {/* Dropdown Menu */}
             <AnimatePresence>
               {isDropdownOpen && (
-                <div
-                  className="absolute top-full left-0 mt-2 w-full min-w-[260px] bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
-                >
+                <div className="absolute top-full left-0 mt-2 w-full min-w-[260px] bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
                   <div className="p-2">
                     {statusOptionsWithCounts.map((option, index) => {
                       const isSelected = option.value === statusFilter;
@@ -279,9 +277,7 @@ console.log(selectedOrder.id);
                           </div>
 
                           {isSelected && (
-                            <div
-                              className="w-6 h-6 rounded-full bg-[#fda481] flex items-center justify-center flex-shrink-0"
-                            >
+                            <div className="w-6 h-6 rounded-full bg-[#fda481] flex items-center justify-center flex-shrink-0">
                               <Check className="w-4 h-4 text-white" />
                             </div>
                           )}
@@ -376,9 +372,7 @@ console.log(selectedOrder.id);
         })}
 
         {/* Total Revenue Card */}
-        <div
-          className="bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 rounded-xl p-4 border border-[#fda481]/30"
-        >
+        <div className="bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 rounded-xl p-4 border border-[#fda481]/30">
           <div className="w-10 h-10 rounded-lg bg-[#fda481]/20 flex items-center justify-center mb-3 mx-auto">
             <DollarSign className="w-5 h-5 text-[#fda481]" />
           </div>
@@ -534,7 +528,7 @@ console.log(selectedOrder.id);
             <p className="text-sm text-gray-400">
               Showing{" "}
               <span className="font-semibold text-white">
-                {filteredOrders.length}
+                {filteredOrders.length + (currentPage - 1) * 10 }
               </span>{" "}
               of{" "}
               <span className="font-semibold text-white">
@@ -544,12 +538,17 @@ console.log(selectedOrder.id);
             </p>
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setCurrentPage((prev) => prev - 1)}
                 disabled={!recentOrders?.previous}
                 className="p-2 rounded-lg hover:bg-white/5 text-gray-400  disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
+              <span className="text-sm text-gray-400 px-2">
+                Page {currentPage}
+              </span>
               <button
+                onClick={() => setCurrentPage((prev) => prev + 1)}
                 disabled={!recentOrders?.next}
                 className="p-2 rounded-lg hover:bg-white/5 text-gray-400  disabled:opacity-30 disabled:cursor-not-allowed"
               >
@@ -568,7 +567,6 @@ console.log(selectedOrder.id);
             onClick={() => setSelectedOrder(null)}
           >
             <div
-
               className="bg-[#1a1d29] rounded-2xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
@@ -595,38 +593,49 @@ console.log(selectedOrder.id);
                   {/* Change Status Dropdown */}
                   <div className="relative flex-1" ref={statusDropdownRef}>
                     <button
-                      onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                      onClick={() =>
+                        setIsStatusDropdownOpen(!isStatusDropdownOpen)
+                      }
                       disabled={patchOrderMutation.isPending}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:border-[#fda481]/30  flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <div className={`w-10 h-10 rounded-lg ${getCurrentStatusOption().bgColor} flex items-center justify-center`}>
+                      <div
+                        className={`w-10 h-10 rounded-lg ${getCurrentStatusOption().bgColor} flex items-center justify-center`}
+                      >
                         {/* <getCurrentStatusOption().icon className={`w-5 h-5 ${getCurrentStatusOption().color}`} /> */}
                       </div>
                       <div className="flex-1 text-left">
                         <p className="text-xs text-gray-400">Order Status</p>
                         <p className="font-bold text-white">
-                          {patchOrderMutation.isPending ? "Updating..." : getCurrentStatusOption().label}
+                          {patchOrderMutation.isPending
+                            ? "Updating..."
+                            : getCurrentStatusOption().label}
                         </p>
                       </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown
+                        className={`w-5 h-5 text-gray-400 ${isStatusDropdownOpen ? "rotate-180" : ""}`}
+                      />
                     </button>
 
                     {/* Status Dropdown Menu */}
                     <AnimatePresence>
                       {isStatusDropdownOpen && (
-                        <div
-                          className="absolute top-full left-0 right-0 mt-2 bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
-                        >
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
                           <div className="p-2">
                             {orderStatusOptions.map((option) => {
-                              const currentStatus = tempStatus || selectedOrder.status;
+                              const currentStatus =
+                                tempStatus || selectedOrder.status;
                               const isSelected = option.value === currentStatus;
                               const Icon = option.icon;
 
                               return (
                                 <button
                                   key={option.value}
-                                  onClick={() => handleStatusChange(option.value as OrderStatus)}
+                                  onClick={() =>
+                                    handleStatusChange(
+                                      option.value as OrderStatus,
+                                    )
+                                  }
                                   disabled={patchOrderMutation.isPending}
                                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg  disabled:opacity-50 ${
                                     isSelected
@@ -634,11 +643,17 @@ console.log(selectedOrder.id);
                                       : "hover:bg-white/5 border border-transparent"
                                   }`}
                                 >
-                                  <div className={`w-10 h-10 rounded-lg ${option.bgColor} flex items-center justify-center`}>
-                                    <Icon className={`w-5 h-5 ${option.color}`} />
+                                  <div
+                                    className={`w-10 h-10 rounded-lg ${option.bgColor} flex items-center justify-center`}
+                                  >
+                                    <Icon
+                                      className={`w-5 h-5 ${option.color}`}
+                                    />
                                   </div>
                                   <div className="flex-1 text-left">
-                                    <p className={`font-semibold text-sm ${isSelected ? "text-white" : "text-gray-300"}`}>
+                                    <p
+                                      className={`font-semibold text-sm ${isSelected ? "text-white" : "text-gray-300"}`}
+                                    >
                                       {option.label}
                                     </p>
                                   </div>
@@ -677,9 +692,7 @@ console.log(selectedOrder.id);
                 {/* Success/Error Messages */}
                 <AnimatePresence>
                   {patchOrderMutation.isSuccess && (
-                    <div
-                      className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3"
-                    >
+                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3">
                       <CheckCircle className="w-5 h-5 text-emerald-400" />
                       <span className="text-emerald-400 font-medium">
                         Order status updated successfully!
@@ -687,9 +700,7 @@ console.log(selectedOrder.id);
                     </div>
                   )}
                   {patchOrderMutation.isError && (
-                    <div
-                      className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3"
-                    >
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
                       <AlertCircle className="w-5 h-5 text-red-400" />
                       <span className="text-red-400 font-medium">
                         {errorMessage}
@@ -737,34 +748,36 @@ console.log(selectedOrder.id);
                   </h3>
                   <div className="space-y-3">
                     {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                      selectedOrder.items.map((item: OrderItem, idx: number) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 flex items-center justify-center">
-                              <Package className="w-6 h-6 text-[#fda481]" />
+                      selectedOrder.items.map(
+                        (item: OrderItem, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 flex items-center justify-center">
+                                <Package className="w-6 h-6 text-[#fda481]" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-white">
+                                  {item.variant_name}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  Qty: {item.quantity}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-semibold text-white">
-                                {item.variant_name}
+                            <div className="text-right">
+                              <p className="font-bold text-white">
+                                ${item.subtotal}
                               </p>
                               <p className="text-xs text-gray-400">
-                                Qty: {item.quantity}
+                                ${item.price} each
                               </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="font-bold text-white">
-                              ${item.subtotal}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              ${item.price} each
-                            </p>
-                          </div>
-                        </div>
-                      ))
+                        ),
+                      )
                     ) : (
                       <p className="text-center text-gray-400 py-4">
                         No items in this order

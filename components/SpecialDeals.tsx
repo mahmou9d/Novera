@@ -68,7 +68,10 @@ export default function SpecialDeals() {
   }, []);
 
   return (
-    <div className="relative bg-gradient-to-br from-[#B4182D] via-[#8B0000] to-[#54162B] py-20 lg:py-32 overflow-hidden">
+    <div
+      id="deals"
+      className="relative bg-gradient-to-br from-[#B4182D] via-[#8B0000] to-[#54162B] py-20 lg:py-32 overflow-hidden"
+    >
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-96 h-96 bg-[#FDA481]/10 rounded-full " />
@@ -207,10 +210,7 @@ export default function SpecialDeals() {
           <button className="group inline-flex items-center gap-4 bg-white text-[#B4182D] px-12 py-6 rounded-full font-body font-bold text-base uppercase tracking-wider shadow-2xl hover:bg-gray-100">
             <TrendingUp size={24} />
             View All Deals
-            <ArrowRight
-              size={20}
-              className="group-hover:translate-x-1 "
-            />
+            <ArrowRight size={20} className="group-hover:translate-x-1 " />
           </button>
         </div>
       </div>

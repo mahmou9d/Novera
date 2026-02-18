@@ -101,12 +101,13 @@ export default function FeaturedTrending() {
   const otherProducts = FEATURED_PRODUCTS.slice(1);
 
   return (
-    <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
+    <section
+      id="featured"
+      className="py-24 bg-gradient-to-b from-gray-50 to-white"
+    >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header */}
-        <div
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FDA481]/20 to-[#B4182D]/20 px-4 py-2 rounded-full mb-4">
             <Sparkles size={16} className="text-[#FDA481]" />
             <span className="text-sm font-semibold uppercase tracking-wider text-[#181A2F]">
@@ -151,9 +152,7 @@ export default function FeaturedTrending() {
         {activeTab === "featured" && (
           <div className="space-y-8">
             {/* Main Featured - Full Width */}
-            <div
-              className="relative h-[500px] lg:h-[600px] rounded-3xl overflow-hidden cursor-pointer group"
-            >
+            <div className="relative h-[500px] lg:h-[600px] rounded-3xl overflow-hidden cursor-pointer group">
               <Image
                 src={mainProduct.image}
                 alt={mainProduct.name}
