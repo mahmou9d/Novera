@@ -429,10 +429,10 @@ const ProductPage = ({ productId }: ProductPageProps) => {
               <label className="text-sm font-semibold text-gray-900">
                 Quantity:
               </label>
-              <div className="flex items-center gap-0 bg-white border-2 border-[#fca481] border-opacity-30 rounded-xl shadow-sm hover:border-opacity-60 ">
+              <div className="flex items-center gap-0 bg-white border-2 border-[#fca481] border-opacity-30 rounded-xl shadow-sm hover:border-opacity-60">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-3   rounded-l-xl text-[#fca481]"
+                  className="p-3 rounded-l-xl text-[#fca481]"
                 >
                   <Minus size={16} />
                 </button>
@@ -440,19 +440,22 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                   {quantity}
                 </span>
                 <button
-                  onClick={() =>
-                    setQuantity(Math.min(selectedVariant.stock, quantity + 1))
-                  }
-                  className={`p-3   rounded-r-xl text-[#fca481] ${
-                    quantity >= Number(selectedVariant.stock)
-                      ? ""
-                      : "hover:bg-[#fca481] hover:text-white"
-                  }`}
-                  disabled={quantity >= selectedVariant.stock}
+                  onClick={() => {
+                    if (quantity >= Number(selectedVariant.stock)) return;
+                    setQuantity(quantity + 1);
+                  }}
+                  className="p-3 rounded-r-xl text-[#fca481]"
                 >
                   <Plus size={16} />
                 </button>
               </div>
+
+              {/* الرسالة */}
+              {quantity >= Number(selectedVariant.stock) && (
+                <span className="text-sm text-orange-500 font-medium">
+                  Max stock reached
+                </span>
+              )}
             </div>
 
             {/* Action Buttons - Enhanced */}
