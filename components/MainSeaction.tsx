@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {  RefreshCw, Sparkles, TrendingUp } from "lucide-react";
+import { RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import Productgrid from "./Productgrid";
 import { useGetProducts } from "@/hooks/useProducts";
 import Link from "next/link";
 import { useGetCategory } from "@/hooks/useDashboard";
 
 const MainSection = () => {
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("Everything");
   const { data, isLoading, isError, error } = useGetProducts();
   const { data: categoryData } = useGetCategory();
   const products = useMemo(() => data?.products || [], [data?.products]);
@@ -16,14 +16,12 @@ const MainSection = () => {
   const categories = useMemo(() => {
     const all = [{ id: "all", name: "Everything" }];
 
-    if (categoryData?.categories) {
-      categoryData.categories.forEach((cat: { id: string; name: string }) => {
-        all.push({ id: cat.id, name: cat.name });
+    if (categoryData) {
+      categoryData.forEach((cat: { id: number; name: string }) => {
+        all.push({ id: String(cat.id), name: cat.name });
       });
       return all;
     }
-
-    // Fallback: استخرج الكاتيجوري من الـ products
     const seen = new Set<string>();
     products.forEach((product) => {
       if (product.category_name && !seen.has(product.category_name)) {
@@ -38,23 +36,13 @@ const MainSection = () => {
     return all;
   }, [categoryData, products]);
 
-  // Filtered products
   const filteredProducts = useMemo(() => {
-    if (!products || products.length === 0) return [];
-    if (activeCategory === "all") return products;
-    return products.filter((p) => {
-      return p.category_name?.toLowerCase() === activeCategory;
-    });
+    if (activeCategory === "Everything") return products;
+    return products.filter((p) => p.category_name === activeCategory);
   }, [activeCategory, products]);
-
-  const someProducts =filteredProducts.slice(0, 8);
-  // Current category name
-  const currentCategoryName = useMemo(() => {
-    if (activeCategory === "all") return "The Collection";
-    const category = categories.find((c) => c.id === activeCategory);
-    return category?.name || "Collection";
-  }, [activeCategory, categories]);
-
+  const someProducts = filteredProducts.slice(0, 8);
+  const currentCategoryName =
+    activeCategory === "Everything" ? "The Collection" : activeCategory;
   if (isError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -129,9 +117,9 @@ const MainSection = () => {
             {categories.map((cat: { id: string; name: string }) => (
               <button
                 key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
+                onClick={() => setActiveCategory(cat.name)}
                 className={`group relative px-8 py-4 rounded-full font-medium text-sm tracking-wide ${
-                  activeCategory === cat.id
+                  activeCategory === cat.name
                     ? "bg-white text-[#181A2F] shadow-2xl"
                     : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
                 }`}
@@ -139,7 +127,7 @@ const MainSection = () => {
                 <span className="relative z-10 flex items-center gap-3">
                   {cat.name}
                 </span>
-                {activeCategory === cat.id && (
+                {activeCategory === cat.name && (
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FDA481]/20 to-transparent rounded-full" />
                 )}
               </button>
@@ -178,7 +166,7 @@ const MainSection = () => {
               key={someProducts.length}
               className="text-gray-600 font-medium text-lg"
             >
-              <span key={someProducts.length}>{someProducts.length}</span>{" "}
+              <span key={someProducts.length}>{someProducts.length}</span>
               pieces for your wardrobe
             </p>
           </div>

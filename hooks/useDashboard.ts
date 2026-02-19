@@ -133,7 +133,7 @@ export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: {id:number, name: string }) =>
+    mutationFn: (payload: { name: string }) =>
       dashboardAPI.createCategory(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: dashboardKeys.categories() });

@@ -15,6 +15,7 @@ import {
 import { useUpdateProduct, useGetSingleProduct } from "@/hooks/useProducts";
 import { EditProductModalFormErrors, EditProductModalProps, ErrorResponse } from "@/type/type";
 import { AxiosError } from "axios";
+import { useGetCategory } from "@/hooks/useDashboard";
 
 
 const FieldError = ({ msg }: { msg: string }) => (
@@ -52,7 +53,7 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
   const [isActive, setIsActive] = useState(true);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
-  const CATEGORIES = ["Men", "Women", "Unisex", "Children", "Teens"];
+  const { data: CATEGORIES } = useGetCategory();
   
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -290,16 +291,12 @@ const handleUpdate = () => {
                                 transition={{ duration: 0.15 }}
                                 className="absolute top-full left-0 right-0 mt-1 bg-[#0f1117] border border-white/10 rounded-lg overflow-hidden z-50 shadow-xl"
                               >
-                                {CATEGORIES.filter((c) =>
-                                  c
-                                    .toLowerCase()
-                                    .includes(category.toLowerCase()),
-                                ).map((c) => (
+                                {CATEGORIES?.map((c) => (
                                   <button
-                                    key={c}
+                                    key={c.id}
                                     type="button"
                                     onClick={() => {
-                                      setCategory(c);
+                                      setCategory(c.name);
                                       setCategoryOpen(false);
                                       setFormErrors((p) => ({
                                         ...p,
@@ -307,23 +304,21 @@ const handleUpdate = () => {
                                       }));
                                     }}
                                     className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 flex items-center justify-between group ${
-                                      category === c
+                                      category === c.name
                                         ? "text-[#fda481]"
                                         : "text-gray-300"
                                     }`}
                                   >
-                                    {c}
-                                    {category === c && (
+                                    {c.name}
+                                    {category === c.name && (
                                       <Check className="w-4 h-4 text-[#fda481]" />
                                     )}
                                   </button>
                                 ))}
-
-                                {/* لو كتب حاجة مش في الليست */}
                                 {category &&
-                                  !CATEGORIES.some(
+                                  !CATEGORIES?.some(
                                     (c) =>
-                                      c.toLowerCase() ===
+                                      c.name.toLowerCase() ===
                                       category.toLowerCase(),
                                   ) && (
                                     <div className="px-4 py-2.5 border-t border-white/10">

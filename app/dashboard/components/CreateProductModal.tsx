@@ -76,8 +76,6 @@ export const CreateProductModal: React.FC<Props> = ({
   const addVariantsMutation = useAddVariantsProduct();
   const addImageMutation = useAddImageVariantsProduct();
   const createCategoryMutation = useCreateCategory();
-  const { data: categoryData } = useGetCategory();
-
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [completedTabs, setCompletedTabs] = useState<Set<TabType>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
@@ -96,11 +94,7 @@ export const CreateProductModal: React.FC<Props> = ({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
-
-  // ── Categories من API أو fallback ─────────────────────────────────────────
-  const CATEGORIES: string[] = categoryData?.categories
-    ? categoryData.categories.map((c: { name: string }) => c.name)
-    : ["Men", "Women", "Unisex", "Children", "Teens"];
+const { data: CATEGORIES } = useGetCategory();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -506,17 +500,13 @@ const handleCreateCategory = () => {
                                 transition={{ duration: 0.15 }}
                                 className="absolute top-full left-0 right-0 mt-1 bg-[#0f1117] border border-white/10 rounded-lg overflow-hidden z-50 shadow-xl"
                               >
-                                {/* الكاتيجوريز الموجودة */}
-                                {CATEGORIES.filter((c) =>
-                                  c
-                                    .toLowerCase()
-                                    .includes(category.toLowerCase()),
-                                ).map((c) => (
+                                
+                                {CATEGORIES?.map((c) => (
                                   <button
-                                    key={c}
+                                    key={c.id}
                                     type="button"
                                     onClick={() => {
-                                      setCategory(c);
+                                      setCategory(c.name);
                                       setCategoryOpen(false);
                                       setFormErrors((p) => ({
                                         ...p,
@@ -524,23 +514,21 @@ const handleCreateCategory = () => {
                                       }));
                                     }}
                                     className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 flex items-center justify-between group ${
-                                      category === c
+                                      category === c.name
                                         ? "text-[#fda481]"
                                         : "text-gray-300"
                                     }`}
                                   >
-                                    {c}
-                                    {category === c && (
+                                    {c.name}
+                                    {category === c.name && (
                                       <Check className="w-4 h-4 text-[#fda481]" />
                                     )}
                                   </button>
                                 ))}
-
-                                {/* ── Create Category Option ── */}
                                 {category.trim() &&
-                                  !CATEGORIES.some(
+                                  !CATEGORIES?.some(
                                     (c) =>
-                                      c.toLowerCase() ===
+                                      c.name.toLowerCase() ===
                                       category.toLowerCase(),
                                   ) && (
                                     <div className="border-t border-white/10">
