@@ -105,7 +105,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
   const addToCart = () => {
     if (!selectedVariant) return;
     addToCartMutation(
-      { variant_id: Number(product?.id), quantity: quantity },
+      { variant_id: Number(selectedVariant?.id), quantity: quantity },
       {
         onSuccess: () => {
           showNotification(`${product?.name} added to cart!`);

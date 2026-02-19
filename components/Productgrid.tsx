@@ -57,28 +57,7 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
     });
   };
 
-  const addToCart = (e: React.MouseEvent, product: TProduct): void => {
-    e.stopPropagation(); // Prevent navigation when clicking add to cart
-    addToCartMutation(
-      {
-        variant_id: product.id,
-        quantity: 1,
-      },
-      {
-        onSuccess: () => {
-          showNotification(`${product.name} added to cart!`);
-        },
-        onError: (error: AxiosError<ErrorResponse>) => {
-          console.error(
-            "Cart error:",
-            (error?.response?.data?.detail as string) ||
-              (error?.response?.data?.error as string),
-          );
-          showNotification(error?.response?.data?.detail as string ||error?.response?.data?.error as string , "error");
-        },
-      },
-    );
-  };
+
 
   // Handle empty state
   if (!products || products.length === 0) {
@@ -146,13 +125,6 @@ const ProductGrid = ({ products = [] }: ProductGridProps) => {
                           : "text-red-500"
                       }`}
                     />
-                  </button>
-
-                  <button
-                    onClick={(e) => addToCart(e, product)}
-                    className="inline-flex items-center bg-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100  "
-                  >
-                    <ShoppingBag size={20} className="text-blue-600" />
                   </button>
                 </div>
               </div>

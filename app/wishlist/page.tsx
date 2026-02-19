@@ -51,32 +51,7 @@ const WishlistPage = () => {
     [toggleWishlistMutation, showNotification],
   );
 
-  const addToCart = useCallback(
-    (item: TProduct): void => {
-      addToCartMutation.mutate(
-        {
-          variant_id: Number(item.id),
-          quantity: 1,
-          size: "default",
-        },
-        {
-          onSuccess: () => {
-            showNotification(`${item.name} added to cart!`);
-          },
-          onError: (error: AxiosError<ErrorResponse>) => {
-            const errorMessage =
-              error?.response?.data?.message ||
-              error?.response?.data?.detail ||
-              error?.response?.data?.error ||
-              error?.message ||
-              "Failed to add to cart";
-            showNotification(errorMessage, "error");
-          },
-        },
-      );
-    },
-    [addToCartMutation, showNotification],
-  );
+
 
   if (isLoading) {
     return (
@@ -207,16 +182,6 @@ const WishlistPage = () => {
 
                       {/* Actions */}
                       <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addToCart(item);
-                          }}
-                          className="flex-1 bg-[#fca481] hover:bg-[#fb8c5f] text-white py-2.5 rounded-xl font-bold text-sm  flex items-center justify-center gap-2"
-                        >
-                          <ShoppingCart size={16} />
-                          Add to Cart
-                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
