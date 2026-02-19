@@ -404,7 +404,7 @@ export interface CreateProduct {
   name: string;
   description: string;
   material_composition: string;
-  category: string;
+  category: number;
 }
 export interface SubVariant {
   color_name: string;

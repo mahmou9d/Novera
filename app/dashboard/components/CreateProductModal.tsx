@@ -83,7 +83,13 @@ export const CreateProductModal: React.FC<Props> = ({
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const [productName, setProductName] = useState("");
-  const [category, setCategory] = useState("");
+
+  // ── Category: نخزن id و name منفصلين ──────────────────────────────────────
+  const [category, setCategory] = useState<{ id: number; name: string } | null>(
+    null,
+  );
+  const [categoryInput, setCategoryInput] = useState("");
+
   const [material, setMaterial] = useState("");
   const [description, setDescription] = useState("");
 
@@ -94,7 +100,7 @@ export const CreateProductModal: React.FC<Props> = ({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
-const { data: CATEGORIES } = useGetCategory();
+  const { data: CATEGORIES } = useGetCategory();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -115,7 +121,8 @@ const { data: CATEGORIES } = useGetCategory();
     setSaveSuccess(false);
     setFormErrors({});
     setProductName("");
-    setCategory("");
+    setCategory(null);
+    setCategoryInput("");
     setMaterial("");
     setDescription("");
     setColors(INITIAL_COLORS);
@@ -130,32 +137,38 @@ const { data: CATEGORIES } = useGetCategory();
   };
 
   // ── Create Category ────────────────────────────────────────────────────────
-const handleCreateCategory = () => {
-  if (!category.trim()) return;
-  setIsCreatingCategory(true);
+  const handleCreateCategory = () => {
+    if (!categoryInput.trim()) return;
+    setIsCreatingCategory(true);
 
-  createCategoryMutation.mutate(
-    { name: category.trim() },
-    {
-      onSuccess: () => {
-        onNotify(`Category "${category}" created successfully!`, "success");
-        setCategoryOpen(false);
-        setFormErrors((p) => ({ ...p, category: undefined }));
-        setIsCreatingCategory(false);
+    createCategoryMutation.mutate(
+      { name: categoryInput.trim() },
+      {
+        onSuccess: (newCat) => {
+          // بعد الإنشاء نخزن الـ id و الاسم
+          setCategory({ id: newCat.id, name: newCat.name });
+          setCategoryInput(newCat.name);
+          onNotify(
+            `Category "${newCat.name}" created successfully!`,
+            "success",
+          );
+          setCategoryOpen(false);
+          setFormErrors((p) => ({ ...p, category: undefined }));
+          setIsCreatingCategory(false);
+        },
+        onError: (error: AxiosError<ErrorResponse>) => {
+          onNotify(
+            error?.response?.data?.message ||
+              error?.response?.data?.name ||
+              error?.message ||
+              "Failed to create category",
+            "error",
+          );
+          setIsCreatingCategory(false);
+        },
       },
-      onError: (error: AxiosError<ErrorResponse>) => {
-        onNotify(
-          error?.response?.data?.message ||
-            error?.response?.data?.name ||
-            error?.message ||
-            "Failed to create category",
-          "error",
-        );
-        setIsCreatingCategory(false);
-      },
-    },
-  );
-};
+    );
+  };
 
   // ── Validation ────────────────────────────────────────────────────────────
   const validateGeneral = (): boolean => {
@@ -206,7 +219,7 @@ const handleCreateCategory = () => {
         list.push({
           id: id++,
           product_name: productName,
-          category_name: category,
+          category_name: category?.name ?? "",
           color_name: c.name,
           color_hex: c.hex,
           size: s.size,
@@ -251,7 +264,7 @@ const handleCreateCategory = () => {
         name: productName,
         description,
         material_composition: material,
-        category: category,
+        category: Number(category!.id),
       };
       const res = await createProductMutation.mutateAsync(payload);
       setCreatedProductId(res.product_id);
@@ -468,9 +481,10 @@ const handleCreateCategory = () => {
                         <div className="relative" ref={categoryRef}>
                           <input
                             type="text"
-                            value={category}
+                            value={categoryInput}
                             onChange={(e) => {
-                              setCategory(e.target.value);
+                              setCategoryInput(e.target.value);
+                              setCategory(null); // امسح الاختيار لو بيكتب من جديد
                               setCategoryOpen(true);
                               setFormErrors((p) => ({
                                 ...p,
@@ -500,13 +514,17 @@ const handleCreateCategory = () => {
                                 transition={{ duration: 0.15 }}
                                 className="absolute top-full left-0 right-0 mt-1 bg-[#0f1117] border border-white/10 rounded-lg overflow-hidden z-50 shadow-xl"
                               >
-                                
-                                {CATEGORIES?.map((c) => (
+                                {CATEGORIES?.filter((c) =>
+                                  c.name
+                                    .toLowerCase()
+                                    .includes(categoryInput.toLowerCase()),
+                                ).map((c) => (
                                   <button
                                     key={c.id}
                                     type="button"
                                     onClick={() => {
-                                      setCategory(c.name);
+                                      setCategory({ id: c.id, name: c.name }); // ← نخزن id + name
+                                      setCategoryInput(c.name); // ← نعرض الاسم في الـ input
                                       setCategoryOpen(false);
                                       setFormErrors((p) => ({
                                         ...p,
@@ -514,22 +532,23 @@ const handleCreateCategory = () => {
                                       }));
                                     }}
                                     className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 flex items-center justify-between group ${
-                                      category === c.name
+                                      category?.id === c.id
                                         ? "text-[#fda481]"
                                         : "text-gray-300"
                                     }`}
                                   >
                                     {c.name}
-                                    {category === c.name && (
+                                    {category?.id === c.id && (
                                       <Check className="w-4 h-4 text-[#fda481]" />
                                     )}
                                   </button>
                                 ))}
-                                {category.trim() &&
+
+                                {categoryInput.trim() &&
                                   !CATEGORIES?.some(
                                     (c) =>
                                       c.name.toLowerCase() ===
-                                      category.toLowerCase(),
+                                      categoryInput.toLowerCase(),
                                   ) && (
                                     <div className="border-t border-white/10">
                                       <button
@@ -546,8 +565,8 @@ const handleCreateCategory = () => {
                                         ) : (
                                           <>
                                             <Plus className="w-4 h-4" />
-                                            Create &quot;{category}&quot; as new
-                                            category
+                                            Create &quot;{categoryInput}&quot;
+                                            as new category
                                           </>
                                         )}
                                       </button>
