@@ -286,6 +286,7 @@ export interface Product {
   variants?: Variant[];
   variant?: Variant;
   is_active?: boolean;
+  product_id?: number;
 }
 // Type للـ Cart Item
 export interface CartItem {

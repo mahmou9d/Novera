@@ -254,7 +254,7 @@ const showNotification = useShowNotification(setNotification);
                     <div
                       key={item.id}
                       onClick={() =>
-                        router.push(`/products/${item.variant?.id}`)
+                        router.push(`/products/${item?.product_id}`)
                       }
                       className="bg-white rounded-2xl p-5 shadow-sm border-2 border-gray-100 hover:border-[#fca481] mb-4 cursor-pointer transition-all"
                     >
@@ -341,7 +341,8 @@ const showNotification = useShowNotification(setNotification);
                                   handleUpdateQuantity(Number(item.id), 1);
                                 }}
                                 className={`w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-600   ${
-                                  Number(item.quantity) >= Number(item.variant?.stock)
+                                  Number(item.quantity) >=
+                                  Number(item.variant?.stock)
                                     ? ""
                                     : "hover:bg-[#fca481] hover:text-white"
                                 }`}
@@ -363,7 +364,8 @@ const showNotification = useShowNotification(setNotification);
                               <span className="text-xl font-black text-gray-900">
                                 $
                                 {(
-                                  Number(item?.variant?.price) * Number(item.quantity)
+                                  Number(item?.variant?.price) *
+                                  Number(item.quantity)
                                 ).toFixed(2)}
                               </span>
                             </div>

@@ -18,6 +18,7 @@ import ProductGrid from "@/components/Productgrid";
 import { useGetProducts } from "@/hooks/useProducts";
 import { TProduct } from "@/type/type";
 import IsLoading from "@/components/IsLoading";
+import { useGetCategory } from "@/hooks/useDashboard";
 
 const Shop = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,7 +26,7 @@ const Shop = () => {
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-
+const { data: categories } = useGetCategory();
   const { data, isLoading, isError, error } = useGetProducts({
     page: currentPage,
   });
@@ -34,21 +35,7 @@ const Shop = () => {
   const totalCount = useMemo(() => data?.count || 0, [data?.count]);
   const hasNext = useMemo(() => data?.next !== null, [data?.next]);
   const hasPrevious = useMemo(() => data?.previous !== null, [data?.previous]);
-  const categories = useMemo(() => {
-    if (!products || products.length === 0) return [{ id: "all", name: "All" }];
 
-
-    const allCategories = products.map((p: TProduct) => p.category_name);
-    const uniqueCategories = Array.from(new Set(allCategories));
-
-    return [
-      { id: "all", name: "All Products" },
-      ...uniqueCategories.map((cat) => ({
-        id: cat,
-        name: cat,
-      })),
-    ];
-  }, [products]);
 
   const maxPrice = useMemo(() => {
     if (!products || products.length === 0) return 1000;
@@ -85,9 +72,6 @@ const Shop = () => {
     });
   }, [products, searchTerm, selectedCategory, priceRange]);
 
-  const itemsPerPage = 8;
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
-
   // Reset price range when products load
   React.useEffect(() => {
     if (products && products.length > 0 && priceRange[1] === 1000) {
@@ -97,22 +81,17 @@ const Shop = () => {
 
   // Pagination handlers
   const handleNextPage = () => {
-    if (hasNext && currentPage < totalPages) {
+    if (hasNext) {
       setCurrentPage((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handlePreviousPage = () => {
-    if (hasPrevious && currentPage > 1) {
+    if (hasPrevious) {
       setCurrentPage((prev) => prev - 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  };
-
-  const handlePageClick = (pageNum: number) => {
-    setCurrentPage(pageNum);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const resetFilters = () => {
@@ -234,7 +213,9 @@ const Shop = () => {
                   </span>
                 </div>
                 <p className="text-2xl font-bold text-white">{currentPage}</p>
-                <p className="text-xs text-white/80">of {totalPages || 1}</p>
+                <p className="text-xs text-white/80">
+                  {hasNext ? `of ${currentPage + 1}+` : `of ${currentPage}`}
+                </p>
               </div>
             </div>
           </div>
@@ -256,128 +237,127 @@ const Shop = () => {
 
         {/* Layout with Sidebar */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-                    {/* Sidebar Filters */}
-            {(showFilters || window.innerWidth >= 1024) && (
-              <div className="lg:w-80 flex-shrink-0">
-                <div className="sticky top-4 space-y-4">
-                  {/* Search */}
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Search className="text-[#fca481]" size={18} />
-                      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                        Search
-                      </h3>
-                    </div>
-                    <div className="relative">
-                      <Search
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                        size={18}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Find your product..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-gradient-to-r from-gray-50 to-[#fef5f1] border-2 border-transparent rounded-xl focus:border-[#fca481] focus:from-white focus:to-white  outline-none text-sm font-medium"
-                      />
-                      {searchTerm && (
-                        <button
-                          onClick={() => setSearchTerm("")}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#fca481]"
-                        >
-                          <X size={16} />
-                        </button>
-                      )}
-                    </div>
+          {/* Sidebar Filters */}
+          {(showFilters ||
+            (typeof window !== "undefined" && window.innerWidth >= 1024)) && (
+            <div className="lg:w-80 flex-shrink-0">
+              <div className="sticky top-4 space-y-4">
+                {/* Search */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Search className="text-[#fca481]" size={18} />
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                      Search
+                    </h3>
                   </div>
-
-                  {/* Categories */}
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Filter className="text-[#fca481]" size={18} />
-                      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                        Categories
-                      </h3>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {categories.map((category, index) => (
-                        <button
-                          key={category.id}
-                          onClick={() => setSelectedCategory(category.id)}
-                          className={`px-5 py-3 rounded-xl text-sm font-semibold  text-left relative overflow-hidden group ${
-                            selectedCategory === category.id
-                              ? "bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30"
-                              : "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-[#fef5f1] hover:to-[#fef5f1] border border-gray-200"
-                          }`}
-                        >
-                          {selectedCategory === category.id && (
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#fca481] to-[#fd9166]" />
-                          )}
-                          <span className="relative z-10">
-                            {category.name as string}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                  <div className="relative">
+                    <Search
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                      size={18}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Find your product..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 bg-gradient-to-r from-gray-50 to-[#fef5f1] border-2 border-transparent rounded-xl focus:border-[#fca481] focus:from-white focus:to-white outline-none text-sm font-medium"
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#fca481]"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
                   </div>
+                </div>
 
-                  {/* Price Range */}
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <SlidersHorizontal className="text-[#fca481]" size={18} />
-                      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                        Price Range
-                      </h3>
-                    </div>
-                    <div className="space-y-4">
-                      <input
-                        type="range"
-                        min="0"
-                        max={maxPrice}
-                        value={priceRange[1]}
-                        onChange={(e) =>
-                          setPriceRange([0, parseInt(e.target.value)])
-                        }
-                        className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer slider-thumb"
-                        style={{
-                          background: `linear-gradient(to right, #fca481 0%, #fca481 ${
-                            (priceRange[1] / maxPrice) * 100
-                          }%, #E5E7EB ${(priceRange[1] / maxPrice) * 100}%, #E5E7EB 100%)`,
-                        }}
-                      />
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl px-4 py-2 border border-gray-200">
-                          <p className="text-xs text-gray-500 mb-1">Min</p>
-                          <p className="text-sm font-bold text-gray-900">$0</p>
-                        </div>
-                        <div className="text-gray-400">—</div>
-                        <div className="flex-1 bg-gradient-to-r from-[#fca481] to-[#fd9166] rounded-xl px-4 py-2 shadow-md">
-                          <p className="text-xs text-white/80 mb-1">Max</p>
-                          <p className="text-sm font-bold text-white">
-                            ${priceRange[1]}
-                          </p>
-                        </div>
+                {/* Categories */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Filter className="text-[#fca481]" size={18} />
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                      Categories
+                    </h3>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {categories?.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => setSelectedCategory(category.name)}
+                        className={`px-5 py-3 rounded-xl text-sm font-semibold text-left relative overflow-hidden group ${
+                          selectedCategory === category.name
+                            ? "bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30"
+                            : "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-[#fef5f1] hover:to-[#fef5f1] border border-gray-200"
+                        }`}
+                      >
+                        {selectedCategory === category.name && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-[#fca481] to-[#fd9166]" />
+                        )}
+                        <span className="relative z-10">
+                          {category.name as string}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price Range */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <SlidersHorizontal className="text-[#fca481]" size={18} />
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                      Price Range
+                    </h3>
+                  </div>
+                  <div className="space-y-4">
+                    <input
+                      type="range"
+                      min="0"
+                      max={maxPrice}
+                      value={priceRange[1]}
+                      onChange={(e) =>
+                        setPriceRange([0, parseInt(e.target.value)])
+                      }
+                      className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer slider-thumb"
+                      style={{
+                        background: `linear-gradient(to right, #fca481 0%, #fca481 ${
+                          (priceRange[1] / maxPrice) * 100
+                        }%, #E5E7EB ${(priceRange[1] / maxPrice) * 100}%, #E5E7EB 100%)`,
+                      }}
+                    />
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl px-4 py-2 border border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1">Min</p>
+                        <p className="text-sm font-bold text-gray-900">$0</p>
+                      </div>
+                      <div className="text-gray-400">—</div>
+                      <div className="flex-1 bg-gradient-to-r from-[#fca481] to-[#fd9166] rounded-xl px-4 py-2 shadow-md">
+                        <p className="text-xs text-white/80 mb-1">Max</p>
+                        <p className="text-sm font-bold text-white">
+                          ${priceRange[1]}
+                        </p>
                       </div>
                     </div>
                   </div>
-
-                  {/* Reset Button */}
-                  {hasActiveFilters && (
-                    <button
-                      onClick={resetFilters}
-                      className="w-full px-5 py-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-xl font-bold hover:from-gray-800 hover:to-gray-700  flex items-center justify-center gap-2 shadow-xl group"
-                    >
-                      <X
-                        size={18}
-                        className="group-hover:rotate-90"
-                      />
-                      Reset All Filters
-                    </button>
-                  )}
                 </div>
+
+                {/* Reset Button */}
+                {hasActiveFilters && (
+                  <button
+                    onClick={resetFilters}
+                    className="w-full px-5 py-4 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-xl font-bold hover:from-gray-800 hover:to-gray-700 flex items-center justify-center gap-2 shadow-xl group"
+                  >
+                    <X size={18} className="group-hover:rotate-90" />
+                    Reset All Filters
+                  </button>
+                )}
               </div>
-            )}
-            {/* Main Content */}
+            </div>
+          )}
+
+          {/* Main Content */}
           <div className="flex-1">
             {/* Results Bar */}
             <div className="mb-6 lg:mb-8 p-5 bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -391,7 +371,15 @@ const Shop = () => {
                     Found
                   </p>
                   <p className="text-sm text-gray-500">
-                    Showing page {currentPage} of {totalPages || 1}
+                    Showing{" "}
+                    <span className="font-semibold text-gray-700">
+                      {filteredProducts.length + (currentPage - 1) * 10}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold text-gray-700">
+                      {totalCount}
+                    </span>{" "}
+                    products
                   </p>
                 </div>
               </div>
@@ -411,55 +399,37 @@ const Shop = () => {
                   <ProductGrid products={filteredProducts} />
                 </div>
 
-                {/* Enhanced Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-10 lg:mt-12 bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                {/* Pagination — same pattern as OrdersPage */}
+                <div className="flex items-center justify-between mt-10 lg:mt-12 bg-white rounded-2xl shadow-lg border border-gray-100 px-6 py-4">
+                  <p className="text-sm text-gray-500">
+                    Page{" "}
+                    <span className="font-semibold text-gray-900">
+                      {currentPage}
+                    </span>
+                  </p>
+
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={handlePreviousPage}
-                      disabled={!hasPrevious || currentPage === 1}
-                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481]  shadow-md"
+                      disabled={!hasPrevious}
+                      className="p-2.5 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481] shadow-md transition-all"
                     >
                       <ChevronLeft size={22} />
                     </button>
 
-                    <div className="flex items-center gap-2 flex-wrap justify-center">
-                      {[...Array(Math.min(totalPages, 5))].map((_, index) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = index + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = index + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + index;
-                        } else {
-                          pageNum = currentPage - 2 + index;
-                        }
-
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => handlePageClick(pageNum)}
-                            className={`w-12 h-12 rounded-xl font-bold  shadow-md ${
-                              currentPage === pageNum
-                                ? "bg-gradient-to-br from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30 scale-110"
-                                : "bg-white border-2 border-gray-200 hover:border-[#fca481] text-gray-700 hover:bg-[#fef5f1]"
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <span className="text-sm text-gray-500 px-3">
+                      Page {currentPage}
+                    </span>
 
                     <button
                       onClick={handleNextPage}
-                      disabled={!hasNext || currentPage === totalPages}
-                      className="p-3 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481]  shadow-md"
+                      disabled={!hasNext}
+                      className="p-2.5 bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-xl disabled:opacity-30 disabled:cursor-not-allowed hover:from-[#fca481] hover:to-[#fd9166] hover:text-white hover:border-[#fca481] shadow-md transition-all"
                     >
                       <ChevronRight size={22} />
                     </button>
                   </div>
-                )}
+                </div>
               </>
             ) : (
               <div className="text-center py-20 bg-white rounded-2xl shadow-lg border border-gray-100">
@@ -474,15 +444,14 @@ const Shop = () => {
                 </p>
                 <button
                   onClick={resetFilters}
-                  className="px-8 py-4 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-bold shadow-lg hover:shadow-xl  inline-flex items-center gap-2"
+                  className="px-8 py-4 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-bold shadow-lg hover:shadow-xl inline-flex items-center gap-2"
                 >
                   <X size={20} />
                   Clear All Filters
                 </button>
               </div>
             )}
-          </div>{" "}
-
+          </div>
         </div>
       </div>
 
