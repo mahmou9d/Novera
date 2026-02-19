@@ -5,41 +5,38 @@ import {  RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import Productgrid from "./Productgrid";
 import { useGetProducts } from "@/hooks/useProducts";
 import Link from "next/link";
+import { useGetCategory } from "@/hooks/useDashboard";
 
 const MainSection = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const { data, isLoading, isError, error } = useGetProducts();
-
+  const { data: categoryData } = useGetCategory();
   const products = useMemo(() => data?.products || [], [data?.products]);
 
   const categories = useMemo(() => {
-    if (!products || products.length === 0) {
-      return [{ id: "all", name: "Everything", count: 0 }];
+    const all = [{ id: "all", name: "Everything" }];
+
+    if (categoryData?.categories) {
+      categoryData.categories.forEach((cat: { id: string; name: string }) => {
+        all.push({ id: cat.id, name: cat.name });
+      });
+      return all;
     }
 
-    const categoryCounts: Record<string, number> = {};
-
+    // Fallback: استخرج الكاتيجوري من الـ products
+    const seen = new Set<string>();
     products.forEach((product) => {
-      if (product.category_name) {
-        categoryCounts[product.category_name] =
-          (categoryCounts[product.category_name] || 0) + 1;
+      if (product.category_name && !seen.has(product.category_name)) {
+        seen.add(product.category_name);
+        all.push({
+          id: product.category_name.toLowerCase(),
+          name: product.category_name,
+        });
       }
     });
 
-    const cats = [{ id: "all", name: "Everything", count: products.length }];
-
-    Object.entries(categoryCounts)
-      .sort((a, b) => b[1] - a[1])
-      .forEach(([categoryName, count]) => {
-        cats.push({
-          id: categoryName.toLowerCase(),
-          name: categoryName,
-          count,
-        });
-      });
-
-    return cats;
-  }, [products]);
+    return all;
+  }, [categoryData, products]);
 
   // Filtered products
   const filteredProducts = useMemo(() => {
@@ -129,7 +126,7 @@ const MainSection = () => {
 
           {/* Categories Navigation */}
           <div className="flex flex-wrap justify-center gap-3">
-            {categories.map((cat, index) => (
+            {categories.map((cat: { id: string; name: string }) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
@@ -141,16 +138,6 @@ const MainSection = () => {
               >
                 <span className="relative z-10 flex items-center gap-3">
                   {cat.name}
-                  <span
-                    key={cat.count}
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      activeCategory === cat.id
-                        ? "bg-[#181A2F] text-white"
-                        : "bg-white/10"
-                    }`}
-                  >
-                    {cat.count}
-                  </span>
                 </span>
                 {activeCategory === cat.id && (
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FDA481]/20 to-transparent rounded-full" />
@@ -191,9 +178,7 @@ const MainSection = () => {
               key={someProducts.length}
               className="text-gray-600 font-medium text-lg"
             >
-              <span key={someProducts.length}>
-                {someProducts.length}
-              </span>{" "}
+              <span key={someProducts.length}>{someProducts.length}</span>{" "}
               pieces for your wardrobe
             </p>
           </div>

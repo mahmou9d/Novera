@@ -15,7 +15,7 @@ import {
   AlertCircle,
   Save,
 } from "lucide-react";
-import { TProduct, EditProductProps, Variant, AddVariants } from "@/type/type";
+import { TProduct, EditProductProps, Variant, AddVariants, ErrorResponse } from "@/type/type";
 import {
   useGetProducts,
   useUpdateProduct,
@@ -28,6 +28,7 @@ import Notification from "@/components/Notification";
 import { CreateProductModal } from "./CreateProductModal";
 import { EditProductModal } from "./EditProductModal";
 import { EditVariantModal } from "./EditVariantModal";
+import { AxiosError } from "axios";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const base64ToFile = async (b64: string, name: string): Promise<File> => {
@@ -133,64 +134,63 @@ const AddVariantModal: React.FC<AddVariantModalProps> = ({
     return !Object.keys(e).length;
   };
 
-  const handleSave = async () => {
-    if (!productId || !validate()) return;
-    setIsLoading(true);
-    try {
-      const payload: AddVariants[] = rows.map((r) => ({
-        id: r.id,
-        color_name: r.color_name,
-        color_hex: r.color_hex,
-        size: r.size,
-        price: r.price,
-        compare_at_price: r.compare_at_price || "0.00",
-        stock: r.stock,
-      }));
+const handleSave = async () => {
+  if (!productId || !validate()) return;
+  setIsLoading(true);
 
-      const res = await addVariantsMutation.mutateAsync({
-        payload,
-        product_id: productId,
-      });
+  const payload: AddVariants[] = rows.map((r) => ({
+    id: r.id,
+    color_name: r.color_name,
+    color_hex: r.color_hex,
+    size: r.size,
+    price: r.price,
+    compare_at_price: r.compare_at_price || "0.00",
+    stock: r.stock,
+  }));
 
-      if (res) {
-        const ids: number[] = res.map(
-          (v: { id?: number; variant_id?: number }) => v.id ?? v.variant_id!,
-        );
-        for (let i = 0; i < rows.length; i++) {
-          if (rows[i].image) {
-            try {
-              const f = await base64ToFile(
-                rows[i].image!,
-                `variant-${ids[i]}.jpg`,
-              );
-              const fd = new FormData();
-              fd.append("img", f);
-              await addImageMutation.mutateAsync({
-                payload: fd,
-                variant_id: ids[i],
-              });
-            } catch {
-              /* non-fatal */
+  addVariantsMutation.mutate(
+    { payload, product_id: productId },
+    {
+      onSuccess: async (res) => {
+        if (res) {
+          const ids: number[] = res.map(
+            (v: { id?: number; variant_id?: number }) => v.id ?? v.variant_id!,
+          );
+          for (let i = 0; i < rows.length; i++) {
+            if (rows[i].image) {
+              try {
+                const f = await base64ToFile(
+                  rows[i].image!,
+                  `variant-${ids[i]}.jpg`,
+                );
+                const fd = new FormData();
+                fd.append("img", f);
+                await addImageMutation.mutateAsync({
+                  payload: fd,
+                  variant_id: ids[i],
+                });
+              } catch {
+                /* non-fatal */
+              }
             }
           }
         }
-      }
-
-      onNotify("Variants added successfully!", "success");
-      handleClose();
-    } catch (err: unknown) {
-      const e = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      onNotify(
-        e?.response?.data?.message || e?.message || "Failed to add variants",
-        "error",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        onNotify("Variants added successfully!", "success");
+        setIsLoading(false);
+        handleClose();
+      },
+      onError: (error: AxiosError<ErrorResponse>) => {
+        onNotify(
+          error?.response?.data?.message ||
+            error?.message ||
+            "Failed to add variants",
+          "error",
+        );
+        setIsLoading(false);
+      },
+    },
+  );
+};
 
   return (
     <AnimatePresence>

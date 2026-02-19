@@ -73,4 +73,13 @@ export const dashboardAPI = {
     );
     return data || [];
   },
+  // في dashboardAPI أضف:
+  getCategories: async () => {
+    const { data } = await apiClient.get("/dashboard/categories/");
+    return data;
+  },
+  createCategory: async (payload: {id:number, name: string }) => {
+    const { data } = await apiClient.post("/dashboard/categories/", payload);
+    return data;
+  },
 };

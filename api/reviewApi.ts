@@ -13,7 +13,7 @@ export const reviewAPI = {
 
   addReview: async (payload: AddReviewRequest): Promise<TReview> => {
     const { data } = await apiClient.post<TReview>("/reviews/add/", {
-      id: payload.product_id,
+      product: payload.product,
       comment: payload.comment,
       rating: Number(payload.rating),
     });

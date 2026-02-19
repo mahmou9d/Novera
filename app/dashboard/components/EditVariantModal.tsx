@@ -17,6 +17,7 @@ import {
 import {
   EditVariantModalFormErrors,
   EditVariantModalProps,
+  ErrorResponse,
   Variant,
 } from "@/type/type";
 import {
@@ -26,6 +27,7 @@ import {
   useDeleteProductVariant,
 } from "@/hooks/useProducts";
 import Image from "next/image";
+import { AxiosError } from "axios";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const base64ToFile = async (b64: string, name: string): Promise<File> => {
@@ -157,6 +159,7 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setView("list");
       setSaveSuccess(false);
       setFormErrors({});
@@ -208,59 +211,68 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
   };
 
   // ── Toggle Active ─────────────────────────────────────────────────────────
-  const handleToggleActive = async (variant: Variant) => {
+  const handleToggleActive = (variant: Variant) => {
     setTogglingId(variant.id);
-    try {
-      await updateVariantMutation.mutateAsync({
+
+    updateVariantMutation.mutate(
+      {
         variant_id: variant.id,
         payload: { is_active: !variant.is_active },
-      });
-      onNotify(
-        `Variant ${!variant.is_active ? "activated" : "deactivated"} successfully`,
-        "success",
-      );
-    } catch (err: unknown) {
-      const e = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      onNotify(
-        e?.response?.data?.message || "Failed to update variant",
-        "error",
-      );
-    } finally {
-      setTogglingId(null);
-    }
+      },
+      {
+        onSuccess: () => {
+          onNotify(
+            `Variant ${!variant.is_active ? "activated" : "deactivated"} successfully`,
+            "success",
+          );
+          setTogglingId(null);
+        },
+        onError: (error: AxiosError<ErrorResponse>) => {
+          onNotify(
+            error?.response?.data?.message ||
+              error?.message ||
+              "Failed to update variant",
+            "error",
+          );
+          setTogglingId(null);
+        },
+      },
+    );
   };
 
   // ── Delete Variant ────────────────────────────────────────────────────────
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = () => {
     if (!deleteTarget) return;
     setIsDeletingVariant(true);
-    try {
-      await deleteVariantMutation.mutateAsync({ variant_id: deleteTarget.id });
-      onNotify("Variant deleted successfully", "success");
-      setDeleteTarget(null);
-    } catch (err: unknown) {
-      const e = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      onNotify(
-        e?.response?.data?.message || "Failed to delete variant",
-        "error",
-      );
-    } finally {
-      setIsDeletingVariant(false);
-    }
+
+    deleteVariantMutation.mutate(
+      { variant_id: deleteTarget.id },
+      {
+        onSuccess: () => {
+          onNotify("Variant deleted successfully", "success");
+          setDeleteTarget(null);
+          setIsDeletingVariant(false);
+        },
+        onError: (error: AxiosError<ErrorResponse>) => {
+          onNotify(
+            error?.response?.data?.message ||
+              error?.message ||
+              "Failed to delete variant",
+            "error",
+          );
+          setIsDeletingVariant(false);
+        },
+      },
+    );
   };
 
   // ── Update ────────────────────────────────────────────────────────────────
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     if (!validate() || !selectedVariant) return;
     setIsUpdating(true);
-    try {
-      await updateVariantMutation.mutateAsync({
+
+    updateVariantMutation.mutate(
+      {
         variant_id: selectedVariant.id,
         payload: {
           color_name: variantColorName,
@@ -271,42 +283,42 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
           stock: variantStock,
           is_active: variantIsActive,
         },
-      });
-
-      if (variantImage && !variantImage.startsWith("http")) {
-        try {
-          const f = await base64ToFile(
-            variantImage,
-            `variant-${selectedVariant.id}.jpg`,
+      },
+      {
+        onSuccess: async () => {
+          if (variantImage && !variantImage.startsWith("http")) {
+            try {
+              const f = await base64ToFile(
+                variantImage,
+                `variant-${selectedVariant.id}.jpg`,
+              );
+              const fd = new FormData();
+              fd.append("img", f);
+              await addImageMutation.mutateAsync({
+                payload: fd,
+                variant_id: selectedVariant.id,
+              });
+            } catch {
+              /* non-fatal */
+            }
+          }
+          setSaveSuccess(true);
+          onNotify("Variant updated successfully", "success");
+          setTimeout(() => setView("list"), 1500);
+          setIsUpdating(false);
+        },
+        onError: (error: AxiosError<ErrorResponse>) => {
+          onNotify(
+            error?.response?.data?.message ||
+              error?.message ||
+              "Failed to update variant",
+            "error",
           );
-          const fd = new FormData();
-          fd.append("img", f);
-          await addImageMutation.mutateAsync({
-            payload: fd,
-            variant_id: selectedVariant.id,
-          });
-        } catch {
-          /* non-fatal */
-        }
-      }
-
-      setSaveSuccess(true);
-      onNotify("Variant updated successfully", "success");
-      setTimeout(() => setView("list"), 1500);
-    } catch (err: unknown) {
-      const e = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      onNotify(
-        e?.response?.data?.message || "Failed to update variant",
-        "error",
-      );
-    } finally {
-      setIsUpdating(false);
-    }
+          setIsUpdating(false);
+        },
+      },
+    );
   };
-
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
@@ -795,4 +807,4 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
       />
     </>
   );
-};
+};;

@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { dashboardAPI } from "../api/dashboardApi";
-import {
-  ErrorResponse,
-  OrderStatus,
-} from "../type/type";
+import { ErrorResponse, OrderStatus } from "../type/type";
 import { AxiosError } from "axios";
 
 export const dashboardKeys = {
@@ -43,6 +36,9 @@ export const dashboardKeys = {
   topSelling: () => [...dashboardKeys.products(), "top-selling"] as const,
 
   productLow: () => [...dashboardKeys.products(), "low-stock"] as const,
+
+  categories: () => [...dashboardKeys.all, "categories"] as const,
+  category: (id: number) => [...dashboardKeys.categories(), id] as const,
 };
 
 export const useGetRecentOrders = (page: number = 1) => {
@@ -104,7 +100,7 @@ export const usePatchOrders = () => {
       queryClient.invalidateQueries({ queryKey: dashboardKeys.ordersCount() });
       queryClient.invalidateQueries({ queryKey: dashboardKeys.statusCount() });
     },
-    onError: (error:AxiosError<ErrorResponse>) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       console.error("Patch order failed:", error);
     },
   });
@@ -120,8 +116,30 @@ export const useMakeAdmin = () => {
       queryClient.invalidateQueries({ queryKey: dashboardKeys.users() });
       console.log("Success:", data.message);
     },
-    onError: (error:AxiosError<ErrorResponse>) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       console.error("Make admin failed:", error);
+    },
+  });
+};
+export const useGetCategory = () => {
+  return useQuery({
+    queryKey: dashboardKeys.categories(),
+    queryFn: dashboardAPI.getCategories,
+    staleTime: 60 * 1000,
+  });
+};
+
+export const useCreateCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: {id:number, name: string }) =>
+      dashboardAPI.createCategory(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.categories() });
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      console.error("Create category failed:", error);
     },
   });
 };

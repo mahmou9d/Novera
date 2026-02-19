@@ -15,13 +15,24 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
-import { Variant, CreateProduct, AddVariants, ColorOption, FormErrors, Props, SizeOption, TabType } from "@/type/type";
+import {
+  Variant,
+  CreateProduct,
+  AddVariants,
+  ColorOption,
+  FormErrors,
+  Props,
+  SizeOption,
+  TabType,
+  ErrorResponse,
+} from "@/type/type";
 import {
   useCreateProduct,
   useAddVariantsProduct,
   useAddImageVariantsProduct,
 } from "@/hooks/useProducts";
-
+import { useCreateCategory, useGetCategory } from "@/hooks/useDashboard";
+import { AxiosError } from "axios";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const INITIAL_COLORS: ColorOption[] = [
@@ -64,6 +75,8 @@ export const CreateProductModal: React.FC<Props> = ({
   const createProductMutation = useCreateProduct();
   const addVariantsMutation = useAddVariantsProduct();
   const addImageMutation = useAddImageVariantsProduct();
+  const createCategoryMutation = useCreateCategory();
+  const { data: categoryData } = useGetCategory();
 
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [completedTabs, setCompletedTabs] = useState<Set<TabType>>(new Set());
@@ -80,26 +93,27 @@ export const CreateProductModal: React.FC<Props> = ({
   const [sizes, setSizes] = useState<SizeOption[]>(INITIAL_SIZES);
   const [generatedVariants, setGeneratedVariants] = useState<Variant[]>([]);
   const [createdProductId, setCreatedProductId] = useState<number | null>(null);
-const [categoryOpen, setCategoryOpen] = useState(false);
-const categoryRef = useRef<HTMLDivElement>(null);
-const CATEGORIES = ["Men", "Women", "Unisex", "Children", "Teens"];
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const categoryRef = useRef<HTMLDivElement>(null);
 
-useEffect(() => {
-  const handleClickOutside = (e: MouseEvent) => {
-    if (
-      categoryRef.current &&
-      !categoryRef.current.contains(e.target as Node)
-    ) {
-      setCategoryOpen(false);
-    }
-  };
+  // ── Categories من API أو fallback ─────────────────────────────────────────
+  const CATEGORIES: string[] = categoryData?.categories
+    ? categoryData.categories.map((c: { name: string }) => c.name)
+    : ["Men", "Women", "Unisex", "Children", "Teens"];
 
-  document.addEventListener("mousedown", handleClickOutside);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        categoryRef.current &&
+        !categoryRef.current.contains(e.target as Node)
+      ) {
+        setCategoryOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const reset = () => {
     setActiveTab("general");
@@ -120,6 +134,34 @@ useEffect(() => {
     reset();
     onClose();
   };
+
+  // ── Create Category ────────────────────────────────────────────────────────
+const handleCreateCategory = () => {
+  if (!category.trim()) return;
+  setIsCreatingCategory(true);
+
+  createCategoryMutation.mutate(
+    { name: category.trim() },
+    {
+      onSuccess: () => {
+        onNotify(`Category "${category}" created successfully!`, "success");
+        setCategoryOpen(false);
+        setFormErrors((p) => ({ ...p, category: undefined }));
+        setIsCreatingCategory(false);
+      },
+      onError: (error: AxiosError<ErrorResponse>) => {
+        onNotify(
+          error?.response?.data?.message ||
+            error?.response?.data?.name ||
+            error?.message ||
+            "Failed to create category",
+          "error",
+        );
+        setIsCreatingCategory(false);
+      },
+    },
+  );
+};
 
   // ── Validation ────────────────────────────────────────────────────────────
   const validateGeneral = (): boolean => {
@@ -422,77 +464,116 @@ useEffect(() => {
                         <FieldError msg={formErrors.productName} />
                       )}
                     </div>
+
                     <div className="grid grid-cols-2 gap-4">
-<div>
-  <label className="block text-sm font-medium text-gray-400 mb-2">
-    Category *
-  </label>
-  <div className="relative" ref={categoryRef}>
-    <input
-      type="text"
-      value={category}
-      onChange={(e) => {
-        setCategory(e.target.value);
-        setCategoryOpen(true);
-        setFormErrors((p) => ({ ...p, category: undefined }));
-      }}
-      onFocus={() => setCategoryOpen(true)}
-      placeholder="Select or type a category..."
-      className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none pr-10 ${
-        formErrors.category
-          ? "border-red-500"
-          : "border-white/10 focus:border-[#fda481]/50"
-      }`}
-    />
-    <ChevronDown
-      className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform ${categoryOpen ? "rotate-180" : ""}`}
-    />
+                      {/* ── Category Dropdown ── */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-2">
+                          Category *
+                        </label>
+                        <div className="relative" ref={categoryRef}>
+                          <input
+                            type="text"
+                            value={category}
+                            onChange={(e) => {
+                              setCategory(e.target.value);
+                              setCategoryOpen(true);
+                              setFormErrors((p) => ({
+                                ...p,
+                                category: undefined,
+                              }));
+                            }}
+                            onFocus={() => setCategoryOpen(true)}
+                            placeholder="Select or type a category..."
+                            className={`w-full bg-[#0f1117] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none pr-10 ${
+                              formErrors.category
+                                ? "border-red-500"
+                                : "border-white/10 focus:border-[#fda481]/50"
+                            }`}
+                          />
+                          <ChevronDown
+                            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform ${
+                              categoryOpen ? "rotate-180" : ""
+                            }`}
+                          />
 
-    <AnimatePresence>
-      {categoryOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.15 }}
-          className="absolute top-full left-0 right-0 mt-1 bg-[#0f1117] border border-white/10 rounded-lg overflow-hidden z-50 shadow-xl"
-        >
-          {CATEGORIES.filter((c) =>
-            c.toLowerCase().includes(category.toLowerCase())
-          ).map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => {
-                setCategory(c);
-                setCategoryOpen(false);
-                setFormErrors((p) => ({ ...p, category: undefined }));
-              }}
-              className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 flex items-center justify-between group ${
-                category === c ? "text-[#fda481]" : "text-gray-300"
-              }`}
-            >
-              {c}
-              {category === c && <Check className="w-4 h-4 text-[#fda481]" />}
-            </button>
-          ))}
+                          <AnimatePresence>
+                            {categoryOpen && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -8 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute top-full left-0 right-0 mt-1 bg-[#0f1117] border border-white/10 rounded-lg overflow-hidden z-50 shadow-xl"
+                              >
+                                {/* الكاتيجوريز الموجودة */}
+                                {CATEGORIES.filter((c) =>
+                                  c
+                                    .toLowerCase()
+                                    .includes(category.toLowerCase()),
+                                ).map((c) => (
+                                  <button
+                                    key={c}
+                                    type="button"
+                                    onClick={() => {
+                                      setCategory(c);
+                                      setCategoryOpen(false);
+                                      setFormErrors((p) => ({
+                                        ...p,
+                                        category: undefined,
+                                      }));
+                                    }}
+                                    className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 flex items-center justify-between group ${
+                                      category === c
+                                        ? "text-[#fda481]"
+                                        : "text-gray-300"
+                                    }`}
+                                  >
+                                    {c}
+                                    {category === c && (
+                                      <Check className="w-4 h-4 text-[#fda481]" />
+                                    )}
+                                  </button>
+                                ))}
 
-          {/* لو كتب حاجة مش في الليست */}
-          {category &&
-            !CATEGORIES.some(
-              (c) => c.toLowerCase() === category.toLowerCase()
-            ) && (
-              <div className="px-4 py-2.5 border-t border-white/10">
-                <p className="text-xs text-gray-500 mb-1">Custom</p>
-                <p className="text-sm text-[#fda481] font-medium">{`"${category}"`}</p>
-              </div>
-            )}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </div>
-  {formErrors.category && <FieldError msg={formErrors.category} />}
-</div>
+                                {/* ── Create Category Option ── */}
+                                {category.trim() &&
+                                  !CATEGORIES.some(
+                                    (c) =>
+                                      c.toLowerCase() ===
+                                      category.toLowerCase(),
+                                  ) && (
+                                    <div className="border-t border-white/10">
+                                      <button
+                                        type="button"
+                                        onClick={handleCreateCategory}
+                                        disabled={isCreatingCategory}
+                                        className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 flex items-center gap-2 text-[#fda481] disabled:opacity-50"
+                                      >
+                                        {isCreatingCategory ? (
+                                          <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Creating...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Plus className="w-4 h-4" />
+                                            Create &quot;{category}&quot; as new
+                                            category
+                                          </>
+                                        )}
+                                      </button>
+                                    </div>
+                                  )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                        {formErrors.category && (
+                          <FieldError msg={formErrors.category} />
+                        )}
+                      </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-2">
                           Material *
@@ -519,6 +600,7 @@ useEffect(() => {
                         )}
                       </div>
                     </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-2">
                         Description *
@@ -577,7 +659,11 @@ useEffect(() => {
                                   ),
                                 )
                               }
-                              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${c.selected ? "bg-white/10 border-[#fda481]" : "bg-[#0f1117] border-white/10 hover:bg-white/5"}`}
+                              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
+                                c.selected
+                                  ? "bg-white/10 border-[#fda481]"
+                                  : "bg-[#0f1117] border-white/10 hover:bg-white/5"
+                              }`}
                             >
                               <div
                                 className="w-4 h-4 rounded-full border border-white/20"
@@ -610,7 +696,11 @@ useEffect(() => {
                                   ),
                                 )
                               }
-                              className={`px-6 py-2 rounded-lg border font-medium ${s.selected ? "bg-white/10 border-[#fda481] text-white" : "bg-[#0f1117] border-white/10 text-gray-400 hover:bg-white/5"}`}
+                              className={`px-6 py-2 rounded-lg border font-medium ${
+                                s.selected
+                                  ? "bg-white/10 border-[#fda481] text-white"
+                                  : "bg-[#0f1117] border-white/10 text-gray-400 hover:bg-white/5"
+                              }`}
                             >
                               {s.size}
                             </button>
@@ -668,7 +758,11 @@ useEffect(() => {
                                   <td className="py-3 px-4">
                                     <label className="cursor-pointer">
                                       <div
-                                        className={`w-12 h-12 bg-[#0f1117] border rounded-lg flex items-center justify-center overflow-hidden ${formErrors.images?.[idx] ? "border-red-500" : "border-white/10"}`}
+                                        className={`w-12 h-12 bg-[#0f1117] border rounded-lg flex items-center justify-center overflow-hidden ${
+                                          formErrors.images?.[idx]
+                                            ? "border-red-500"
+                                            : "border-white/10"
+                                        }`}
                                       >
                                         {v.images.length ? (
                                           <img
@@ -753,7 +847,11 @@ useEffect(() => {
                                           parseInt(e.target.value) || 1,
                                         )
                                       }
-                                      className={`w-24 bg-[#0f1117] border rounded px-3 py-1.5 text-white text-sm focus:outline-none ${formErrors.stock?.[idx] ? "border-red-500" : "border-white/10 focus:border-[#fda481]/50"}`}
+                                      className={`w-24 bg-[#0f1117] border rounded px-3 py-1.5 text-white text-sm focus:outline-none ${
+                                        formErrors.stock?.[idx]
+                                          ? "border-red-500"
+                                          : "border-white/10 focus:border-[#fda481]/50"
+                                      }`}
                                     />
                                     {formErrors.stock?.[idx] && (
                                       <p className="text-xs text-red-500 mt-1">

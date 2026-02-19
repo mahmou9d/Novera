@@ -169,9 +169,7 @@ export const AnalyticsPage = () => {
       {/* Second Row: Order Status & Reviews */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Order Status Distribution */}
-        <div
-          className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10"
-        >
+        <div className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white">Order Status</h2>
             <div className="flex items-center gap-2 text-gray-400">
@@ -211,70 +209,105 @@ export const AnalyticsPage = () => {
         </div>
 
         {/* Customer Reviews */}
-        <div
-          className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10"
-        >
+        <div className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10">
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white">Recent Reviews</h2>
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-              <span className="text-lg font-bold text-white">
-                {averageRating}
-              </span>
-              <span className="text-sm text-gray-400">
-                ({reviewsData?.length || 0})
+            <div className="flex items-center gap-3">
+              {/* Star rating summary */}
+              <div className="flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-3 py-1.5">
+                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                <span className="text-sm font-bold text-yellow-400">
+                  {averageRating}
+                </span>
+              </div>
+              <span className="text-sm text-gray-500">
+                {reviewsData?.length || 0}{" "}
+                {reviewsData?.length === 1 ? "review" : "reviews"}
               </span>
             </div>
           </div>
-          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+
+          {/* Reviews List */}
+          <div
+            className="space-y-3 max-h-[320px] overflow-y-auto pr-1 
+    [&::-webkit-scrollbar]:w-1 
+    [&::-webkit-scrollbar-track]:bg-transparent 
+    [&::-webkit-scrollbar-thumb]:bg-white/10 
+    [&::-webkit-scrollbar-thumb]:rounded-full"
+          >
             {reviewsData && reviewsData.length > 0 ? (
               reviewsData.slice(0, 5).map((review, index) => (
                 <div
                   key={review.id}
-                  className="p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5"
+                  className="group relative p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/10 transition-all duration-200 overflow-hidden"
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#fda481] to-[#b4182d] flex items-center justify-center text-white font-bold">
-                        {review.customer_name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-white text-sm">
-                          {review.customer_name}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(review.created_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )}
-                        </p>
-                      </div>
+                  {/* Left accent */}
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl bg-gradient-to-b from-[#fda481]/50 to-[#b4182d]/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
+                  <div className="flex items-start gap-3">
+                    {/* Avatar */}
+                    <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-[#fda481] to-[#b4182d] flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-[#b4182d]/20">
+                      {review.customer_name.charAt(0).toUpperCase()}
                     </div>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i < review.rating
-                              ? "text-yellow-500 fill-yellow-500"
-                              : "text-gray-600"
-                          }`}
-                        />
-                      ))}
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-white text-sm leading-tight truncate">
+                            {review.customer_name}
+                          </p>
+                          <p className="text-xs text-[#fda481]/80 truncate mt-0.5">
+                            {review.product_name}
+                          </p>
+                        </div>
+                        {/* Stars */}
+                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3.5 h-3.5 ${
+                                i < review.rating
+                                  ? "text-yellow-400 fill-yellow-400"
+                                  : "text-gray-700"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Comment */}
+                      {review.comment && (
+                        <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 mb-2">
+                          {`"${review.comment}"`}
+                        </p>
+                      )}
+
+                      {/* Date */}
+                      <p className="text-xs text-gray-600">
+                        {new Date(review.created_at).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        )}
+                      </p>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-300">{review.comment}</p>
                 </div>
               ))
             ) : (
-              <div className="text-center text-gray-400 py-12">
-                <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p className="font-semibold">No reviews yet</p>
-                <p className="text-sm text-gray-500 mt-1">
+              <div className="flex flex-col items-center justify-center py-12 text-center bg-white/[0.02] rounded-xl border border-white/5 border-dashed">
+                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-3">
+                  <MessageSquare className="w-7 h-7 text-gray-600" />
+                </div>
+                <p className="font-semibold text-gray-400 text-sm">
+                  No reviews yet
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
                   Reviews will appear here
                 </p>
               </div>
@@ -286,9 +319,7 @@ export const AnalyticsPage = () => {
       {/* Third Row: Low Stock & Product Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Low Stock Alert */}
-        <div
-          className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10"
-        >
+        <div className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white">Low Stock Alert</h2>
             <div className="flex items-center gap-2">
@@ -340,9 +371,7 @@ export const AnalyticsPage = () => {
         </div>
 
         {/* Product Statistics */}
-        <div
-          className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10"
-        >
+        <div className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10">
           <h2 className="text-xl font-bold text-white mb-6">
             Product Statistics
           </h2>

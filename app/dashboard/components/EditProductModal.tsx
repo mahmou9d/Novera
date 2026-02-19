@@ -13,7 +13,8 @@ import {
 
 } from "lucide-react";
 import { useUpdateProduct, useGetSingleProduct } from "@/hooks/useProducts";
-import { EditProductModalFormErrors, EditProductModalProps } from "@/type/type";
+import { EditProductModalFormErrors, EditProductModalProps, ErrorResponse } from "@/type/type";
+import { AxiosError } from "axios";
 
 
 const FieldError = ({ msg }: { msg: string }) => (
@@ -72,6 +73,7 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
   
   useEffect(() => {
     if (product) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProductName(product.name ?? "");
       setCategory(product.category?.toString() ?? "");
       setMaterial(product.material_composition ?? "");
@@ -104,36 +106,40 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────
-  const handleUpdate = async () => {
-    if (!validate() || !productId) return;
-    setIsUpdating(true);
-    try {
-      await updateProductMutation.mutateAsync({
-        product_id: productId,
-        payload: {
-          name: productName,
-          description,
-          material_composition: material,
-          category: category,
-          is_active: isActive,
-        },
-      });
-      setSaveSuccess(true);
-      onNotify("Product updated successfully", "success");
-      setTimeout(handleClose, 1500);
-    } catch (err: unknown) {
-      const e = err as {
-        response?: { data?: { message?: string } };
-        message?: string;
-      };
-      onNotify(
-        e?.response?.data?.message || "Failed to update product",
-        "error",
-      );
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+const handleUpdate = () => {
+  if (!validate() || !productId) return;
+  setIsUpdating(true);
+
+  updateProductMutation.mutate(
+    {
+      product_id: productId,
+      payload: {
+        name: productName,
+        description,
+        material_composition: material,
+        category: category,
+        is_active: isActive,
+      },
+    },
+    {
+      onSuccess: () => {
+        setSaveSuccess(true);
+        onNotify("Product updated successfully", "success");
+        setTimeout(handleClose, 1500);
+        setIsUpdating(false);
+      },
+      onError: (error: AxiosError<ErrorResponse>) => {
+        onNotify(
+          error?.response?.data?.message ||
+            error?.message ||
+            "Failed to update product",
+          "error",
+        );
+        setIsUpdating(false);
+      },
+    },
+  );
+};
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (

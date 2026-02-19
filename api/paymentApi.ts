@@ -1,7 +1,7 @@
 "use client";
 
 import { apiClient } from "@/lib/apiClient";
-import { CheckoutFormData, CheckoutSessionResponse, PayPalCapture, PayPalCaptureResponse, PayPalOrderResponse, PlaceOrderResponse } from "@/type/type";
+import { CheckoutFormData, CheckoutSessionResponse, OrderHistoryResponse, PayPalCapture, PayPalCaptureResponse, PayPalOrderResponse, PlaceOrderResponse } from "@/type/type";
 
 export const paymentAPI = {
   createCheckoutSession: async (
@@ -38,6 +38,13 @@ export const paymentAPI = {
     const { data } = await apiClient.post<PlaceOrderResponse>(
       "/orders/place/",
       orderData,
+    );
+    return data;
+  },
+
+  orderHistory: async (): Promise<OrderHistoryResponse> => {
+    const { data } = await apiClient.get<OrderHistoryResponse>(
+      "/orders/history/",
     );
     return data;
   },

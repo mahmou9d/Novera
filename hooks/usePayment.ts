@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { paymentAPI } from "../api/paymentApi";
 import { CheckoutFormData } from "@/components/Checkoutform";
 import { ErrorResponse, PayPalCapture } from "@/type/type";
@@ -16,7 +16,7 @@ export const useCreateStripeSession = () => {
         window.location.href = data.url;
       }
     },
-    onError: (error:AxiosError<ErrorResponse>) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       console.error("Create checkout session failed:", error);
     },
   });
@@ -28,7 +28,7 @@ export const useCreatePayPalOrder = () => {
     onSuccess: (data) => {
       console.log("PayPal order created:", data);
     },
-    onError: (error:AxiosError<ErrorResponse>) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       console.error("Create PayPal order failed:", error);
     },
   });
@@ -41,7 +41,7 @@ export const useCapturePayPalOrder = () => {
     onSuccess: (data) => {
       console.log("PayPal payment captured:", data);
     },
-    onError: (error:AxiosError<ErrorResponse>) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       console.error("Capture PayPal order failed:", error);
     },
   });
@@ -54,8 +54,16 @@ export const usePlaceOrder = () => {
     onSuccess: (data) => {
       console.log("Order placed successfully:", data);
     },
-    onError: (error:AxiosError<ErrorResponse>) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       console.error("Place order failed:", error);
     },
+  });
+};
+
+export const useOrderHistory = () => {
+  return useQuery({
+    queryKey: ["orderHistory"],
+    queryFn: () => paymentAPI.orderHistory(),
+    staleTime: 60 * 1000,
   });
 };

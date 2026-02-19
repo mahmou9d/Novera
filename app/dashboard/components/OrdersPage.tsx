@@ -241,7 +241,7 @@ console.log(selectedOrder.id);
               {isDropdownOpen && (
                 <div className="absolute top-full left-0 mt-2 w-full min-w-[260px] bg-[#0f1117] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
                   <div className="p-2">
-                    {statusOptionsWithCounts.map((option, index) => {
+                    {statusOptionsWithCounts.map((option) => {
                       const isSelected = option.value === statusFilter;
                       const Icon = option.icon;
 
@@ -528,7 +528,7 @@ console.log(selectedOrder.id);
             <p className="text-sm text-gray-400">
               Showing{" "}
               <span className="font-semibold text-white">
-                {filteredOrders.length + (currentPage - 1) * 10 }
+                {filteredOrders.length + (currentPage - 1) * 10}
               </span>{" "}
               of{" "}
               <span className="font-semibold text-white">
@@ -688,7 +688,6 @@ console.log(selectedOrder.id);
                     </span>
                   </div>
                 </div>
-
                 {/* Success/Error Messages */}
                 <AnimatePresence>
                   {patchOrderMutation.isSuccess && (
@@ -708,7 +707,6 @@ console.log(selectedOrder.id);
                     </div>
                   )}
                 </AnimatePresence>
-
                 {/* Customer Info */}
                 <div className="bg-white/5 rounded-xl p-5 border border-white/10">
                   <h3 className="text-lg font-bold text-white mb-4">
@@ -740,52 +738,123 @@ console.log(selectedOrder.id);
                     </div>
                   </div>
                 </div>
-
                 {/* Order Items */}
-                <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                  <h3 className="text-lg font-bold text-white mb-4">
-                    Order Items
-                  </h3>
-                  <div className="space-y-3">
-                    {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                      selectedOrder.items.map(
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white font-semibold text-sm uppercase tracking-wider flex items-center gap-2">
+                      <Package size={14} className="text-[#fda481]" />
+                      Order Items
+                    </h3>
+                    {selectedOrder.items && selectedOrder.items.length > 0 && (
+                      <span className="text-xs text-gray-500 bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
+                        {selectedOrder.items.length}{" "}
+                        {selectedOrder.items.length === 1 ? "item" : "items"}
+                      </span>
+                    )}
+                  </div>
+
+                  {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                    <div className="space-y-2.5">
+                      {selectedOrder.items.map(
                         (item: OrderItem, idx: number) => (
                           <div
                             key={idx}
-                            className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
+                            className="group relative bg-white/[0.03] border border-white/10 rounded-xl p-4 hover:border-[#fda481]/20 hover:bg-white/[0.05] transition-all duration-200 overflow-hidden"
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#fda481]/20 to-[#b4182d]/20 flex items-center justify-center">
-                                <Package className="w-6 h-6 text-[#fda481]" />
+                            {/* Subtle accent line on the left */}
+                            <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#fda481]/60 to-[#b4182d]/60 rounded-l-xl" />
+
+                            <div className="flex items-start justify-between gap-4 pl-2">
+                              {/* Left: Item info */}
+                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                {/* Index badge */}
+                                <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-[#fda481]/10 border border-[#fda481]/20 flex items-center justify-center">
+                                  <span className="text-[#fda481] text-xs font-bold">
+                                    {idx + 1}
+                                  </span>
+                                </div>
+
+                                {/* Item details */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-white font-medium text-sm truncate leading-tight">
+                                    {item.variant_name}
+                                  </p>
+                                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                    {item.variant_color && (
+                                      <span className="inline-flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+                                        {/* Color dot */}
+                                        <span
+                                          className="w-2 h-2 rounded-full border border-white/20 flex-shrink-0"
+                                          style={{
+                                            backgroundColor:
+                                              item.variant_color.toLowerCase(),
+                                          }}
+                                        />
+                                        {item.variant_color}
+                                      </span>
+                                    )}
+                                    {item.variant_size && (
+                                      <span className="text-xs text-gray-400 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+                                        Size:{" "}
+                                        <span className="text-gray-300 font-medium">
+                                          {item.variant_size}
+                                        </span>
+                                      </span>
+                                    )}
+                                    <span className="text-xs text-gray-400 bg-white/5 px-2 py-0.5 rounded-md border border-white/10">
+                                      Qty:{" "}
+                                      <span className="text-gray-300 font-medium">
+                                        {item.quantity}
+                                      </span>
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <p className="font-semibold text-white">
-                                  {item.variant_name}
+
+                              {/* Right: Pricing */}
+                              <div className="flex-shrink-0 text-right">
+                                <p className="text-white font-bold text-sm">
+                                  ${item.subtotal}
                                 </p>
-                                <p className="text-xs text-gray-400">
-                                  Qty: {item.quantity}
+                                <p className="text-gray-500 text-xs mt-0.5">
+                                  ${item.price} × {item.quantity}
                                 </p>
                               </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold text-white">
-                                ${item.subtotal}
-                              </p>
-                              <p className="text-xs text-gray-400">
-                                ${item.price} each
-                              </p>
                             </div>
                           </div>
                         ),
-                      )
-                    ) : (
-                      <p className="text-center text-gray-400 py-4">
+                      )}
+
+                      {/* Items subtotal summary */}
+                      <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.02] rounded-xl border border-white/5">
+                        <span className="text-gray-500 text-xs">
+                          {selectedOrder.items.reduce(
+                            (sum: number, i: OrderItem) => sum + i.quantity,
+                            0,
+                          )}{" "}
+                          units total
+                        </span>
+                        <span className="text-gray-400 text-xs">
+                          Subtotal:{" "}
+                          <span className="text-gray-300 font-medium">
+                            $
+                            {selectedOrder.items.reduce(
+                              (sum: number, i: OrderItem) => sum + i.subtotal,
+                              0,
+                            )}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 text-center bg-white/[0.02] rounded-xl border border-white/5 border-dashed">
+                      <Package size={28} className="text-gray-600 mb-2" />
+                      <p className="text-gray-500 text-sm">
                         No items in this order
                       </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-
                 {/* Total */}
                 <div className="bg-gradient-to-r from-[#fda481]/10 to-[#b4182d]/10 rounded-xl p-5 border border-[#fda481]/20">
                   <div className="flex items-center justify-between">

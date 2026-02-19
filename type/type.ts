@@ -62,14 +62,15 @@ export interface CheckoutSessionRequest {
 }
 
 export interface TReview {
-  product_id: number;
+  id: number;
   comment: string;
   rating: number;
   customer_name: string;
+  created_at: string;
 }
 
 export interface AddReviewRequest {
-  product_id: number;
+  product: number;
   comment: string;
   rating: number;
 }
@@ -294,14 +295,13 @@ export interface CartItem {
   subtotal: string;
   variant: Variant;
 }
-
-// Type للمنتج
-
 export interface OrderItem {
   variant_name: string;
   quantity: number;
   price: string;
   subtotal: number;
+  variant_size: string;
+  variant_color: string;
 }
 
 export interface Order {
@@ -367,6 +367,7 @@ export interface Review {
   rating: number;
   comment: string;
   created_at: string;
+  product_name: string;
 }
 
 export type ReviewsResponse = Review[];
@@ -522,6 +523,8 @@ export interface ErrorResponse {
   detail?: string;
   error?: string;
   status?: string;
+  non_field_errors?: string;
+  name?: string;
 }
 
 export interface NotificationState {
@@ -633,3 +636,26 @@ export interface SidebarProps {
   activeMenu: string;
   setActiveMenu: (menu: string) => void;
 }
+
+export interface OrderItem {
+  variant_name: string;
+  variant_color: string;
+  variant_size: string;
+  quantity: number;
+  price: string;
+  subtotal: number;
+}
+
+export interface OrderData {
+  id: string;
+  status: string;
+  total_price: number;
+  created_at: string;
+  items: OrderItem[];
+  full_name: string;
+  full_address: string;
+  phone_number: string;
+  country: string;
+}
+
+export type OrderHistoryResponse = OrderData[];
