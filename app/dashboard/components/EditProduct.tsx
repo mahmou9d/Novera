@@ -14,8 +14,16 @@ import {
   Image as ImageIcon,
   AlertCircle,
   Save,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { TProduct, EditProductProps, Variant, AddVariants, ErrorResponse } from "@/type/type";
+import {
+  TProduct,
+  EditProductProps,
+  Variant,
+  AddVariants,
+  ErrorResponse,
+} from "@/type/type";
 import {
   useGetProducts,
   useUpdateProduct,
@@ -59,7 +67,7 @@ interface NewVariantRow {
   price: string;
   compare_at_price: string;
   stock: number;
-  image: string | null; // base64
+  image: string | null;
 }
 
 const COLOR_OPTIONS = [
@@ -106,10 +114,8 @@ const AddVariantModal: React.FC<AddVariantModalProps> = ({
   };
 
   const addRow = () => setRows((p) => [...p, emptyRow(p[p.length - 1].id + 1)]);
-
   const removeRow = (idx: number) =>
     setRows((p) => p.filter((_, i) => i !== idx));
-
   const updateRow = (idx: number, field: keyof NewVariantRow, val: unknown) =>
     setRows((p) => p.map((r, i) => (i === idx ? { ...r, [field]: val } : r)));
 
@@ -134,63 +140,64 @@ const AddVariantModal: React.FC<AddVariantModalProps> = ({
     return !Object.keys(e).length;
   };
 
-const handleSave = async () => {
-  if (!productId || !validate()) return;
-  setIsLoading(true);
+  const handleSave = async () => {
+    if (!productId || !validate()) return;
+    setIsLoading(true);
 
-  const payload: AddVariants[] = rows.map((r) => ({
-    id: r.id,
-    color_name: r.color_name,
-    color_hex: r.color_hex,
-    size: r.size,
-    price: r.price,
-    compare_at_price: r.compare_at_price || "0.00",
-    stock: r.stock,
-  }));
+    const payload: AddVariants[] = rows.map((r) => ({
+      id: r.id,
+      color_name: r.color_name,
+      color_hex: r.color_hex,
+      size: r.size,
+      price: r.price,
+      compare_at_price: r.compare_at_price || "0.00",
+      stock: r.stock,
+    }));
 
-  addVariantsMutation.mutate(
-    { payload, product_id: productId },
-    {
-      onSuccess: async (res) => {
-        if (res) {
-          const ids: number[] = res.map(
-            (v: { id?: number; variant_id?: number }) => v.id ?? v.variant_id!,
-          );
-          for (let i = 0; i < rows.length; i++) {
-            if (rows[i].image) {
-              try {
-                const f = await base64ToFile(
-                  rows[i].image!,
-                  `variant-${ids[i]}.jpg`,
-                );
-                const fd = new FormData();
-                fd.append("img", f);
-                await addImageMutation.mutateAsync({
-                  payload: fd,
-                  variant_id: ids[i],
-                });
-              } catch {
-                /* non-fatal */
+    addVariantsMutation.mutate(
+      { payload, product_id: productId },
+      {
+        onSuccess: async (res) => {
+          if (res) {
+            const ids: number[] = res.map(
+              (v: { id?: number; variant_id?: number }) =>
+                v.id ?? v.variant_id!,
+            );
+            for (let i = 0; i < rows.length; i++) {
+              if (rows[i].image) {
+                try {
+                  const f = await base64ToFile(
+                    rows[i].image!,
+                    `variant-${ids[i]}.jpg`,
+                  );
+                  const fd = new FormData();
+                  fd.append("img", f);
+                  await addImageMutation.mutateAsync({
+                    payload: fd,
+                    variant_id: ids[i],
+                  });
+                } catch {
+                  /* non-fatal */
+                }
               }
             }
           }
-        }
-        onNotify("Variants added successfully!", "success");
-        setIsLoading(false);
-        handleClose();
+          onNotify("Variants added successfully!", "success");
+          setIsLoading(false);
+          handleClose();
+        },
+        onError: (error: AxiosError<ErrorResponse>) => {
+          onNotify(
+            error?.response?.data?.message ||
+              error?.message ||
+              "Failed to add variants",
+            "error",
+          );
+          setIsLoading(false);
+        },
       },
-      onError: (error: AxiosError<ErrorResponse>) => {
-        onNotify(
-          error?.response?.data?.message ||
-            error?.message ||
-            "Failed to add variants",
-          "error",
-        );
-        setIsLoading(false);
-      },
-    },
-  );
-};
+    );
+  };
 
   return (
     <AnimatePresence>
@@ -209,7 +216,6 @@ const handleSave = async () => {
             onClick={(e) => e.stopPropagation()}
             className="bg-[#0f1117] border-2 border-white/10 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
           >
-            {/* Header */}
             <div className="border-b border-white/10 p-6 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-white">Add Variants</h2>
@@ -225,7 +231,6 @@ const handleSave = async () => {
               </button>
             </div>
 
-            {/* Body */}
             <div className="flex-1 overflow-y-auto p-6">
               <div className="bg-[#1a1d29] border border-white/10 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -268,15 +273,10 @@ const handleSave = async () => {
                           key={row.id}
                           className="border-b border-white/5 hover:bg-white/5"
                         >
-                          {/* Image */}
                           <td className="py-3 px-4">
                             <label className="cursor-pointer">
                               <div
-                                className={`w-12 h-12 bg-[#0f1117] border rounded-lg flex items-center justify-center overflow-hidden ${
-                                  errors[idx]
-                                    ? "border-red-500"
-                                    : "border-white/10"
-                                }`}
+                                className={`w-12 h-12 bg-[#0f1117] border rounded-lg flex items-center justify-center overflow-hidden ${errors[idx] ? "border-red-500" : "border-white/10"}`}
                               >
                                 {row.image ? (
                                   <img
@@ -302,7 +302,6 @@ const handleSave = async () => {
                             )}
                           </td>
 
-                          {/* Color */}
                           <td className="py-3 px-4">
                             <select
                               value={row.color_name}
@@ -324,7 +323,6 @@ const handleSave = async () => {
                             </select>
                           </td>
 
-                          {/* Size */}
                           <td className="py-3 px-4">
                             <select
                               value={row.size}
@@ -341,7 +339,6 @@ const handleSave = async () => {
                             </select>
                           </td>
 
-                          {/* Price */}
                           <td className="py-3 px-4">
                             <input
                               type="number"
@@ -355,7 +352,6 @@ const handleSave = async () => {
                             />
                           </td>
 
-                          {/* Compare price */}
                           <td className="py-3 px-4">
                             <input
                               type="number"
@@ -373,7 +369,6 @@ const handleSave = async () => {
                             />
                           </td>
 
-                          {/* Stock */}
                           <td className="py-3 px-4">
                             <input
                               type="number"
@@ -390,7 +385,6 @@ const handleSave = async () => {
                             />
                           </td>
 
-                          {/* Remove */}
                           <td className="py-3 px-4">
                             <button
                               onClick={() => removeRow(idx)}
@@ -413,7 +407,6 @@ const handleSave = async () => {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="border-t border-white/10 p-6 flex items-center justify-between">
               <button
                 onClick={handleClose}
@@ -485,8 +478,8 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           <h2 className="text-xl font-bold text-white mb-2">Delete Product</h2>
           <p className="text-gray-400 mb-6">
             Are you sure you want to delete{" "}
-            <span className="text-white font-semibold">{`"${productName}"`}</span>?
-            This action cannot be undone.
+            <span className="text-white font-semibold">{`"${productName}"`}</span>
+            ? This action cannot be undone.
           </p>
           <div className="flex gap-3">
             <button
@@ -524,8 +517,15 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
 export const EditProduct: React.FC<EditProductProps> = () => {
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
-  const { data } = useGetProducts({ all: true });
+
+  // ── Pagination state ───────────────────────────────────────────────────────
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data } = useGetProducts({ page: currentPage });
+  console.log(data)
   const products: TProduct[] = data?.products || [];
+  const totalCount = data?.count || 0;
+  const hasNext = data?.next !== null && data?.next !== undefined;
+  const hasPrevious = data?.previous !== null && data?.previous !== undefined;
 
   // Notification
   const [notification, setNotification] = useState<{
@@ -626,8 +626,8 @@ export const EditProduct: React.FC<EditProductProps> = () => {
         <p className="text-gray-400 text-base">Manage your product inventory</p>
       </div>
 
-      {/* Add button */}
-      <div className="flex items-center gap-3 mb-6">
+      {/* Add button + count */}
+      <div className="flex items-center justify-between mb-6">
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -637,6 +637,11 @@ export const EditProduct: React.FC<EditProductProps> = () => {
           <Plus className="w-5 h-5" />
           Add Product
         </motion.button>
+
+        <p className="text-sm text-gray-400">
+          <span className="font-semibold text-white">{totalCount}</span> total
+          products
+        </p>
       </div>
 
       {/* Product Grid */}
@@ -664,7 +669,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
                   : "border-red-500/30 opacity-60"
               }`}
             >
-              {/* Inactive badge */}
               {!isActive && (
                 <div className="absolute top-4 right-4 bg-red-500/20 border border-red-500/50 rounded-lg px-3 py-1">
                   <span className="text-xs font-bold text-red-400">
@@ -673,7 +677,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
                 </div>
               )}
 
-              {/* Thumbnail */}
               <div className="mb-5">
                 <div
                   className={`w-20 h-20 rounded-2xl overflow-hidden border border-white/10 ${!isActive ? "grayscale" : ""}`}
@@ -688,7 +691,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
                 </div>
               </div>
 
-              {/* Info */}
               <h3 className="font-bold text-white text-lg mb-1">
                 {product.name}
               </h3>
@@ -708,7 +710,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
                 </div>
               </div>
 
-              {/* Edit + Variants */}
               <div className="flex items-center gap-2 mb-3">
                 <button
                   onClick={() => {
@@ -732,7 +733,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
                 </button>
               </div>
 
-              {/* Add Variant + Delete */}
               <div className="flex items-center gap-2 mb-3">
                 <button
                   onClick={() => {
@@ -758,7 +758,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
                 </button>
               </div>
 
-              {/* Toggle Active */}
               <button
                 onClick={() => handleToggleActive(product)}
                 disabled={isToggling}
@@ -781,6 +780,42 @@ export const EditProduct: React.FC<EditProductProps> = () => {
           );
         })}
       </div>
+
+      {/* ── Pagination ── */}
+      {(hasNext || hasPrevious) && (
+        <div className="flex items-center justify-between mt-10 bg-[#1a1d29] rounded-2xl border border-white/10 px-6 py-4">
+          <p className="text-sm text-gray-400">
+            Page <span className="font-semibold text-white">{currentPage}</span>
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setCurrentPage((p) => p - 1);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              disabled={!hasPrevious}
+              className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#fda481]/20 hover:border-[#fda481]/30 hover:text-[#fda481] transition-all"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <span className="text-sm text-gray-400 px-3">
+              Page {currentPage}
+            </span>
+
+            <button
+              onClick={() => {
+                setCurrentPage((p) => p + 1);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              disabled={!hasNext}
+              className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#fda481]/20 hover:border-[#fda481]/30 hover:text-[#fda481] transition-all"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       <CreateProductModal
@@ -809,7 +844,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
         onNotify={notify}
       />
 
-      {/* Add Variant Modal */}
       <AddVariantModal
         open={showAddVariant}
         productId={selectedProductId}
@@ -820,7 +854,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
         onNotify={notify}
       />
 
-      {/* Delete Confirm Modal */}
       <DeleteConfirmModal
         open={showDeleteConfirm}
         productName={selectedProductName}

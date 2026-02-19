@@ -26,7 +26,9 @@ const Shop = () => {
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-const { data: categories } = useGetCategory();
+
+  const { data: categories } = useGetCategory();
+
   const { data, isLoading, isError, error } = useGetProducts({
     page: currentPage,
   });
@@ -36,23 +38,18 @@ const { data: categories } = useGetCategory();
   const hasNext = useMemo(() => data?.next !== null, [data?.next]);
   const hasPrevious = useMemo(() => data?.previous !== null, [data?.previous]);
 
-
   const maxPrice = useMemo(() => {
     if (!products || products.length === 0) return 1000;
-
     const prices = products
       .map((p: TProduct) => parseFloat(p.lowest_price))
       .filter((price: number) => !isNaN(price));
-
     if (prices.length === 0) return 1000;
-
     return Math.ceil(Math.max(...prices) / 100) * 100;
   }, [products]);
 
-  // Client-side filtering
+  // Client-side filtering — case-insensitive category comparison
   const filteredProducts = useMemo(() => {
     if (!products || products.length === 0) return [];
-
     return products.filter((product: TProduct) => {
       const matchesSearch = product.name
         .toLowerCase()
@@ -60,7 +57,7 @@ const { data: categories } = useGetCategory();
 
       const matchesCategory =
         selectedCategory === "all" ||
-        product.category_name.toLowerCase() === selectedCategory;
+        product.category_name.toLowerCase() === selectedCategory.toLowerCase();
 
       const productPrice = parseFloat(product.lowest_price);
       const matchesPrice =
@@ -133,7 +130,7 @@ const { data: categories } = useGetCategory();
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-8 py-3 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl "
+                className="px-8 py-3 bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl"
               >
                 Try Again
               </button>
@@ -175,7 +172,7 @@ const { data: categories } = useGetCategory();
       <Header />
 
       <div className="container mx-auto px-4 sm:px-6 lg:p-10 xl:px-20 py-8 lg:py-12">
-        {/* Enhanced Header with Stats */}
+        {/* Header with Stats */}
         <div className="mb-8 lg:mb-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-6 lg:mb-8">
             <div>
@@ -282,24 +279,45 @@ const { data: categories } = useGetCategory();
                     </h3>
                   </div>
                   <div className="flex flex-col gap-2">
-                    {categories?.map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() => setSelectedCategory(category.name)}
-                        className={`px-5 py-3 rounded-xl text-sm font-semibold text-left relative overflow-hidden group ${
-                          selectedCategory === category.name
-                            ? "bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30"
-                            : "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-[#fef5f1] hover:to-[#fef5f1] border border-gray-200"
-                        }`}
-                      >
-                        {selectedCategory === category.name && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-[#fca481] to-[#fd9166]" />
-                        )}
-                        <span className="relative z-10">
-                          {category.name as string}
-                        </span>
-                      </button>
-                    ))}
+                    {/* All Products button */}
+                    <button
+                      onClick={() => setSelectedCategory("all")}
+                      className={`px-5 py-3 rounded-xl text-sm font-semibold text-left relative overflow-hidden ${
+                        selectedCategory === "all"
+                          ? "bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30"
+                          : "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-[#fef5f1] hover:to-[#fef5f1] border border-gray-200"
+                      }`}
+                    >
+                      {selectedCategory === "all" && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#fca481] to-[#fd9166]" />
+                      )}
+                      <span className="relative z-10">All Products</span>
+                    </button>
+
+                    {/* Dynamic categories from API */}
+                    {categories?.map((category) => {
+                      const isSelected =
+                        selectedCategory.toLowerCase() ===
+                        category.name.toLowerCase();
+                      return (
+                        <button
+                          key={category.id}
+                          onClick={() =>
+                            setSelectedCategory(category.name.toLowerCase())
+                          }
+                          className={`px-5 py-3 rounded-xl text-sm font-semibold text-left relative overflow-hidden ${
+                            isSelected
+                              ? "bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg shadow-[#fca481]/30"
+                              : "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 hover:from-[#fef5f1] hover:to-[#fef5f1] border border-gray-200"
+                          }`}
+                        >
+                          {isSelected && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#fca481] to-[#fd9166]" />
+                          )}
+                          <span className="relative z-10">{category.name}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -395,11 +413,9 @@ const { data: categories } = useGetCategory();
             {/* Products Grid */}
             {filteredProducts.length > 0 ? (
               <>
-                <div>
-                  <ProductGrid products={filteredProducts} />
-                </div>
+                <ProductGrid products={filteredProducts} />
 
-                {/* Pagination — same pattern as OrdersPage */}
+                {/* Pagination */}
                 <div className="flex items-center justify-between mt-10 lg:mt-12 bg-white rounded-2xl shadow-lg border border-gray-100 px-6 py-4">
                   <p className="text-sm text-gray-500">
                     Page{" "}

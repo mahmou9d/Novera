@@ -11,6 +11,7 @@ import {
   SalesOrdersResponse,
   Order,
   TopSellingResponse,
+  ReviewsDataRes,
 } from "../type/type";
 
 export const dashboardAPI = {
@@ -67,6 +68,15 @@ export const dashboardAPI = {
     );
     return data;
   },
+  getAllReviews: async (
+    page: number = 1,
+  ): Promise<ReviewsDataRes> => {
+    const { data } = await apiClient.get<ReviewsDataRes>(
+      `/dashboard/reviews/`,
+      { params: { page } },
+    );
+    return data;
+  },
   getProductLow: async (): Promise<LowStockResponse> => {
     const { data } = await apiClient.get<LowStockResponse>(
       "/charts/products/low/",
@@ -74,15 +84,13 @@ export const dashboardAPI = {
     return data || [];
   },
   // في dashboardAPI أضف:
-  getCategories: async (): Promise<{id: number, name: string}[]> => {
-    const { data } = await apiClient.get<{id: number, name: string}[]>(
+  getCategories: async (): Promise<{ id: number; name: string }[]> => {
+    const { data } = await apiClient.get<{ id: number; name: string }[]>(
       "/dashboard/categories/",
     );
     return data;
   },
-  createCategory: async (payload: {
-    name: string;
-  }) => {
+  createCategory: async (payload: { name: string }) => {
     const { data } = await apiClient.post("/dashboard/categories/", payload);
     return data;
   },

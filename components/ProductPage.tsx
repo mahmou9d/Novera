@@ -209,7 +209,6 @@ const ProductPage = ({ productId }: ProductPageProps) => {
         ).toFixed(1)
       : null;
 
-  // ⚠️ استبدل hasPurchased بالـ logic الصح عندك
   const hasPurchased = true;
 
   // Loading State
@@ -559,7 +558,30 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                 </div>
               ))}
             </div>
-
+            {/* Payment Methods */}
+            <div className="flex items-center gap-3 pt-2">
+              <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
+                We accept:
+              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Stripe */}
+                <div className="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg"
+                    alt="Stripe"
+                    className="h-4 w-auto"
+                  />
+                </div>
+                {/* PayPal */}
+                <div className="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg"
+                    alt="PayPal"
+                    className="h-4 w-auto"
+                  />
+                </div>
+              </div>
+            </div>
             {/* Description */}
             <div className="space-y-4 pt-8 border-t-2 border-gray-100">
               <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">

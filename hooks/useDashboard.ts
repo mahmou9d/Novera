@@ -15,6 +15,9 @@ export const dashboardKeys = {
 
   statusCount: () => [...dashboardKeys.all, "stats", "count"] as const,
   reviewsCount: () => [...dashboardKeys.all, "reviews", "count"] as const,
+  reviews: () => [...dashboardKeys.all, "reviews"] as const,
+  allReviews: (page?: number) =>
+    [...dashboardKeys.reviews(), "all", page] as const,
 
   users: () => [...dashboardKeys.all, "users"] as const,
   usersCount: () => [...dashboardKeys.users(), "count"] as const,
@@ -62,6 +65,14 @@ export const useGetReviewsCount = () => {
     queryKey: dashboardKeys.reviewsCount(),
     queryFn: dashboardAPI.getReviewsCount,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useGetAllReviews = (page: number = 1) => {
+  return useQuery({
+    queryKey: dashboardKeys.allReviews(page),
+    queryFn: () => dashboardAPI.getAllReviews(page),
+    staleTime: 60 * 1000,
   });
 };
 
@@ -121,6 +132,7 @@ export const useMakeAdmin = () => {
     },
   });
 };
+
 export const useGetCategory = () => {
   return useQuery({
     queryKey: dashboardKeys.categories(),

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   TrendingUp,
@@ -12,21 +13,29 @@ import {
   DollarSign,
   MessageSquare,
   BarChart3,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   useGetStatusCount,
-  useGetReviewsCount,
+  useGetAllReviews,
   useGetProductLow,
   useGetSalesOrders,
 } from "@/hooks/useDashboard";
 
 export const AnalyticsPage = () => {
+  const [reviewPage, setReviewPage] = useState(1);
+
   const { data: statusCount } = useGetStatusCount();
-  const { data: reviewsData } = useGetReviewsCount();
+  const { data: reviewsData } = useGetAllReviews(reviewPage);
   const { data: lowStockData } = useGetProductLow();
   const { data: salesData } = useGetSalesOrders();
 
-  console.log({ statusCount, reviewsData, lowStockData, salesData });
+  const reviews = reviewsData?.results || [];
+  const hasNextReviews =
+    reviewsData?.next !== null && reviewsData?.next !== undefined;
+  const hasPrevReviews =
+    reviewsData?.previous !== null && reviewsData?.previous !== undefined;
 
   const totalOrders = statusCount?.orders?.total || 0;
   const totalSales = statusCount?.sales || 0;
@@ -59,7 +68,7 @@ export const AnalyticsPage = () => {
     },
     {
       label: "Total Reviews",
-      value: reviewsData?.length || 0,
+      value: reviewsData?.count || 0,
       change: "+3.1%",
       trend: "up" as const,
       icon: MessageSquare,
@@ -107,15 +116,15 @@ export const AnalyticsPage = () => {
     },
   ];
 
-  // Calculate average rating
+  // Calculate average rating from current page
   const averageRating =
-    reviewsData && reviewsData.length > 0
+    reviews.length > 0
       ? (
-          reviewsData.reduce((sum, review) => sum + review.rating, 0) /
-          reviewsData.length
+          reviews.reduce((sum, review) => sum + review.rating, 0) /
+          reviews.length
         ).toFixed(1)
       : "0.0";
-
+console.log(reviews);
   return (
     <>
       <div className="mb-10">
@@ -209,12 +218,11 @@ export const AnalyticsPage = () => {
         </div>
 
         {/* Customer Reviews */}
-        <div className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10">
+        <div className="bg-[#1a1d29] rounded-2xl p-8 border border-white/10 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white">Recent Reviews</h2>
             <div className="flex items-center gap-3">
-              {/* Star rating summary */}
               <div className="flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-3 py-1.5">
                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                 <span className="text-sm font-bold text-yellow-400">
@@ -222,36 +230,33 @@ export const AnalyticsPage = () => {
                 </span>
               </div>
               <span className="text-sm text-gray-500">
-                {reviewsData?.length || 0}{" "}
-                {reviewsData?.length === 1 ? "review" : "reviews"}
+                {reviewsData?.count || 0}{" "}
+                {reviewsData?.count === 1 ? "review" : "reviews"}
               </span>
             </div>
           </div>
 
           {/* Reviews List */}
           <div
-            className="space-y-3 max-h-[320px] overflow-y-auto pr-1 
-    [&::-webkit-scrollbar]:w-1 
-    [&::-webkit-scrollbar-track]:bg-transparent 
-    [&::-webkit-scrollbar-thumb]:bg-white/10 
-    [&::-webkit-scrollbar-thumb]:rounded-full"
+            className="flex-1 space-y-3 overflow-y-auto pr-1 max-h-[280px]
+            [&::-webkit-scrollbar]:w-1
+            [&::-webkit-scrollbar-track]:bg-transparent
+            [&::-webkit-scrollbar-thumb]:bg-white/10
+            [&::-webkit-scrollbar-thumb]:rounded-full"
           >
-            {reviewsData && reviewsData.length > 0 ? (
-              reviewsData.slice(0, 5).map((review, index) => (
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
                 <div
                   key={review.id}
                   className="group relative p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/10 transition-all duration-200 overflow-hidden"
                 >
-                  {/* Left accent */}
                   <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl bg-gradient-to-b from-[#fda481]/50 to-[#b4182d]/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
                   <div className="flex items-start gap-3">
-                    {/* Avatar */}
                     <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-[#fda481] to-[#b4182d] flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-[#b4182d]/20">
                       {review.customer_name.charAt(0).toUpperCase()}
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div className="min-w-0">
@@ -262,7 +267,6 @@ export const AnalyticsPage = () => {
                             {review.product_name}
                           </p>
                         </div>
-                        {/* Stars */}
                         <div className="flex items-center gap-0.5 flex-shrink-0">
                           {[...Array(5)].map((_, i) => (
                             <Star
@@ -277,14 +281,12 @@ export const AnalyticsPage = () => {
                         </div>
                       </div>
 
-                      {/* Comment */}
                       {review.comment && (
                         <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 mb-2">
                           {`"${review.comment}"`}
                         </p>
                       )}
 
-                      {/* Date */}
                       <p className="text-xs text-gray-600">
                         {new Date(review.created_at).toLocaleDateString(
                           "en-US",
@@ -313,6 +315,34 @@ export const AnalyticsPage = () => {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {(hasNextReviews || hasPrevReviews) && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+              <p className="text-xs text-gray-500">
+                Page{" "}
+                <span className="font-semibold text-gray-300">
+                  {reviewPage}
+                </span>
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setReviewPage((p) => p - 1)}
+                  disabled={!hasPrevReviews}
+                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#fda481]/20 hover:border-[#fda481]/30 hover:text-[#fda481] transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setReviewPage((p) => p + 1)}
+                  disabled={!hasNextReviews}
+                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#fda481]/20 hover:border-[#fda481]/30 hover:text-[#fda481] transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -331,10 +361,10 @@ export const AnalyticsPage = () => {
           </div>
           <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2">
             {lowStockData?.variants && lowStockData.variants.length > 0 ? (
-              lowStockData.variants.map((variant, index) => (
+              lowStockData.variants.map((variant) => (
                 <div
                   key={variant.id}
-                  className="flex items-center justify-between p-4 rounded-xl bg-red-500/5 hover:bg-red-500/10  border border-red-500/10"
+                  className="flex items-center justify-between p-4 rounded-xl bg-red-500/5 hover:bg-red-500/10 border border-red-500/10"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500/20 to-red-600/20 flex items-center justify-center">
@@ -349,12 +379,10 @@ export const AnalyticsPage = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30">
-                      <span className="text-xs font-bold text-red-400">
-                        Low Stock
-                      </span>
-                    </div>
+                  <div className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30">
+                    <span className="text-xs font-bold text-red-400">
+                      Low Stock
+                    </span>
                   </div>
                 </div>
               ))

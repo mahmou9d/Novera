@@ -67,6 +67,7 @@ export interface TReview {
   rating: number;
   customer_name: string;
   created_at: string;
+  product_name?: string;
 }
 
 export interface AddReviewRequest {
@@ -288,7 +289,12 @@ export interface Product {
   is_active?: boolean;
   product_id?: number;
 }
-// Type للـ Cart Item
+export interface ReviewsDataRes {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  reviews: TReview[];
+}
 export interface CartItem {
   id: number;
   price: string;
@@ -297,6 +303,7 @@ export interface CartItem {
   variant: Variant;
 }
 export interface OrderItem {
+  id?: number;
   variant_name: string;
   quantity: number;
   price: string;
@@ -325,7 +332,8 @@ export interface RecentOrdersDatares {
 }
 
 export interface RecentOrdersData {
-  orders: Order[];
+  results?: Order[];
+  orders?: Order[];
   count: number;
   next: string | null;
   previous: string | null;
