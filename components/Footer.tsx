@@ -157,9 +157,8 @@ export default function Footer() {
               {SOCIAL_LINKS.map((social, idx) => (
                 <a
                   key={idx}
-                  href={social.href}
+                  href={""}
                   target="_blank"
-                  rel="noopener noreferrer"
                   aria-label={social.label}
                   className={`bg-white/5 p-3 rounded-full hover:bg-white/10  hover:scale-110 ${social.color}`}
                 >
@@ -176,7 +175,7 @@ export default function Footer() {
               {FOOTER_LINKS.shop.map((link, idx) => (
                 <li key={idx}>
                   <Link
-                    href={link.href}
+                    href={""}
                     className="font-sans text-sm text-gray-400 hover:text-[#FDA481]  hover:translate-x-1 inline-block"
                   >
                     {link.name}
@@ -193,7 +192,7 @@ export default function Footer() {
               {FOOTER_LINKS.company.map((link, idx) => (
                 <li key={idx}>
                   <Link
-                    href={link.href}
+                    href={""}
                     className="font-sans text-sm text-gray-400 hover:text-[#FDA481]  hover:translate-x-1 inline-block"
                   >
                     {link.name}
@@ -210,7 +209,7 @@ export default function Footer() {
               {FOOTER_LINKS.support.map((link, idx) => (
                 <li key={idx}>
                   <Link
-                    href={link.href}
+                    href={""}
                     className="font-sans text-sm text-gray-400 hover:text-[#FDA481]  hover:translate-x-1 inline-block"
                   >
                     {link.name}
@@ -227,7 +226,7 @@ export default function Footer() {
               {FOOTER_LINKS.legal.map((link, idx) => (
                 <li key={idx}>
                   <Link
-                    href={link.href}
+                    href={""}
                     className="font-sans text-sm text-gray-400 hover:text-[#FDA481]  hover:translate-x-1 inline-block"
                   >
                     {link.name}
