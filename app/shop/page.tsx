@@ -38,14 +38,14 @@ const Shop = () => {
   const hasNext = useMemo(() => data?.next !== null, [data?.next]);
   const hasPrevious = useMemo(() => data?.previous !== null, [data?.previous]);
 
-  const maxPrice = useMemo(() => {
-    if (!products || products.length === 0) return 1000;
-    const prices = products
-      .map((p: TProduct) => parseFloat(p.lowest_price))
-      .filter((price: number) => !isNaN(price));
-    if (prices.length === 0) return 1000;
-    return Math.ceil(Math.max(...prices) / 100) * 100;
-  }, [products]);
+const maxPrice = useMemo(() => {
+  if (!products || products.length === 0) return 1000;
+  const prices = products
+    .map((p: TProduct) => parseFloat(p.lowest_price))
+    .filter((price: number) => !isNaN(price));
+  if (prices.length === 0) return 1000;
+  return Math.ceil(Math.max(...prices) / 100) * 100;
+}, [products]);
 
   // Client-side filtering — case-insensitive category comparison
   const filteredProducts = useMemo(() => {
@@ -70,11 +70,11 @@ const Shop = () => {
   }, [products, searchTerm, selectedCategory, priceRange]);
 
   // Reset price range when products load
-  React.useEffect(() => {
-    if (products && products.length > 0 && priceRange[1] === 1000) {
-      setPriceRange([0, maxPrice]);
-    }
-  }, [products, maxPrice, priceRange]);
+React.useEffect(() => {
+  if (products && products.length > 0) {
+    setPriceRange([0, maxPrice]);
+  }
+}, [maxPrice]);
 
   // Pagination handlers
   const handleNextPage = () => {

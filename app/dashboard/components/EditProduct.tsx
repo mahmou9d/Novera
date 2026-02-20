@@ -680,7 +680,7 @@ export const EditProduct: React.FC<EditProductProps> = () => {
               <p className="text-sm text-gray-400 mb-5 font-medium">{product.category_name}</p>
 
               <div className="flex items-center justify-between mb-5">
-                <span className="text-2xl font-bold text-[#fda481]">{product.lowest_price}</span>
+                <span className="text-2xl font-bold text-[#fda481]">${product.lowest_price}</span>
                 <div className="flex items-center gap-1.5">
                   <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
                   <span className="font-bold text-white text-base">{product.average_rating}</span>

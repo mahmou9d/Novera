@@ -70,72 +70,72 @@ export default function SpecialDeals() {
   return (
     <div
       id="deals"
-      className="relative bg-gradient-to-br from-[#B4182D] via-[#8B0000] to-[#54162B] py-20 lg:py-32 overflow-hidden"
+      className="relative bg-gradient-to-br from-[#B4182D] via-[#8B0000] to-[#54162B] py-12 sm:py-16 lg:py-32 overflow-hidden"
     >
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-[#FDA481]/10 rounded-full " />
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-yellow-400/10 rounded-full " />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-white/5 rounded-full" />
+        <div className="absolute top-20 left-10 w-48 h-48 sm:w-96 sm:h-96 bg-[#FDA481]/10 rounded-full" />
+        <div className="absolute bottom-20 right-10 w-40 h-40 sm:w-80 sm:h-80 bg-yellow-400/10 rounded-full" />
+        <div className="absolute top-1/2 left-1/3 w-32 h-32 sm:w-64 sm:h-64 bg-white/5 rounded-full" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
         {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-3 bg-white/10 px-6 py-3 rounded-full mb-6 border border-white/20">
-            <Flame className="text-yellow-400" size={24} />
-            <span className="font-body text-sm font-bold uppercase tracking-wider text-white">
+        <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+          <div className="inline-flex items-center gap-2 sm:gap-3 bg-white/10 px-4 sm:px-6 py-2 sm:py-3 rounded-full mb-4 sm:mb-6 border border-white/20">
+            <Flame className="text-yellow-400" size={20} />
+            <span className="font-body text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
               Flash Sale Alert
             </span>
           </div>
 
-          <h2 className="font-display text-6xl lg:text-8xl text-white mb-6 uppercase">
+          <h2 className="font-display text-5xl sm:text-6xl lg:text-8xl text-white mb-3 sm:mb-6 uppercase">
             Hot Deals
           </h2>
-          <p className="font-body text-xl text-white/90 max-w-2xl mx-auto font-light">
+          <p className="font-body text-base sm:text-xl text-white/90 max-w-2xl mx-auto font-light px-4">
             Exclusive offers you can&apos;t afford to miss
           </p>
         </div>
 
         {/* Countdown Timer */}
-        <div className="bg-white/10 border-2 border-white/20 rounded-3xl p-8 lg:p-12 mb-16 relative overflow-hidden">
+        <div className="bg-white/10 border-2 border-white/20 rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-12 mb-10 sm:mb-16 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
           <div className="relative z-10">
-            <div className="flex items-center justify-center gap-3 mb-8">
-              <Clock className="text-yellow-400" size={32} />
-              <h3 className="font-display text-3xl lg:text-4xl text-white uppercase">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+              <Clock className="text-yellow-400" size={24} />
+              <h3 className="font-display text-xl sm:text-3xl lg:text-4xl text-white uppercase text-center">
                 Hurry! Sale Ends In
               </h3>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 lg:gap-8 max-w-3xl mx-auto">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:gap-8 max-w-xs sm:max-w-lg lg:max-w-3xl mx-auto">
               {/* Hours */}
-              <div className="bg-white rounded-2xl p-6 lg:p-8 text-center">
-                <div className="font-display text-5xl lg:text-7xl text-[#B4182D] mb-2">
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center">
+                <div className="font-display text-4xl sm:text-5xl lg:text-7xl text-[#B4182D] mb-1 sm:mb-2">
                   {timeLeft.hours.toString().padStart(2, "0")}
                 </div>
-                <div className="font-body text-sm lg:text-base text-gray-600 uppercase tracking-wider font-semibold">
+                <div className="font-body text-xs sm:text-sm lg:text-base text-gray-600 uppercase tracking-wider font-semibold">
                   Hours
                 </div>
               </div>
 
               {/* Minutes */}
-              <div className="bg-white rounded-2xl p-6 lg:p-8 text-center">
-                <div className="font-display text-5xl lg:text-7xl text-[#B4182D] mb-2">
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center">
+                <div className="font-display text-4xl sm:text-5xl lg:text-7xl text-[#B4182D] mb-1 sm:mb-2">
                   {timeLeft.minutes.toString().padStart(2, "0")}
                 </div>
-                <div className="font-body text-sm lg:text-base text-gray-600 uppercase tracking-wider font-semibold">
+                <div className="font-body text-xs sm:text-sm lg:text-base text-gray-600 uppercase tracking-wider font-semibold">
                   Minutes
                 </div>
               </div>
 
               {/* Seconds */}
-              <div className="bg-white rounded-2xl p-6 lg:p-8 text-center">
-                <div className="font-display text-5xl lg:text-7xl text-[#B4182D] mb-2">
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center">
+                <div className="font-display text-4xl sm:text-5xl lg:text-7xl text-[#B4182D] mb-1 sm:mb-2">
                   {timeLeft.seconds.toString().padStart(2, "0")}
                 </div>
-                <div className="font-body text-sm lg:text-base text-gray-600 uppercase tracking-wider font-semibold">
+                <div className="font-body text-xs sm:text-sm lg:text-base text-gray-600 uppercase tracking-wider font-semibold">
                   Seconds
                 </div>
               </div>
@@ -144,35 +144,35 @@ export default function SpecialDeals() {
         </div>
 
         {/* Deals Grid */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
           {DEALS.map((deal) => (
             <div
               key={deal.id}
-              className="group relative bg-white rounded-3xl overflow-hidden shadow-2xl"
+              className="group relative bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
             >
               {/* Image */}
-              <div className="relative h-80 overflow-hidden">
+              <div className="relative h-56 sm:h-64 md:h-72 lg:h-80 overflow-hidden">
                 <Image
                   src={deal.image}
                   alt={deal.name}
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
                 {/* Tag */}
-                <div className="absolute top-6 left-6">
-                  <div className="bg-yellow-400 text-[#181A2F] px-4 py-2 rounded-full font-body font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-xl">
-                    <Zap size={14} />
+                <div className="absolute top-4 sm:top-6 left-4 sm:left-6">
+                  <div className="bg-yellow-400 text-[#181A2F] px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-body font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-xl">
+                    <Zap size={12} />
                     {deal.tag}
                   </div>
                 </div>
 
                 {/* Discount Badge */}
-                <div className="absolute top-6 right-6">
-                  <div className="bg-[#B4182D] text-white rounded-2xl p-4 shadow-2xl">
-                    <div className="font-display text-4xl leading-none">
+                <div className="absolute top-4 sm:top-6 right-4 sm:right-6">
+                  <div className="bg-[#B4182D] text-white rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-2xl">
+                    <div className="font-display text-3xl sm:text-4xl leading-none">
                       {deal.discount}%
                     </div>
                     <div className="font-body text-xs uppercase tracking-wider">
@@ -182,23 +182,23 @@ export default function SpecialDeals() {
                 </div>
 
                 {/* Title */}
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className="font-display text-3xl text-white mb-2 uppercase">
+                <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
+                  <h3 className="font-display text-2xl sm:text-3xl text-white mb-1 uppercase">
                     {deal.name}
                   </h3>
                 </div>
               </div>
 
               {/* Card Content */}
-              <div className="p-6 space-y-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600 font-body">
-                  <Tag size={16} />
+              <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 font-body">
+                  <Tag size={14} />
                   <span>Min. purchase ${deal.minPurchase}</span>
                 </div>
 
-                <button className="w-full bg-gradient-to-r from-[#B4182D] to-[#54162B] text-white py-4 rounded-full font-body font-bold uppercase tracking-wider hover:from-[#8B0000] hover:to-[#3d0f1f] flex items-center justify-center gap-3">
+                <button className="w-full bg-gradient-to-r from-[#B4182D] to-[#54162B] text-white py-3 sm:py-4 rounded-full font-body font-bold text-sm uppercase tracking-wider hover:from-[#8B0000] hover:to-[#3d0f1f] flex items-center justify-center gap-2 sm:gap-3 transition-all">
                   Shop Now
-                  <ArrowRight size={20} />
+                  <ArrowRight size={18} />
                 </button>
               </div>
             </div>
@@ -206,11 +206,14 @@ export default function SpecialDeals() {
         </div>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-16">
-          <button className="group inline-flex items-center gap-4 bg-white text-[#B4182D] px-12 py-6 rounded-full font-body font-bold text-base uppercase tracking-wider shadow-2xl hover:bg-gray-100">
-            <TrendingUp size={24} />
+        <div className="text-center mt-10 sm:mt-16">
+          <button className="group inline-flex items-center gap-3 sm:gap-4 bg-white text-[#B4182D] px-8 sm:px-12 py-4 sm:py-6 rounded-full font-body font-bold text-sm sm:text-base uppercase tracking-wider shadow-2xl hover:bg-gray-100 transition-all">
+            <TrendingUp size={20} />
             View All Deals
-            <ArrowRight size={20} className="group-hover:translate-x-1 " />
+            <ArrowRight
+              size={18}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </button>
         </div>
       </div>
