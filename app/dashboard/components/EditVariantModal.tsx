@@ -80,8 +80,7 @@ const DeleteVariantConfirm: React.FC<DeleteVariantConfirmProps> = ({
           <h2 className="text-xl font-bold text-white mb-2">Delete Variant</h2>
           <p className="text-gray-400 mb-6">
             Are you sure you want to delete{" "}
-            <span className="text-white font-semibold">{`"${variantLabel}"`}</span>
-            ?
+            <span className="text-white font-semibold">{`"${variantLabel}"`}</span>?
             <br />
             <span className="text-sm text-red-400/80">
               This action cannot be undone.
@@ -745,16 +744,18 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
                               />
                             </div>
 
-                            {/* Size (read-only) */}
+                            {/* Size (editable) */}
                             <div>
                               <label className="block text-sm font-medium text-gray-400 mb-2">
                                 Size
                               </label>
-                              <div className="bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3">
-                                <span className="text-white font-medium">
-                                  {variantSize}
-                                </span>
-                              </div>
+                              <input
+                                type="text"
+                                value={variantSize}
+                                onChange={(e) => setVariantSize(e.target.value)}
+                                placeholder="e.g. M, L, XL"
+                                className="w-full bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
+                              />
                             </div>
                           </div>
 

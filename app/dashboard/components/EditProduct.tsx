@@ -1,5 +1,5 @@
 "use client";
-import React, { JSX, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -20,7 +20,6 @@ import {
 import {
   TProduct,
   EditProductProps,
-  Variant,
   AddVariants,
   ErrorResponse,
 } from "@/type/type";
@@ -70,24 +69,11 @@ interface NewVariantRow {
   image: string | null;
 }
 
-const COLOR_OPTIONS = [
-  { name: "Red", hex: "#EF4444" },
-  { name: "Blue", hex: "#3B82F6" },
-  { name: "Green", hex: "#10B981" },
-  { name: "Black", hex: "#000000" },
-  { name: "White", hex: "#FFFFFF" },
-  { name: "Yellow", hex: "#F59E0B" },
-  { name: "Purple", hex: "#8B5CF6" },
-  { name: "Pink", hex: "#EC4899" },
-];
-
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"];
-
 const emptyRow = (id: number): NewVariantRow => ({
   id,
-  color_name: "Black",
+  color_name: "",
   color_hex: "#000000",
-  size: "M",
+  size: "",
   price: "20.00",
   compare_at_price: "25.00",
   stock: 1,
@@ -255,13 +241,14 @@ const AddVariantModal: React.FC<AddVariantModalProps> = ({
                         {[
                           "IMAGE *",
                           "COLOR",
+                          "HEX",
                           "SIZE",
                           "PRICE",
                           "COMPARE PRICE",
                           "STOCK *",
                           "REMOVE",
                         ].map((h) => (
-                          <th key={h} className="py-3 px-4">
+                          <th key={h} className="py-3 px-3">
                             {h}
                           </th>
                         ))}
@@ -273,7 +260,8 @@ const AddVariantModal: React.FC<AddVariantModalProps> = ({
                           key={row.id}
                           className="border-b border-white/5 hover:bg-white/5"
                         >
-                          <td className="py-3 px-4">
+                          {/* Image */}
+                          <td className="py-3 px-3">
                             <label className="cursor-pointer">
                               <div
                                 className={`w-12 h-12 bg-[#0f1117] border rounded-lg flex items-center justify-center overflow-hidden ${errors[idx] ? "border-red-500" : "border-white/10"}`}
@@ -302,44 +290,65 @@ const AddVariantModal: React.FC<AddVariantModalProps> = ({
                             )}
                           </td>
 
-                          <td className="py-3 px-4">
-                            <select
+                          {/* Color name text input */}
+                          <td className="py-3 px-3">
+                            <input
+                              type="text"
                               value={row.color_name}
-                              onChange={(e) => {
-                                const found = COLOR_OPTIONS.find(
-                                  (c) => c.name === e.target.value,
-                                );
-                                updateRow(idx, "color_name", e.target.value);
-                                if (found)
-                                  updateRow(idx, "color_hex", found.hex);
-                              }}
-                              className="bg-[#0f1117] border border-white/10 rounded px-3 py-1.5 text-white text-sm focus:outline-none focus:border-[#fda481]/50"
-                            >
-                              {COLOR_OPTIONS.map((c) => (
-                                <option key={c.name} value={c.name}>
-                                  {c.name}
-                                </option>
-                              ))}
-                            </select>
+                              onChange={(e) =>
+                                updateRow(idx, "color_name", e.target.value)
+                              }
+                              placeholder="e.g. Navy Blue"
+                              className="w-28 bg-[#0f1117] border border-white/10 rounded px-3 py-1.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50"
+                            />
                           </td>
 
-                          <td className="py-3 px-4">
-                            <select
+                          {/* Color hex — preview circle + text input */}
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-2">
+                              {/* Native color picker hidden behind circle */}
+                              <div className="relative flex-shrink-0">
+                                <div
+                                  className="w-7 h-7 rounded-full border border-white/20 cursor-pointer overflow-hidden"
+                                  style={{ backgroundColor: row.color_hex }}
+                                >
+                                  <input
+                                    type="color"
+                                    value={row.color_hex}
+                                    onChange={(e) =>
+                                      updateRow(idx, "color_hex", e.target.value)
+                                    }
+                                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+                              <input
+                                type="text"
+                                value={row.color_hex}
+                                onChange={(e) =>
+                                  updateRow(idx, "color_hex", e.target.value)
+                                }
+                                placeholder="#000000"
+                                className="w-24 bg-[#0f1117] border border-white/10 rounded px-3 py-1.5 text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50"
+                              />
+                            </div>
+                          </td>
+
+                          {/* Size text input */}
+                          <td className="py-3 px-3">
+                            <input
+                              type="text"
                               value={row.size}
                               onChange={(e) =>
                                 updateRow(idx, "size", e.target.value)
                               }
-                              className="bg-[#0f1117] border border-white/10 rounded px-3 py-1.5 text-white text-sm focus:outline-none focus:border-[#fda481]/50"
-                            >
-                              {SIZE_OPTIONS.map((s) => (
-                                <option key={s} value={s}>
-                                  {s}
-                                </option>
-                              ))}
-                            </select>
+                              placeholder="e.g. M"
+                              className="w-20 bg-[#0f1117] border border-white/10 rounded px-3 py-1.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50"
+                            />
                           </td>
 
-                          <td className="py-3 px-4">
+                          {/* Price */}
+                          <td className="py-3 px-3">
                             <input
                               type="number"
                               step="0.01"
@@ -352,40 +361,35 @@ const AddVariantModal: React.FC<AddVariantModalProps> = ({
                             />
                           </td>
 
-                          <td className="py-3 px-4">
+                          {/* Compare Price */}
+                          <td className="py-3 px-3">
                             <input
                               type="number"
                               step="0.01"
                               min="0"
                               value={row.compare_at_price}
                               onChange={(e) =>
-                                updateRow(
-                                  idx,
-                                  "compare_at_price",
-                                  e.target.value,
-                                )
+                                updateRow(idx, "compare_at_price", e.target.value)
                               }
                               className="w-24 bg-[#0f1117] border border-white/10 rounded px-3 py-1.5 text-white text-sm focus:outline-none focus:border-[#fda481]/50"
                             />
                           </td>
 
-                          <td className="py-3 px-4">
+                          {/* Stock */}
+                          <td className="py-3 px-3">
                             <input
                               type="number"
                               min="1"
                               value={row.stock}
                               onChange={(e) =>
-                                updateRow(
-                                  idx,
-                                  "stock",
-                                  parseInt(e.target.value) || 1,
-                                )
+                                updateRow(idx, "stock", parseInt(e.target.value) || 1)
                               }
                               className="w-20 bg-[#0f1117] border border-white/10 rounded px-3 py-1.5 text-white text-sm focus:outline-none focus:border-[#fda481]/50"
                             />
                           </td>
 
-                          <td className="py-3 px-4">
+                          {/* Remove */}
+                          <td className="py-3 px-3">
                             <button
                               onClick={() => removeRow(idx)}
                               disabled={rows.length === 1}
@@ -518,16 +522,13 @@ export const EditProduct: React.FC<EditProductProps> = () => {
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
 
-  // ── Pagination state ───────────────────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
-  const { data } = useGetProducts({ page: currentPage,all: true });
-  console.log(data)
+  const { data } = useGetProducts({ page: currentPage, all: true });
   const products: TProduct[] = data?.products || [];
   const totalCount = data?.count || 0;
   const hasNext = data?.next !== null && data?.next !== undefined;
   const hasPrevious = data?.previous !== null && data?.previous !== undefined;
 
-  // Notification
   const [notification, setNotification] = useState<{
     message: string;
     type: "success" | "error";
@@ -541,24 +542,18 @@ export const EditProduct: React.FC<EditProductProps> = () => {
     [],
   );
 
-  // Modal visibility
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showVariants, setShowVariants] = useState(false);
   const [showAddVariant, setShowAddVariant] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Selected product
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(
-    null,
-  );
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [selectedProductName, setSelectedProductName] = useState<string>("");
 
-  // Loading states
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  // ── Toggle active ──────────────────────────────────────────────────────────
   const handleToggleActive = async (product: TProduct) => {
     setTogglingId(product.id);
     try {
@@ -581,7 +576,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
     }
   };
 
-  // ── Delete ─────────────────────────────────────────────────────────────────
   const openDeleteConfirm = (product: TProduct) => {
     setSelectedProductId(product.id);
     setSelectedProductName(product.name);
@@ -592,9 +586,7 @@ export const EditProduct: React.FC<EditProductProps> = () => {
     if (!selectedProductId) return;
     setDeletingId(selectedProductId);
     try {
-      await deleteProductMutation.mutateAsync({
-        product_id: selectedProductId,
-      });
+      await deleteProductMutation.mutateAsync({ product_id: selectedProductId });
       notify("Product deleted successfully", "success");
       setShowDeleteConfirm(false);
       setSelectedProductId(null);
@@ -610,7 +602,6 @@ export const EditProduct: React.FC<EditProductProps> = () => {
     }
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <section>
       {notification?.message && (
@@ -620,13 +611,11 @@ export const EditProduct: React.FC<EditProductProps> = () => {
         />
       )}
 
-      {/* Title */}
       <div className="mb-10">
         <h1 className="text-4xl font-bold text-white mb-3">Products Catalog</h1>
         <p className="text-gray-400 text-base">Manage your product inventory</p>
       </div>
 
-      {/* Add button + count */}
       <div className="flex items-center justify-between mb-6">
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -639,12 +628,10 @@ export const EditProduct: React.FC<EditProductProps> = () => {
         </motion.button>
 
         <p className="text-sm text-gray-400">
-          <span className="font-semibold text-white">{totalCount}</span> total
-          products
+          <span className="font-semibold text-white">{totalCount}</span> total products
         </p>
       </div>
 
-      {/* Product Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product, index) => {
           const imageSrc =
@@ -671,9 +658,7 @@ export const EditProduct: React.FC<EditProductProps> = () => {
             >
               {!isActive && (
                 <div className="absolute top-4 right-4 bg-red-500/20 border border-red-500/50 rounded-lg px-3 py-1">
-                  <span className="text-xs font-bold text-red-400">
-                    INACTIVE
-                  </span>
+                  <span className="text-xs font-bold text-red-400">INACTIVE</span>
                 </div>
               )}
 
@@ -691,22 +676,14 @@ export const EditProduct: React.FC<EditProductProps> = () => {
                 </div>
               </div>
 
-              <h3 className="font-bold text-white text-lg mb-1">
-                {product.name}
-              </h3>
-              <p className="text-sm text-gray-400 mb-5 font-medium">
-                {product.category_name}
-              </p>
+              <h3 className="font-bold text-white text-lg mb-1">{product.name}</h3>
+              <p className="text-sm text-gray-400 mb-5 font-medium">{product.category_name}</p>
 
               <div className="flex items-center justify-between mb-5">
-                <span className="text-2xl font-bold text-[#fda481]">
-                  {product.lowest_price}
-                </span>
+                <span className="text-2xl font-bold text-[#fda481]">{product.lowest_price}</span>
                 <div className="flex items-center gap-1.5">
                   <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-                  <span className="font-bold text-white text-base">
-                    {product.average_rating}
-                  </span>
+                  <span className="font-bold text-white text-base">{product.average_rating}</span>
                 </div>
               </div>
 
@@ -781,7 +758,7 @@ export const EditProduct: React.FC<EditProductProps> = () => {
         })}
       </div>
 
-      {/* ── Pagination ── */}
+      {/* Pagination */}
       {(hasNext || hasPrevious) && (
         <div className="flex items-center justify-between mt-10 bg-[#1a1d29] rounded-2xl border border-white/10 px-6 py-4">
           <p className="text-sm text-gray-400">
@@ -798,11 +775,7 @@ export const EditProduct: React.FC<EditProductProps> = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-
-            <span className="text-sm text-gray-400 px-3">
-              Page {currentPage}
-            </span>
-
+            <span className="text-sm text-gray-400 px-3">Page {currentPage}</span>
             <button
               onClick={() => {
                 setCurrentPage((p) => p + 1);
