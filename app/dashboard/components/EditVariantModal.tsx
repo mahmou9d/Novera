@@ -230,7 +230,7 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
         onError: (error: AxiosError<ErrorResponse>) => {
           onNotify(
             error?.response?.data?.message ||
-              error?.message ||
+              error?.response?.data?.error ||
               "Failed to update variant",
             "error",
           );
@@ -256,7 +256,7 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
         onError: (error: AxiosError<ErrorResponse>) => {
           onNotify(
             error?.response?.data?.message ||
-              error?.message ||
+              error?.response?.data?.error ||
               "Failed to delete variant",
             "error",
           );
@@ -310,7 +310,7 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
         onError: (error: AxiosError<ErrorResponse>) => {
           onNotify(
             error?.response?.data?.message ||
-              error?.message ||
+              error?.response?.data?.error ||
               "Failed to update variant",
             "error",
           );

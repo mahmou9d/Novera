@@ -132,7 +132,7 @@ const handleUpdate = () => {
       onError: (error: AxiosError<ErrorResponse>) => {
         onNotify(
           error?.response?.data?.message ||
-            error?.message ||
+            error?.response?.data?.error ||
             "Failed to update product",
           "error",
         );

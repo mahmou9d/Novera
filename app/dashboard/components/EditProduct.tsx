@@ -567,10 +567,10 @@ export const EditProduct: React.FC<EditProductProps> = () => {
       );
     } catch (err: unknown) {
       const e = err as {
-        response?: { data?: { message?: string } };
+        response?: { data?: { message?: string, error?: string } };
         message?: string;
       };
-      notify(e?.response?.data?.message || "Failed to update product", "error");
+      notify(e?.response?.data?.message || e?.response?.data?.error || "Failed to update product", "error");
     } finally {
       setTogglingId(null);
     }
@@ -593,10 +593,10 @@ export const EditProduct: React.FC<EditProductProps> = () => {
       setSelectedProductName("");
     } catch (err: unknown) {
       const e = err as {
-        response?: { data?: { message?: string } };
+        response?: { data?: { message?: string, error?: string } };
         message?: string;
       };
-      notify(e?.response?.data?.message || "Failed to delete product", "error");
+      notify(e?.response?.data?.error ||e.response?.data?.message || "Failed to delete product", "error");
     } finally {
       setDeletingId(null);
     }
