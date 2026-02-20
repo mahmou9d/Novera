@@ -80,7 +80,8 @@ const DeleteVariantConfirm: React.FC<DeleteVariantConfirmProps> = ({
           <h2 className="text-xl font-bold text-white mb-2">Delete Variant</h2>
           <p className="text-gray-400 mb-6">
             Are you sure you want to delete{" "}
-            <span className="text-white font-semibold">{`"${variantLabel}"`}</span>?
+            <span className="text-white font-semibold">{`"${variantLabel}"`}</span>
+            ?
             <br />
             <span className="text-sm text-red-400/80">
               This action cannot be undone.
@@ -319,6 +320,7 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
       },
     );
   };
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
@@ -694,22 +696,56 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
                             )}
                           </div>
 
-                          {/* Color + Size (read-only) */}
+                          {/* Color (editable) + Size (read-only) */}
                           <div className="grid grid-cols-2 gap-4">
+                            {/* ── Color — text inputs ── */}
                             <div>
                               <label className="block text-sm font-medium text-gray-400 mb-2">
                                 Color
                               </label>
-                              <div className="flex items-center gap-3 bg-[#0f1117] border border-white/10 rounded-lg px-4 py-3">
-                                <div
-                                  className="w-5 h-5 rounded-full border border-white/20 flex-shrink-0"
-                                  style={{ backgroundColor: variantColorHex }}
+                              <div className="flex items-center gap-2">
+                                {/* Color preview / native picker */}
+                                <div className="relative flex-shrink-0">
+                                  <div
+                                    className="w-10 h-10 rounded-lg border border-white/20 cursor-pointer overflow-hidden"
+                                    style={{ backgroundColor: variantColorHex }}
+                                  >
+                                    <input
+                                      type="color"
+                                      value={variantColorHex}
+                                      onChange={(e) =>
+                                        setVariantColorHex(e.target.value)
+                                      }
+                                      className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Color name */}
+                                <input
+                                  type="text"
+                                  value={variantColorName}
+                                  onChange={(e) =>
+                                    setVariantColorName(e.target.value)
+                                  }
+                                  placeholder="Color name"
+                                  className="flex-1 bg-[#0f1117] border border-white/10 rounded-lg px-3 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 text-sm"
                                 />
-                                <span className="text-white font-medium">
-                                  {variantColorName}
-                                </span>
                               </div>
+
+                              {/* Hex text input */}
+                              <input
+                                type="text"
+                                value={variantColorHex}
+                                onChange={(e) =>
+                                  setVariantColorHex(e.target.value)
+                                }
+                                placeholder="#000000"
+                                className="mt-2 w-full bg-[#0f1117] border border-white/10 rounded-lg px-3 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 text-sm font-mono"
+                              />
                             </div>
+
+                            {/* Size (read-only) */}
                             <div>
                               <label className="block text-sm font-medium text-gray-400 mb-2">
                                 Size
@@ -807,4 +843,4 @@ export const EditVariantModal: React.FC<EditVariantModalProps> = ({
       />
     </>
   );
-};;
+};

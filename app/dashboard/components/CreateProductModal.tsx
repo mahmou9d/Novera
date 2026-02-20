@@ -36,12 +36,7 @@ import { AxiosError } from "axios";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const INITIAL_COLORS: ColorOption[] = [
-  { name: "Red", hex: "#EF4444", selected: false },
-  { name: "Blue", hex: "#3B82F6", selected: false },
-  { name: "Green", hex: "#10B981", selected: false },
-  { name: "Black", hex: "#000000", selected: false },
-  { name: "White", hex: "#FFFFFF", selected: false },
-  { name: "Yellow", hex: "#F59E0B", selected: false },
+  { name: "", hex: "#000000", selected: true },
 ];
 
 const INITIAL_SIZES: SizeOption[] = [
@@ -84,7 +79,7 @@ export const CreateProductModal: React.FC<Props> = ({
 
   const [productName, setProductName] = useState("");
 
-  // ── Category: نخزن id و name منفصلين ──────────────────────────────────────
+  // ── Category ──────────────────────────────────────────────────────────────
   const [category, setCategory] = useState<{ id: number; name: string } | null>(
     null,
   );
@@ -145,7 +140,6 @@ export const CreateProductModal: React.FC<Props> = ({
       { name: categoryInput.trim() },
       {
         onSuccess: (newCat) => {
-          // بعد الإنشاء نخزن الـ id و الاسم
           setCategory({ id: newCat.id, name: newCat.name });
           setCategoryInput(newCat.name);
           onNotify(
@@ -203,12 +197,12 @@ export const CreateProductModal: React.FC<Props> = ({
 
   // ── Variants ──────────────────────────────────────────────────────────────
   const generateVariants = () => {
-    const selC = colors.filter((c) => c.selected);
+    const selC = colors.filter((c) => c.name.trim());
     const selS = sizes.filter((s) => s.selected);
     if (!selC.length || !selS.length) {
       setFormErrors((p) => ({
         ...p,
-        variants: "Select at least one color and size",
+        variants: "Add at least one color name and select one size",
       }));
       return;
     }
@@ -484,7 +478,7 @@ export const CreateProductModal: React.FC<Props> = ({
                             value={categoryInput}
                             onChange={(e) => {
                               setCategoryInput(e.target.value);
-                              setCategory(null); // امسح الاختيار لو بيكتب من جديد
+                              setCategory(null);
                               setCategoryOpen(true);
                               setFormErrors((p) => ({
                                 ...p,
@@ -523,8 +517,8 @@ export const CreateProductModal: React.FC<Props> = ({
                                     key={c.id}
                                     type="button"
                                     onClick={() => {
-                                      setCategory({ id: c.id, name: c.name }); // ← نخزن id + name
-                                      setCategoryInput(c.name); // ← نعرض الاسم في الـ input
+                                      setCategory({ id: c.id, name: c.name });
+                                      setCategoryInput(c.name);
                                       setCategoryOpen(false);
                                       setFormErrors((p) => ({
                                         ...p,
@@ -649,43 +643,101 @@ export const CreateProductModal: React.FC<Props> = ({
                       <h3 className="text-lg font-bold text-white">
                         Generate Variants
                       </h3>
+
+                      {/* ── Colors as Text Inputs ── */}
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-3">
-                          Select Colors:
+                          Colors:
                         </label>
-                        <div className="flex flex-wrap gap-3">
+                        <div className="space-y-2">
                           {colors.map((c, i) => (
-                            <button
-                              key={c.name}
-                              onClick={() =>
-                                setColors((p) =>
-                                  p.map((x, j) =>
-                                    j === i
-                                      ? { ...x, selected: !x.selected }
-                                      : x,
-                                  ),
-                                )
-                              }
-                              className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-                                c.selected
-                                  ? "bg-white/10 border-[#fda481]"
-                                  : "bg-[#0f1117] border-white/10 hover:bg-white/5"
-                              }`}
-                            >
-                              <div
-                                className="w-4 h-4 rounded-full border border-white/20"
-                                style={{ backgroundColor: c.hex }}
+                            <div key={i} className="flex items-center gap-3">
+                              {/* Color preview circle — click to open native color picker */}
+                              <div className="relative flex-shrink-0">
+                                <div
+                                  className="w-10 h-10 rounded-lg border border-white/20 cursor-pointer overflow-hidden"
+                                  style={{ backgroundColor: c.hex }}
+                                >
+                                  <input
+                                    type="color"
+                                    value={c.hex}
+                                    onChange={(e) =>
+                                      setColors((p) =>
+                                        p.map((x, j) =>
+                                          j === i
+                                            ? { ...x, hex: e.target.value }
+                                            : x,
+                                        ),
+                                      )
+                                    }
+                                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Color name text input */}
+                              <input
+                                type="text"
+                                value={c.name}
+                                onChange={(e) =>
+                                  setColors((p) =>
+                                    p.map((x, j) =>
+                                      j === i
+                                        ? { ...x, name: e.target.value }
+                                        : x,
+                                    ),
+                                  )
+                                }
+                                placeholder="Color name (e.g. Navy Blue)"
+                                className="flex-1 bg-[#0f1117] border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 text-sm"
                               />
-                              <span className="text-sm text-white font-medium">
-                                {c.name}
-                              </span>
-                              {c.selected && (
-                                <X className="w-4 h-4 text-[#fda481]" />
-                              )}
-                            </button>
+
+                              {/* Hex text input */}
+                              <input
+                                type="text"
+                                value={c.hex}
+                                onChange={(e) =>
+                                  setColors((p) =>
+                                    p.map((x, j) =>
+                                      j === i
+                                        ? { ...x, hex: e.target.value }
+                                        : x,
+                                    ),
+                                  )
+                                }
+                                placeholder="#000000"
+                                className="w-28 bg-[#0f1117] border border-white/10 rounded-lg px-3 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#fda481]/50 text-sm font-mono"
+                              />
+
+                              {/* Remove color button */}
+                              <button
+                                onClick={() =>
+                                  setColors((p) => p.filter((_, j) => j !== i))
+                                }
+                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
                           ))}
+
+                          {/* Add Color button */}
+                          <button
+                            onClick={() =>
+                              setColors((p) => [
+                                ...p,
+                                { name: "", hex: "#000000", selected: true },
+                              ])
+                            }
+                            className="flex items-center gap-2 px-4 py-2 border border-dashed border-white/20 rounded-lg text-gray-400 hover:text-white hover:border-white/40 text-sm transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Color
+                          </button>
                         </div>
                       </div>
+
+                      {/* ── Sizes ── */}
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-3">
                           Select Sizes:
@@ -714,17 +766,18 @@ export const CreateProductModal: React.FC<Props> = ({
                           ))}
                         </div>
                       </div>
+
                       <button
                         onClick={generateVariants}
                         disabled={
-                          !colors.some((c) => c.selected) ||
+                          !colors.some((c) => c.name.trim()) ||
                           !sizes.some((s) => s.selected)
                         }
                         className="px-6 py-3 bg-gradient-to-r from-[#fda481] to-[#b4182d] text-white rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Plus className="w-5 h-5" />
                         Generate{" "}
-                        {colors.filter((c) => c.selected).length *
+                        {colors.filter((c) => c.name.trim()).length *
                           sizes.filter((s) => s.selected).length}{" "}
                         Combinations
                       </button>

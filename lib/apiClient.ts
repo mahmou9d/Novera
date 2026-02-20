@@ -62,7 +62,7 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
-        window.location.href = "/login";
+        // window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }

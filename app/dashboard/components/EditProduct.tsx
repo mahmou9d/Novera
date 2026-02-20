@@ -520,7 +520,7 @@ export const EditProduct: React.FC<EditProductProps> = () => {
 
   // ── Pagination state ───────────────────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
-  const { data } = useGetProducts({ page: currentPage });
+  const { data } = useGetProducts({ page: currentPage,all: true });
   console.log(data)
   const products: TProduct[] = data?.products || [];
   const totalCount = data?.count || 0;
