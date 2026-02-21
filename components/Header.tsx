@@ -222,12 +222,12 @@ console.log(orders);
                     >
                       Logout
                     </button>
-                    <Link
+                    {isAdmin && <Link
                       href="/dashboard"
                       className="col-span-2 bg-[#FDA481] text-[#181A2F] px-8 py-4 rounded-full font-sans font-bold text-sm uppercase tracking-wider hover:bg-white text-center shadow-xl"
                     >
                       Dashboard
-                    </Link>
+                    </Link>}
                   </div>
                 ) : (
                   <Link

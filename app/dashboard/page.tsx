@@ -12,6 +12,7 @@ import { getStatusColor, getStatusIcon } from "@/utils/helpers";
 import { StatType } from "@/type/type";
 import { DollarSign, Package, ShoppingCart, Users } from "lucide-react";
 import { useGetStatusCount } from "@/hooks/useDashboard";
+import { ProtectedRoute } from "@/utils/Protectedroute";
 
 const CompleteDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
@@ -84,20 +85,22 @@ const CompleteDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1117] flex relative overflow-hidden">
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        activeMenu={activeMenu}
-        setActiveMenu={setActiveMenu}
-      />
-      <main className="flex-1 flex flex-col relative z-10 bg-[#0f1117] w-full">
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <div className="flex-1 p-4 md:p-8 overflow-auto">
-          <div key={activeMenu}>{renderContent()}</div>
-        </div>
-      </main>
-    </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-[#0f1117] flex relative overflow-hidden">
+        <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          activeMenu={activeMenu}
+          setActiveMenu={setActiveMenu}
+        />
+        <main className="flex-1 flex flex-col relative z-10 bg-[#0f1117] w-full">
+          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+          <div className="flex-1 p-4 md:p-8 overflow-auto">
+            <div key={activeMenu}>{renderContent()}</div>
+          </div>
+        </main>
+      </div>
+    </ProtectedRoute>
   );
 };
 

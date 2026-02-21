@@ -10,13 +10,16 @@ import {
   Package,
   Check,
   ChevronDown,
-
+  Plus,
 } from "lucide-react";
 import { useUpdateProduct, useGetSingleProduct } from "@/hooks/useProducts";
-import { EditProductModalFormErrors, EditProductModalProps, ErrorResponse } from "@/type/type";
+import {
+  EditProductModalFormErrors,
+  EditProductModalProps,
+  ErrorResponse,
+} from "@/type/type";
 import { AxiosError } from "axios";
-import { useGetCategory } from "@/hooks/useDashboard";
-
+import { useGetCategory, useCreateCategory } from "@/hooks/useDashboard";
 
 const FieldError = ({ msg }: { msg: string }) => (
   <div className="flex items-center gap-2 mt-2 text-red-500 text-sm">
@@ -25,7 +28,6 @@ const FieldError = ({ msg }: { msg: string }) => (
   </div>
 );
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export const EditProductModal: React.FC<EditProductModalProps> = ({
   open,
   productId,
@@ -33,6 +35,7 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
   onNotify,
 }) => {
   const updateProductMutation = useUpdateProduct();
+  const createCategoryMutation = useCreateCategory();
 
   const {
     data: product,
@@ -47,14 +50,20 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
 
   // Form fields
   const [productName, setProductName] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<{ id: number; name: string } | null>(
+    null,
+  );
+  const [categoryInput, setCategoryInput] = useState("");
   const [material, setMaterial] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
+
+  // Category dropdown
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
   const { data: CATEGORIES } = useGetCategory();
-  
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -64,31 +73,68 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
         setCategoryOpen(false);
       }
     };
-  
     document.addEventListener("mousedown", handleClickOutside);
-  
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  
+
   useEffect(() => {
     if (product) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setProductName(product.name ?? "");
-      setCategory(product.category?.toString() ?? "");
+      const matched = CATEGORIES?.find(
+        (c) =>
+          c.id === product.category || c.name === product.category?.toString(),
+      );
+      if (matched) {
+        setCategory({ id: matched.id, name: matched.name });
+        setCategoryInput(matched.name);
+      } else {
+        setCategory(null);
+        setCategoryInput(product.category?.toString() ?? "");
+      }
       setMaterial(product.material_composition ?? "");
       setDescription(product.description ?? "");
       setIsActive(product.is_active ?? true);
       setSaveSuccess(false);
       setFormErrors({});
     }
-  }, [product]);
-  console.log(category);
+  }, [product, CATEGORIES]);
+
   const handleClose = () => {
     setSaveSuccess(false);
     setFormErrors({});
     onClose();
+  };
+  const handleCreateCategory = () => {
+    if (!categoryInput.trim()) return;
+    setIsCreatingCategory(true);
+
+    createCategoryMutation.mutate(
+      { name: categoryInput.trim() },
+      {
+        onSuccess: (newCat) => {
+          setCategory({ id: newCat.id, name: newCat.name });
+          setCategoryInput(newCat.name);
+          onNotify(
+            `Category "${newCat.name}" created successfully!`,
+            "success",
+          );
+          setCategoryOpen(false);
+          setFormErrors((p) => ({ ...p, category: undefined }));
+          setIsCreatingCategory(false);
+        },
+        onError: (error: AxiosError<ErrorResponse>) => {
+          onNotify(
+            error?.response?.data?.message ||
+              error?.response?.data?.name ||
+              error?.message ||
+              "Failed to create category",
+            "error",
+          );
+          setIsCreatingCategory(false);
+        },
+      },
+    );
   };
 
   // ── Validation ────────────────────────────────────────────────────────────
@@ -107,40 +153,39 @@ export const EditProductModal: React.FC<EditProductModalProps> = ({
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────
-const handleUpdate = () => {
-  if (!validate() || !productId) return;
-  setIsUpdating(true);
-
-  updateProductMutation.mutate(
-    {
-      product_id: productId,
-      payload: {
-        name: productName,
-        description,
-        material_composition: material,
-        category: category,
-        is_active: isActive,
+  const handleUpdate = () => {
+    if (!validate() || !productId) return;
+    setIsUpdating(true);
+    updateProductMutation.mutate(
+      {
+        product_id: productId,
+        payload: {
+          name: productName,
+          description,
+          material_composition: material,
+          category: (category!.name),
+          is_active: isActive,
+        },
       },
-    },
-    {
-      onSuccess: () => {
-        setSaveSuccess(true);
-        onNotify("Product updated successfully", "success");
-        setTimeout(handleClose, 1500);
-        setIsUpdating(false);
+      {
+        onSuccess: () => {
+          setSaveSuccess(true);
+          onNotify("Product updated successfully", "success");
+          setTimeout(handleClose, 1500);
+          setIsUpdating(false);
+        },
+        onError: (error: AxiosError<ErrorResponse>) => {
+          onNotify(
+            error?.response?.data?.message ||
+              error?.response?.data?.error ||
+              "Failed to update product",
+            "error",
+          );
+          setIsUpdating(false);
+        },
       },
-      onError: (error: AxiosError<ErrorResponse>) => {
-        onNotify(
-          error?.response?.data?.message ||
-            error?.response?.data?.error ||
-            "Failed to update product",
-          "error",
-        );
-        setIsUpdating(false);
-      },
-    },
-  );
-};
+    );
+  };
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -195,7 +240,6 @@ const handleUpdate = () => {
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-6">
-              {/* ── Loading state ──────────────────────────────────────────── */}
               {isFetching && (
                 <div className="flex flex-col items-center justify-center h-64 gap-4">
                   <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
@@ -203,7 +247,6 @@ const handleUpdate = () => {
                 </div>
               )}
 
-              {/* ── Error state ────────────────────────────────────────────── */}
               {isError && !isFetching && (
                 <div className="flex flex-col items-center justify-center h-64 gap-3">
                   <AlertCircle className="w-10 h-10 text-red-500" />
@@ -217,7 +260,6 @@ const handleUpdate = () => {
                 </div>
               )}
 
-              {/* ── Form ───────────────────────────────────────────────────── */}
               {!isFetching && !isError && product && (
                 <div className="space-y-6">
                   <div className="bg-[#1a1d29] border border-white/10 rounded-xl p-6 space-y-4">
@@ -254,6 +296,7 @@ const handleUpdate = () => {
 
                     {/* Category + Material */}
                     <div className="grid grid-cols-2 gap-4">
+                      {/* ── Category Dropdown (نفس CreateProductModal بالظبط) ── */}
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-2">
                           Category *
@@ -261,9 +304,10 @@ const handleUpdate = () => {
                         <div className="relative" ref={categoryRef}>
                           <input
                             type="text"
-                            value={category}
+                            value={categoryInput}
                             onChange={(e) => {
-                              setCategory(e.target.value);
+                              setCategoryInput(e.target.value);
+                              setCategory(null);
                               setCategoryOpen(true);
                               setFormErrors((p) => ({
                                 ...p,
@@ -279,7 +323,9 @@ const handleUpdate = () => {
                             }`}
                           />
                           <ChevronDown
-                            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform ${categoryOpen ? "rotate-180" : ""}`}
+                            className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform ${
+                              categoryOpen ? "rotate-180" : ""
+                            }`}
                           />
 
                           <AnimatePresence>
@@ -291,12 +337,17 @@ const handleUpdate = () => {
                                 transition={{ duration: 0.15 }}
                                 className="absolute top-full left-0 right-0 mt-1 bg-[#0f1117] border border-white/10 rounded-lg overflow-hidden z-50 shadow-xl"
                               >
-                                {CATEGORIES?.map((c) => (
+                                {CATEGORIES?.filter((c) =>
+                                  c.name
+                                    .toLowerCase()
+                                    .includes(categoryInput.toLowerCase()),
+                                ).map((c) => (
                                   <button
                                     key={c.id}
                                     type="button"
                                     onClick={() => {
-                                      setCategory(c.name);
+                                      setCategory({ id: c.id, name: c.name });
+                                      setCategoryInput(c.name);
                                       setCategoryOpen(false);
                                       setFormErrors((p) => ({
                                         ...p,
@@ -304,28 +355,44 @@ const handleUpdate = () => {
                                       }));
                                     }}
                                     className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 flex items-center justify-between group ${
-                                      category === c.name
+                                      category?.id === c.id
                                         ? "text-[#fda481]"
                                         : "text-gray-300"
                                     }`}
                                   >
                                     {c.name}
-                                    {category === c.name && (
+                                    {category?.id === c.id && (
                                       <Check className="w-4 h-4 text-[#fda481]" />
                                     )}
                                   </button>
                                 ))}
-                                {category &&
+
+                                {categoryInput.trim() &&
                                   !CATEGORIES?.some(
                                     (c) =>
                                       c.name.toLowerCase() ===
-                                      category.toLowerCase(),
+                                      categoryInput.toLowerCase(),
                                   ) && (
-                                    <div className="px-4 py-2.5 border-t border-white/10">
-                                      <p className="text-xs text-gray-500 mb-1">
-                                        Custom
-                                      </p>
-                                      <p className="text-sm text-[#fda481] font-medium">{`"${category}"`}</p>
+                                    <div className="border-t border-white/10">
+                                      <button
+                                        type="button"
+                                        onClick={handleCreateCategory}
+                                        disabled={isCreatingCategory}
+                                        className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 flex items-center gap-2 text-[#fda481] disabled:opacity-50"
+                                      >
+                                        {isCreatingCategory ? (
+                                          <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Creating...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Plus className="w-4 h-4" />
+                                            Create &quot;{categoryInput}&quot;
+                                            as new category
+                                          </>
+                                        )}
+                                      </button>
                                     </div>
                                   )}
                               </motion.div>
@@ -336,6 +403,8 @@ const handleUpdate = () => {
                           <FieldError msg={formErrors.category} />
                         )}
                       </div>
+
+                      {/* Material */}
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-2">
                           Material *
