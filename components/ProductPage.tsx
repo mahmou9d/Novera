@@ -398,7 +398,7 @@ const ProductPage = ({ productId }: ProductPageProps) => {
                     onClick={() => handleVariantChange(option.id)}
                     disabled={option.stock === 0}
                     className={`px-5 py-2.5 rounded-xl border-2 text-sm font-medium shadow-sm ${
-                      selectedVariant.size === option.size
+                      selectedVariant.color_name === option.color_name
                         ? "border-[#fca481] bg-gradient-to-r from-[#fca481] to-[#fd9166] text-white shadow-lg ring-2 ring-[#fca481] ring-opacity-30"
                         : option.stock === 0
                           ? "border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50"
