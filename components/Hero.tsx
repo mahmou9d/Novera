@@ -18,7 +18,7 @@ const Hero = () => {
       className="relative bg-gradient-to-br from-navy via-slate to-steel overflow-hidden"
     >
       <div className="container mx-auto px-4 sm:px-6 xl:px-40 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-150 lg:min-h-175 py-12 lg:py-0">
+        <div className="grid lg:grid-cols-2 gap-4 md:gap-8 lg:gap-12 items-center min-h-150 lg:min-h-175 py-12 lg:py-0">
           {/* Left Content */}
           <div className="flex flex-col justify-center space-y-6 lg:space-y-8 text-center lg:text-left">
             {/* Badge */}
