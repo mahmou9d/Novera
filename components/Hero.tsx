@@ -13,12 +13,9 @@ const Hero = () => {
   ];
 
   return (
-    <section
-      
-      className="relative bg-gradient-to-br from-navy via-slate to-steel overflow-hidden"
-    >
+    <section className="relative bg-gradient-to-br from-navy via-slate to-steel overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 xl:px-40 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-4 md:gap-8 lg:gap-12 items-center min-h-150 lg:min-h-175 py-12 lg:py-0">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-150 lg:min-h-175 py-12 lg:py-0">
           {/* Left Content */}
           <div className="flex flex-col justify-center space-y-6 lg:space-y-8 text-center lg:text-left">
             {/* Badge */}
@@ -74,7 +71,7 @@ const Hero = () => {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-8 lg:gap-12 justify-center lg:justify-start pt-4 lg:pt-8 border-t border-steel/30">
+            <div className="flex gap-4 md:gap-8 lg:gap-12 justify-center lg:justify-start pt-4 lg:pt-8 border-t border-steel/30">
               {stats.map((stat, index) => (
                 <div key={index}>
                   <h3 className="text-2xl lg:text-3xl font-bold text-peach">
