@@ -42,13 +42,22 @@ const Header = () => {
   );
   const orders = ordersData || [];
 console.log(orders);
-  const scrollToSection = (sectionId: string) => {
+const scrollToSection = (sectionId: string) => {
+  const isHomePage = window.location.pathname === "/";
+
+  if (isHomePage) {
+
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
-      setMobileMenuOpen(false);
     }
-  };
+  } else {
+
+    router.push(`/#${sectionId}`);
+  }
+
+  setMobileMenuOpen(false);
+};
 
   const handleLogout = () => {
     logout(undefined, {

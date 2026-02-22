@@ -127,28 +127,22 @@ export default function Footer() {
             {/* Contact Info */}
             <div className="space-y-3 mb-6">
               <a
-                href="mailto:hello@novera.com"
+                href="mailto:mfb4010@gmail.com"
                 className="flex items-center gap-3 text-gray-400 hover:text-[#FDA481]   text-sm group"
               >
-                <Mail
-                  size={16}
-                  className="group-hover:scale-110  "
-                />
-                <span>hello@novera.com</span>
+                <Mail size={16} className="group-hover:scale-110  " />
+                <span>mfb4010@gmail.com</span>
               </a>
               <a
-                href="tel:+1234567890"
+                href="tel:01153032052"
                 className="flex items-center gap-3 text-gray-400 hover:text-[#FDA481]   text-sm group"
               >
-                <Phone
-                  size={16}
-                  className="group-hover:scale-110  "
-                />
-                <span>+1 (234) 567-890</span>
+                <Phone size={16} className="group-hover:scale-110  " />
+                <span>01153032052</span>
               </a>
               <div className="flex items-start gap-3 text-gray-400 text-sm">
                 <MapPin size={16} className="mt-0.5 shrink-0" />
-                <span>123 Fashion Ave, New York, NY 10001</span>
+                <span>Egypt Cairo</span>
               </div>
             </div>
 
@@ -249,7 +243,7 @@ export default function Footer() {
                 size={14}
                 className="inline text-[#FDA481] fill-current animate-pulse"
               />{" "}
-              in New York
+              in Egypt
             </div>
 
             {/* Payment Methods */}
