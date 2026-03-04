@@ -104,7 +104,7 @@ export const productsData: ProductType[] = [
         stock: 8,
         sold: 134,
         rating: 4.7,
-        status: "low stock",
+        status: "low stocks",
         image: "🔌",
     },
     {
