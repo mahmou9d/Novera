@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
       if (!refreshToken) return Promise.reject(error);
 
       try {
-        const { data } = await axios.post(`${BASE_URL}auth/token/refresh/`, {
+        const { data } = await axios.post(`${BASE_URL}/auth/token/refresh/`, {
           refresh: refreshToken,
         });
 
